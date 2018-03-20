@@ -23,10 +23,19 @@ function prompt
     return "> "
 }
 
+
+# ---------------------------------------------------------------------------------------
+# su
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 # open a new command prompt in elevated mode - alias 'su'
 function Invoke-SuperUser { conemu /single /cmd -cur_console:an powershell }
 New-Alias su Invoke-SuperUser
 
+
+# ---------------------------------------------------------------------------------------
+# vs
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # invoke the Visual Studio environment batch script - alias 'vs'
 function Invoke-VsDevCmd
@@ -52,14 +61,18 @@ if ($env:vsdev -eq '1')
     Invoke-VsDev
 }
 
+# ---------------------------------------------------------------------------------------
+# Docker
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # prune unused docker objects
 function Invoke-DockerClean
 {
+    Write-Host
     $trash = $(docker ps -a -q)
     if ($trash -ne $null)
     {
-        Write-Host ('Removing {0} stopped containers' -f $trash.Count) -ForegroundColor DarkYellow
+        Write-Host ('Removing {0} stopped containers...' -f $trash.Count) -ForegroundColor DarkYellow
         docker container prune
     }
     else
@@ -67,18 +80,34 @@ function Invoke-DockerClean
         Write-Host "No stopped containers" -ForegroundColor DarkYellow
     }
 
+    Write-Host
     $trash = $(docker images --filter "dangling=true" -q --no-trunc)
     if ($trash -ne $null)
     {
-        Write-Host ('Removing {0} dangling images' -f $trash.Count) -ForegroundColor DarkYellow
+        Write-Host ('Removing {0} dangling images...' -f $trash.Count) -ForegroundColor DarkYellow
         docker rmi $trash
     }
     else
     {
         Write-Host "No dangling images" -ForegroundColor DarkYellow
     }
+
+    Write-Host
 }
-New-Alias doclean Invoke-DockerClean -Force
+New-Alias doclean Invoke-DockerClean
+
+
+function Invoke-DockerShow
+{
+    Write-Host
+    Write-Host 'Containers...' -ForegroundColor DarkYellow
+    docker ps -a
+    Write-Host
+    Write-Host 'Images...' -ForegroundColor DarkYellow
+    docker images
+    Write-Host
+}
+New-Alias doshow Invoke-DockerShow
 
 
 # Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively
