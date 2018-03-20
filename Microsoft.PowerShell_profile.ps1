@@ -31,9 +31,9 @@ New-Alias su Invoke-SuperUser
 # invoke the Visual Studio environment batch script - alias 'vs'
 function Invoke-VsDevCmd
 {
-    Push-Location "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\Tools"
+    pushd "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\Tools"
 
-    cmd /c "VsDevCmd.bat&set" | ForEach-Object `
+    cmd /c "VsDevCmd.bat&set" | foreach `
     {
         if ($_ -match "=")
         {
@@ -41,7 +41,7 @@ function Invoke-VsDevCmd
         }
     }
 
-    Pop-Location
+    popd
 }
 New-Alias vs Invoke-VsDevCmd
 
@@ -51,6 +51,35 @@ if ($env:vsdev -eq '1')
 {
     Invoke-VsDev
 }
+
+
+# prune unused docker objects
+function Invoke-DockerClean
+{
+    $trash = $(docker ps -a -q)
+    if ($trash -ne $null)
+    {
+        Write-Host ('Removing {0} stopped containers' -f $trash.Count) -ForegroundColor DarkYellow
+        docker container prune
+    }
+    else
+    {
+        Write-Host "No stopped containers" -ForegroundColor DarkYellow
+    }
+
+    $trash = $(docker images --filter "dangling=true" -q --no-trunc)
+    if ($trash -ne $null)
+    {
+        Write-Host ('Removing {0} dangling images' -f $trash.Count) -ForegroundColor DarkYellow
+        docker rmi $trash
+    }
+    else
+    {
+        Write-Host "No dangling images" -ForegroundColor DarkYellow
+    }
+}
+New-Alias doclean Invoke-DockerClean -Force
+
 
 # Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively
 # instead set location to root of current drive
