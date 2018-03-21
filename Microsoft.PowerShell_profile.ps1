@@ -58,7 +58,7 @@ New-Alias vs Invoke-VsDevCmd
 # run vsdevcmd.bat if $env:vsdev is set; this is done by conemu task definition
 if ($env:vsdev -eq '1')
 {
-    Invoke-VsDev
+    Invoke-VsDevCmd
 }
 
 # ---------------------------------------------------------------------------------------
