@@ -197,6 +197,8 @@ Remove-Item alias:ls
 Set-Alias dir Get-ColorDir
 Set-Alias ls Get-ColorDir
 
+New-Alias ccat Show-ColorizedContent
+
 
 # Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively
 # instead set location to root of current drive
