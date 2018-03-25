@@ -36,7 +36,7 @@ function Invoke-VsDevCmd {
 	Push-Location "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\Tools"
 
 	cmd /c "VsDevCmd.bat&set" | ForEach-Object `
- 	{
+ {
 		if ($_ -match "=") {
 			$v = $_.split("="); set-item -force -path "ENV:\$($v[0])"  -value "$($v[1])"
 		}
@@ -120,19 +120,20 @@ New-Alias doshow Invoke-DockerShow
 #***************************************************************************************
 
 New-CommandWrapper Out-Default -Process {
-	$nocase = ([System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-	$compressed = New-Object System.Text.RegularExpressions.Regex('\.(zip|tar|gz|iso)$', $nocase)
-	$executable = New-Object System.Text.RegularExpressions.Regex('\.(exe|bat|cmd|msi|ps1|psm1)$', $nocase)
+	$nocase = ([Text.RegularExpressions.RegexOptions]::IgnoreCase)
+	$compressed = New-Object Text.RegularExpressions.Regex('\.(zip|tar|gz|iso)$', $nocase)
+	$executable = New-Object Text.RegularExpressions.Regex('\.(exe|bat|cmd|msi|ps1|psm1)$', $nocase)
 
-	if (($_ -is [System.IO.DirectoryInfo]) -or ($_ -is [System.IO.FileInfo])) {
+	if (($_ -is [IO.DirectoryInfo]) -or ($_ -is [IO.FileInfo])) {
 		if (-not ($notfirst)) {
-			Write-Host "`n    Directory: $(Get-Location)`n"
+			$parent = [IO.Path]::GetDirectoryName($_.FullName)
+			Write-Host "`n    Directory: $parent`n"
 			Write-Host "Mode        Last Write Time       Length   Name"
 			Write-Host "----        ---------------       ------   ----"
 			$notfirst = $true
 		}
 
-		if ($_ -is [System.IO.DirectoryInfo]) {
+		if ($_ -is [IO.DirectoryInfo]) {
 			Write-Host ("{0}   {1}               " -f $_.mode, ([String]::Format("{0,10} {1,8}", $_.LastWriteTime.ToString("d"), $_.LastWriteTime.ToString("t")))) -NoNewline
 			Write-Host $_.name -ForegroundColor "Blue"
 		}
@@ -163,7 +164,7 @@ function Get-DirSize {
 
 	Get-Childitem $dir | Foreach-Object `
 	{
-		if ($_ -is [System.IO.FileInfo]) {
+		if ($_ -is [IO.FileInfo]) {
 			$bytes += $_.Length
 			$count++
 		}
@@ -197,7 +198,7 @@ Remove-Item alias:ls
 Set-Alias dir Get-ColorDir
 Set-Alias ls Get-ColorDir
 
-New-Alias ccat Show-ColorizedContent
+New-Alias cc Show-ColorizedContent
 
 
 # Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively
