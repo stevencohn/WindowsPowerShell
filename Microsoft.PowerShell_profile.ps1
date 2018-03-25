@@ -158,11 +158,13 @@ New-CommandWrapper Out-Default -Process {
 }
 
 function Get-DirSize {
-	param ($dir)
+	param ($dir,
+	[System.Management.Automation.SwitchParameter] $la)
+
 	$bytes = 0
 	$count = 0
 
-	Get-Childitem $dir | Foreach-Object `
+	Get-Childitem $dir -force:$la | Foreach-Object `
 	{
 		if ($_ -is [IO.FileInfo]) {
 			$bytes += $_.Length
@@ -188,9 +190,9 @@ function Get-DirSize {
 }
 
 function Get-ColorDir {
-	param ($dir)
-	Get-Childitem $dir
-	Get-DirSize $dir
+	param ($dir,[System.Management.Automation.SwitchParameter] $la)
+	Get-Childitem $dir -force:$la
+	Get-DirSize $dir -la:$la
 }
 
 Remove-Item alias:dir
