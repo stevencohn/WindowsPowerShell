@@ -184,7 +184,7 @@ function Get-DirSize {
 		Write-Host ("" + [Math]::Round(($bytes / 1GB), 2) + " GB") -NoNewLine
 	}
 	else {
-		Write-Host ("" + $bytes + " bytes") -ForegroundColor "White" -NoNewLine
+		Write-Host ("" + $bytes + " bytes") -NoNewLine
 	}
 	Write-Host " in $count files"
 }
@@ -206,3 +206,9 @@ New-Alias cc Show-ColorizedContent
 # Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively
 # instead set location to root of current drive
 Set-Location \
+
+# Chocolatey profile
+$ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+if (Test-Path($ChocolateyProfile)) {
+  Import-Module "$ChocolateyProfile"
+}
