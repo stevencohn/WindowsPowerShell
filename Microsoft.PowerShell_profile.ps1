@@ -1,16 +1,11 @@
 ﻿
-function Test-Elevated {
-	$user = [Security.Principal.WindowsIdentity]::GetCurrent();
-	(New-Object Security.Principal.WindowsPrincipal $user).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
-}
-
 <#
 .SYNOPSIS
 Set the prompt to a colorized string customized by elevation
 #>
 function prompt {
 	$saveCode = $LASTEXITCODE
-	if (Test-Elevated) {
+	if (Confirm-Elevated) {
 		Write-Host "PS " -NoNewline -ForegroundColor Red
 		Write-Host $pwd -NoNewline -ForegroundColor Blue
 	}
@@ -23,101 +18,23 @@ function prompt {
 }
 
 
-<#
-.SYNOPSIS
-Open a new command prompt in elevated mode - alias 'su'
-#>
-function Invoke-SuperUser { conemu /single /cmd -cur_console:an powershell }
+#=======================================================================================
+# Aliases
+#---------------------------------------------------------------------------------------
+
+New-Alias ep Invoke-EditProfile
 New-Alias su Invoke-SuperUser
-
-
-# invoke the Visual Studio environment batch script - alias 'vs'
-function Invoke-VsDevCmd {
-	Push-Location "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\Tools"
-
-	cmd /c "VsDevCmd.bat&set" | ForEach-Object `
- {
-		if ($_ -match "=") {
-			$v = $_.split("="); set-item -force -path "ENV:\$($v[0])"  -value "$($v[1])"
-		}
-	}
-
-	Pop-Location
-}
 New-Alias vs Invoke-VsDevCmd
+New-Alias cc Show-ColorizedContent
 
-
-# run vsdevcmd.bat if $env:vsdev is set; this is done by conemu task definition
-if ($env:vsdev -eq '1') {
-	Invoke-VsDevCmd
-}
-
-
-#***************************************************************************************
 # Docker helpers
-#***************************************************************************************
-
-<#
-.SYNOPSIS
-Prune unused docker containers and dangling images.
-#>
-function Invoke-DockerClean {
-	if (!(New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole( `
-				[Security.Principal.WindowsBuiltinRole]::Administrator)) {
-		Write-Host 'Must be an administrator to run this command'
-		return
-	}
-
-	Write-Host
-	$trash = $(docker ps -a -q)
-	if ($trash -ne $null) {
-		Write-Host ('Removing {0} stopped containers...' -f $trash.Count) -ForegroundColor DarkYellow
-		docker container prune
-	}
-	else {
-		Write-Host "No stopped containers" -ForegroundColor DarkYellow
-	}
-
-	Write-Host
-	$trash = $(docker images --filter "dangling=true" -q --no-trunc)
-	if ($trash -ne $null) {
-		Write-Host ('Removing {0} dangling images...' -f $trash.Count) -ForegroundColor DarkYellow
-		docker rmi $trash
-	}
-	else {
-		Write-Host "No dangling images" -ForegroundColor DarkYellow
-	}
-
-	Write-Host
-}
-New-Alias doclean Invoke-DockerClean
+New-Alias doc Invoke-DockerClean
+New-Alias dos Invoke-DockerShow
 
 
-<#
-.SYNOPSIS
-Show containers and images in a single command.
-#>
-function Invoke-DockerShow {
-	if (!(New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole( `
-				[Security.Principal.WindowsBuiltinRole]::Administrator)) {
-		Write-Host 'Must be an administrator to run this command'
-		return
-	}
-
-	Write-Host
-	Write-Host 'Containers...' -ForegroundColor DarkYellow
-	docker ps -a
-	Write-Host
-	Write-Host 'Images...' -ForegroundColor DarkYellow
-	docker images
-	Write-Host
-}
-New-Alias doshow Invoke-DockerShow
-
-
-#***************************************************************************************
-# Get-ColorDir (lc)
-#***************************************************************************************
+#=======================================================================================
+# Get-ColorDir (ls)
+#---------------------------------------------------------------------------------------
 
 New-CommandWrapper Out-Default -Process {
 	$nocase = ([Text.RegularExpressions.RegexOptions]::IgnoreCase)
@@ -200,18 +117,19 @@ Remove-Item alias:ls
 Set-Alias dir Get-ColorDir
 Set-Alias ls Get-ColorDir
 
-New-Alias cc Show-ColorizedContent
-
-function Invoke-EditProfile { code ([IO.Path]::GetDirectoryName($profile)) }
-New-Alias editprofile Invoke-EditProfile
-
+#=======================================================================================
+# OK, Go!
 
 # Chocolatey profile (added by Chocolatey installer)
 $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 if (Test-Path($ChocolateyProfile)) {
-  Import-Module "$ChocolateyProfile"
+	Import-Module "$ChocolateyProfile"
 }
 
+# run vsdevcmd.bat if $env:vsdev is set; this is done by conemu task definition
+if ($env:vsdev -eq '1') {
+	Invoke-VsDevCmd
+}
 
 # Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively
 # instead set location to root of current drive
