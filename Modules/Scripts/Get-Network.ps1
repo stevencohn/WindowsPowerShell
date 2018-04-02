@@ -21,12 +21,15 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 		# entering this block of code, not sure why though: | select -first 10 
 
 		$face = $_
+		# -- face.Name and Description
 
 		# all testing seems to prove that once an interface comes online
 		# it has already accrued statistics for both received and sent...
 
 		$face.GetIPv4Statistics() | ? { ($_.BytesReceived -gt 0) -and ($_.BytesSent -gt 0) } | % `
 		{
+			# -- $face.GetIPProperties().DnsAddresses
+
 			# the unicast address tells us our actual IP, both v4 and v6
 			$face.GetIPProperties() | ? { $_.UnicastAddresses.Count -gt 0 } | select -first 1 | % `
 			{

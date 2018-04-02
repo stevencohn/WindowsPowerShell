@@ -202,13 +202,17 @@ Set-Alias ls Get-ColorDir
 
 New-Alias cc Show-ColorizedContent
 
+function Invoke-EditProfile { code ([IO.Path]::GetDirectoryName($profile)) }
+New-Alias editprofile Invoke-EditProfile
 
-# Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively
-# instead set location to root of current drive
-Set-Location \
 
-# Chocolatey profile
+# Chocolatey profile (added by Chocolatey installer)
 $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 if (Test-Path($ChocolateyProfile)) {
   Import-Module "$ChocolateyProfile"
 }
+
+
+# Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively
+# instead set location to root of current drive
+Set-Location \
