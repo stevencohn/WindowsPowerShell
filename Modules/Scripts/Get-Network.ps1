@@ -5,6 +5,8 @@ machine.  All other adpaters such as tunneling and loopbacks are ignored.  Only 
 adapters are considered.
 #>
 
+$preferred = $null
+
 $items = @()
 if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 {
@@ -24,23 +26,17 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 
             $props = $_.GetIPProperties()
 
-            if (($props.UnicastAddresses.Count -gt 0) -and `
-                ($props.UnicastAddresses[0].Address.AddressFamily -eq 'InterNetwork'))
-            {
-                $item.Address = $props.UnicastAddresses[0].Address.IPAddressToString
-            }
+            $item.Address = $props.UnicastAddresses `
+                | ? { $_.Address.AddressFamily -eq 'InterNetwork' } `
+                | select -first 1 -ExpandProperty Address
 
-            if (($props.DnsAddresses.Count -gt 0) -and `
-                ($props.DnsAddresses[0].AddressFamily -eq 'InterNetwork'))
-            {
-                $item.DNSServer = $props.DnsAddresses[0].IPAddressToString
-            }
+            $item.DNSServer = $props.DnsAddresses `
+                | ? { $_.AddressFamily -eq 'InterNetwork' } `
+                | select -first 1 -ExpandProperty IPAddressToString
 
-	        if (($props.GatewayAddresses.Count -gt 0) -and `
-                ($props.GatewayAddresses[0].Address.AddressFamily -eq 'InterNetwork'))
-            {
-                $item.Gateway = $props.GatewayAddresses[0].Address.IPAddressToString
-		    }
+            $item.Gateway = $props.GatewayAddresses `
+                | ? { $_.Address.AddressFamily -eq 'InterNetwork' } `
+                | select -first 1 -ExpandProperty Address
 
             $stats = $_.GetIPv4Statistics() | Select -first 1
             $item.HasStats = ($stats.BytesReceived -gt 0) -and ($stats.BytesSent -gt 0)
@@ -48,18 +44,25 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
             $item.Description = $_.Name + ', ' + $_.Description
             if (($props.DnsSuffix -ne $null) -and ($props.DnsSuffix.Length -gt 0))
             {
-                $item.Description += (', ' + $props.DnsSuffix)
+                if ($item.Type.ToString().StartsWith('Wireless'))
+                {
+                    $profile = (netsh wlan show interfaces | Select-String '\sSSID').ToString().Split(':')[1].Trim()
+                    if ($profile) { $item.Description += (', ' + $profile) }
+                }
+                else
+                {
+                    $item.Description += (', ' + $props.DnsSuffix)
+                }
+            }
+
+            if ((!$preferred) -and ($item.Status -eq 'Up') -and $item.Address -and $item.DNSServer)
+            {
+                $preferred = $item.Address
             }
 
             $items += $item
         }
 	}
-
-    $preferred = $items | ? { $_.HasStats -and $_.Address -and $_.DNSServer -and $_.Gateway } | select -first 1 -ExpandProperty Address
-    if (-not $preferred)
-    {
-        $preferred = $items | ? { $_.HasStats -and $_.Address } | select -first 1 -ExpandProperty Address
-    }
 
     Write-Host
     if ($preferred -eq $null)
@@ -83,7 +86,7 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 	    elseif ($_.Address -eq $preferred) {
 		    Write-Host $line -ForegroundColor Green
 	    }
-	    elseif ($_.Description -match 'Wi-Fi') {
+	    elseif ($_.Type -match 'Wireless') {
 		    Write-Host $line -ForegroundColor Cyan
 	    }
 	    elseif ($_.Description -match 'Bluetooth') {
