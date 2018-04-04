@@ -55,8 +55,8 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
         }
 	}
 
-    $preferred = $items | ? { $_.HasStats -and $_.Address -and $_.DnsAddress -and $_.Gateway } | select -first 1 -ExpandProperty Address
-    if ($preferred -eq $null)
+    $preferred = $items | ? { $_.HasStats -and $_.Address -and $_.DNSServer -and $_.Gateway } | select -first 1 -ExpandProperty Address
+    if (-not $preferred)
     {
         $preferred = $items | ? { $_.HasStats -and $_.Address } | select -first 1 -ExpandProperty Address
     }
@@ -80,7 +80,7 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
         if ($_.Status -eq 'Down') {
             Write-Host $line -ForegroundColor DarkGray
         }
-	    elseif ($_.Address -eq $preferred.Address) {
+	    elseif ($_.Address -eq $preferred) {
 		    Write-Host $line -ForegroundColor Green
 	    }
 	    elseif ($_.Description -match 'Wi-Fi') {
