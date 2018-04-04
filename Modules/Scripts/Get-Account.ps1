@@ -5,7 +5,7 @@ get-account -username foo -domain bar
 #>
 param(
 	$username = $(throw "Please specify a username"),
-	$domain = 'CORP')
+	$domain = $env:USERDOMAIN)
 
 $found = $false
 $entry = New-Object System.DirectoryServices.DirectoryEntry('GC://' + $domain)

@@ -5,48 +5,103 @@ machine.  All other adpaters such as tunneling and loopbacks are ignored.  Only 
 adapters are considered.
 #>
 
-$address = $null
-
-# only recognizes changes related to Internet adapters
+$items = @()
 if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
-{	
-	# filter all adapters so we see only Internet adapters
-	[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() `
-		| ? { ($_.OperationalStatus -eq [Net.NetworkInformation.OperationalStatus]::Up) -and `
-		($_.NetworkInterfaceType -ne [Net.NetworkInformation.NetworkInterfaceType]::Tunnel ) -and `
-		($_.NetworkInterfaceType -ne [Net.NetworkInformation.NetworkInterfaceType]::Loopback ) } `
-		| % `
- 	{
-		# At one point, I had the following pipe filter as the last part of the filter just
-		# entering this block of code, not sure why though: | select -first 10 
+{
+	[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | % `
+	{
+        if ($_.NetworkInterfaceType -ne 'Loopback')
+        {
+		    $item = New-Object PSObject -Property @{
+			    Address = $null
+			    DNSServer = $null
+			    Gateway = $null
+			    Description = $null
+                HasStats = $false
+                Status = $_.OperationalStatus
+                Type = $_.NetworkInterfaceType
+            }
 
-		$face = $_
-		# -- face.Name and Description
+            $props = $_.GetIPProperties()
 
-		# all testing seems to prove that once an interface comes online
-		# it has already accrued statistics for both received and sent...
+            if (($props.UnicastAddresses.Count -gt 0) -and `
+                ($props.UnicastAddresses[0].Address.AddressFamily -eq 'InterNetwork'))
+            {
+                $item.Address = $props.UnicastAddresses[0].Address.IPAddressToString
+            }
 
-		$face.GetIPv4Statistics() | ? { ($_.BytesReceived -gt 0) -and ($_.BytesSent -gt 0) } | % `
-		{
-			# -- $face.GetIPProperties().DnsAddresses
+            if (($props.DnsAddresses.Count -gt 0) -and `
+                ($props.DnsAddresses[0].AddressFamily -eq 'InterNetwork'))
+            {
+                $item.DNSServer = $props.DnsAddresses[0].IPAddressToString
+            }
 
-			# the unicast address tells us our actual IP, both v4 and v6
-			$face.GetIPProperties() | ? { $_.UnicastAddresses.Count -gt 0 } | select -first 1 | % `
-			{
-				# select the v4-specific address
-				$_.UnicastAddresses `
-					| ? { $_.Address.AddressFamily -eq [Net.Sockets.AddressFamily]::InterNetwork } `
-					| select -first 1 | % `
-				{
-					$address = $_.Address.IPAddressToString
-				}
-			}
-		}
+	        if (($props.GatewayAddresses.Count -gt 0) -and `
+                ($props.GatewayAddresses[0].Address.AddressFamily -eq 'InterNetwork'))
+            {
+                $item.Gateway = $props.GatewayAddresses[0].Address.IPAddressToString
+		    }
+
+            $stats = $_.GetIPv4Statistics() | Select -first 1
+            $item.HasStats = ($stats.BytesReceived -gt 0) -and ($stats.BytesSent -gt 0)
+
+            $item.Description = $_.Name + ', ' + $_.Description
+            if (($props.DnsSuffix -ne $null) -and ($props.DnsSuffix.Length -gt 0))
+            {
+                $item.Description += (', ' + $props.DnsSuffix)
+            }
+
+            $items += $item
+        }
 	}
+
+    $preferred = $items | ? { $_.HasStats -and $_.Address -and $_.DnsAddress -and $_.Gateway } | select -first 1 -ExpandProperty Address
+    if ($preferred -eq $null)
+    {
+        $preferred = $items | ? { $_.HasStats -and $_.Address } | select -first 1 -ExpandProperty Address
+    }
+
+    Write-Host
+    if ($preferred -eq $null)
+    {
+        Write-Host 'Preferred address is unknown' -ForegroundColor DarkGreen
+    }
+    else
+    {
+        Write-Host ("Preferred address is {0}" -f $preferred) -ForegroundColor Green
+    }
+
+    Write-Host
+    Write-Host 'Address         DNS Server      Gateway         Interface'
+    Write-Host '-------         ----------      -------         ---------'
+    $items | % `
+    {
+	    $line = ("{0,-15} {1,-15} {2,-15} {3}" -f $_.Address, $_.DNSServer, $_.Gateway, $_.Description)
+        if ($_.Status -eq 'Down') {
+            Write-Host $line -ForegroundColor DarkGray
+        }
+	    elseif ($_.Address -eq $preferred.Address) {
+		    Write-Host $line -ForegroundColor Green
+	    }
+	    elseif ($_.Description -match 'Wi-Fi') {
+		    Write-Host $line -ForegroundColor Cyan
+	    }
+	    elseif ($_.Description -match 'Bluetooth') {
+		    Write-Host $line -ForegroundColor DarkCyan
+	    }
+	    else {
+		    Write-Host $line
+	    }
+    }
+}
+else
+{
+    Write-Host 'Network unavailable' -ForegroundColor Red
 }
 
-Write-Host
-Write-Host "Preferred address is $address" -ForegroundColor Green
+<#
+
+    ... This is a whole lot less code but is much slower then the code above 
 
 $candidates = @()
 Get-NetIPConfiguration | % `
@@ -62,23 +117,4 @@ Get-NetIPConfiguration | % `
 		Interface = $ifx
 	}
 }
-
-Write-Host
-Write-Host 'Address         DNS Server      Gateway         Interface'
-Write-Host '-------         ----------      -------         ---------'
-$candidates | % `
-{
-	$line = ("{0,-15} {1,-15} {2,-15} {3}" -f $_.Address, $_.DNSServer, $_.Gateway, $_.Interface)
-	if ($_.Address -eq $address) {
-		Write-Host $line -ForegroundColor Green
-	}
-	elseif ($_.Interface -match 'Wi-Fi') {
-		Write-Host $line -ForegroundColor Cyan
-	}
-	elseif ($_.Interface -match 'Bluetooth') {
-		Write-Host $line -ForegroundColor DarkCyan
-	}
-	else {
-		Write-Host $line
-	}
-}
+#>
