@@ -5,6 +5,8 @@ machine.  All other adpaters such as tunneling and loopbacks are ignored.  Only 
 adapters are considered.
 #>
 
+param([switch] $verbose)
+
 $preferred = $null
 
 $items = @()
@@ -18,8 +20,10 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 			    Address = $null
 			    DNSServer = $null
 			    Gateway = $null
-			    Description = $null
-                HasStats = $false
+				Description = $null
+				DnsSuffix = $null
+				BytesReceived = 0
+				BytesSent = 0
                 Status = $_.OperationalStatus
                 Type = $_.NetworkInterfaceType
             }
@@ -39,15 +43,21 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
                 | select -first 1 -ExpandProperty Address
 
             $stats = $_.GetIPv4Statistics() | Select -first 1
-            $item.HasStats = ($stats.BytesReceived -gt 0) -and ($stats.BytesSent -gt 0)
+			$item.BytesReceived = $stats.BytesReceived
+			$item.BytesSent = $stats.BytesSent
 
-            $item.Description = $_.Name + ', ' + $_.Description
+			$item.Description = $_.Name + ', ' + $_.Description
+			$item.DnsSuffix = $props.DnsSuffix
             if (($props.DnsSuffix -ne $null) -and ($props.DnsSuffix.Length -gt 0))
             {
                 if ($item.Type.ToString().StartsWith('Wireless'))
                 {
-                    $profile = (netsh wlan show interfaces | Select-String '\sSSID').ToString().Split(':')[1].Trim()
-                    if ($profile) { $item.Description += (', ' + $profile) }
+					$ssid = netsh wlan show interfaces | Select-String '\sSSID'
+					if ($ssid)
+					{
+						$profile = $ssid.ToString().Split(':')[1].Trim()
+						if ($profile) { $item.Description += (', ' + $profile) }
+					}
                 }
                 else
                 {
@@ -94,7 +104,22 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 	    }
 	    else {
 		    Write-Host $line
-	    }
+		}
+		
+		if ($verbose)
+		{
+			if ($_.Status -eq 'Up')
+			{
+				Write-Host ("{0,47} Type{1}  BytesSent:{2}  BytesReceived:{3}" -f `
+					'',$_.Type,$_.BytesSent, $_.BytesReceived) -ForegroundColor DarkGray
+
+				if ($_.DnsSuffix)
+				{
+					Write-Host ("{0,47} DnsSuffix:{1}" -f '',$_.DnsSuffix) -ForegroundColor DarkGray
+				}
+			}
+			Write-Host
+		}
     }
 }
 else
