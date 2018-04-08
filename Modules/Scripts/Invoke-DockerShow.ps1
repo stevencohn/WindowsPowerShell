@@ -4,7 +4,7 @@
 Show containers and images in a single command.
 #>
 $confirm = [IO.Path]::Combine((Split-Path -parent $PSCommandPath), 'Confirm-Elevated.ps1')
-if (!(. $confirm 'Invoke-DockerShow' $true)) { return }
+if (!(. $confirm (Split-Path -Leaf $PSCommandPath) $true)) { return }
 
 Write-Host
 Write-Host 'Containers...' -ForegroundColor DarkYellow

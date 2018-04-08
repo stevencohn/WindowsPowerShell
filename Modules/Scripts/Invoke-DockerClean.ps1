@@ -4,7 +4,7 @@ Prune unused docker containers and dangling images.
 #>
 
 $confirm = [IO.Path]::Combine((Split-Path -parent $PSCommandPath), 'Confirm-Elevated.ps1')
-if (!(. $confirm 'Invoke-DockerClean' $true)) { return }
+if (!(. $confirm (Split-Path -Leaf $PSCommandPath) $true)) { return }
 
 Write-Host
 $trash = $(docker ps -q -f "status=exited")
