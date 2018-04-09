@@ -17,7 +17,8 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
         if ($_.NetworkInterfaceType -ne 'Loopback')
         {
 		    $item = New-Object PSObject -Property @{
-			    Address = $null
+				Address = $null
+				PhysicalAddress = $_.GetPhysicalAddress().ToString()
 			    DNSServer = $null
 			    Gateway = $null
 				Description = $null
@@ -26,8 +27,8 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 				BytesSent = 0
                 Status = $_.OperationalStatus
                 Type = $_.NetworkInterfaceType
-            }
-
+			}
+			
             $props = $_.GetIPProperties()
 
             $item.Address = $props.UnicastAddresses `
@@ -77,11 +78,11 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
     Write-Host
     if ($preferred -eq $null)
     {
-        Write-Host 'Preferred address is unknown' -ForegroundColor DarkGreen
+        Write-Host ('{0} Preferred address is unknown' -f $env:COMPUTERNAME) -ForegroundColor DarkGreen
     }
     else
     {
-        Write-Host ("Preferred address is {0}" -f $preferred) -ForegroundColor Green
+        Write-Host ("{0} Preferred address is {1}" -f $env:COMPUTERNAME,$preferred) -ForegroundColor Green
     }
 
     Write-Host
@@ -108,16 +109,24 @@ if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 		
 		if ($verbose)
 		{
+			$spacer = ("{0,47}" -f '')
+
+			for($i=10; $i -gt 0; $i -= 2) { $_.PhysicalAddress = $_.PhysicalAddress.insert($i, '-') }
+			Write-Host ("{0} Physical Address.. {1}" -f $spacer,$_.PhysicalAddress) -ForegroundColor DarkGray
+
+			Write-Host ("{0} Type.............. {1}" -f $spacer,$_.Type) -ForegroundColor DarkGray
+
 			if ($_.Status -eq 'Up')
 			{
-				Write-Host ("{0,47} Type{1}  BytesSent:{2}  BytesReceived:{3}" -f `
-					'',$_.Type,$_.BytesSent, $_.BytesReceived) -ForegroundColor DarkGray
+				Write-Host ("{0} Bytes Sent........ {1}" -f $spacer,$_BytesSent) -ForegroundColor DarkGray
+				Write-Host ("{0} Bytes Received.... {1}" -f $spacer,$_BytesReceived) -ForegroundColor DarkGray
 
 				if ($_.DnsSuffix)
 				{
-					Write-Host ("{0,47} DnsSuffix:{1}" -f '',$_.DnsSuffix) -ForegroundColor DarkGray
+					Write-Host ("{0} DnsSuffix......... {1}" -f $spacer,$_.DnsSuffix) -ForegroundColor DarkGray
 				}
 			}
+
 			Write-Host
 		}
     }
