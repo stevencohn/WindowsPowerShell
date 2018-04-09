@@ -7,6 +7,12 @@ param(
 	$username = $(throw "Please specify a username"),
 	$domain = $env:USERDOMAIN)
 
+if ($domain -eq $env:COMPUTERNAME)
+{
+	Write-Host 'Get-Account currently only works for AD domains' -ForegroundColor Red
+	return
+}
+
 $found = $false
 $entry = New-Object System.DirectoryServices.DirectoryEntry('GC://' + $domain)
 $searcher = New-Object System.DirectoryServices.DirectorySearcher($entry)

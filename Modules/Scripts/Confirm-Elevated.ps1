@@ -2,6 +2,13 @@
 <#
 .SYNOPSIS
 Display an warning message if the current command prompt session does not have elevated permissions.
+.DESCRIPTION
+For scripts in this same \Scripts folder, add these two lines exactly:
+
+$confirm = [IO.Path]::Combine((Split-Path -parent $PSCommandPath), 'Confirm-Elevated.ps1')
+if (!(. $confirm (Split-Path -Leaf $PSCommandPath) $true)) { return }
+
+For scripts in other locations, just call Confirm-Elevated [action-name] [show-warning]
 #>
 param (
 	[string] $action = $null,
