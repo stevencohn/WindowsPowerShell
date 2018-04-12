@@ -9,6 +9,7 @@ param(
 
 if ($domain -eq $env:COMPUTERNAME)
 {
+	Write-Host
 	Write-Host 'Get-Account currently only works for AD domains' -ForegroundColor Red
 	return
 }

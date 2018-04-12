@@ -37,6 +37,7 @@ Begin
 
 	function Get-Preferred ()
 	{
+		$prefs = @()
 		if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 		{
 			[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | % `
@@ -55,13 +56,18 @@ Begin
 
 					if ($address -and $DNSServer)
 					{
-						return $address.IPAddressToString
+						$prefs += $address.IPAddressToString
 					}
 				}
 			}
 		}
- 
-		$null
+
+		if ($prefs.Length -gt 0)
+		{
+			return $prefs[0]
+		}
+
+		return $null
 	}
 
 	function Get-Information ()
