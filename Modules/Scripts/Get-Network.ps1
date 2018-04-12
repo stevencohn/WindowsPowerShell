@@ -6,11 +6,35 @@ adapters are considered.
 #>
 
 param(
-	[switch] $quick,	# just return preferred address
-	[switch] $verbose)	# verbose report
+	[switch] $preferred,	# just return the preferred address
+	[switch] $addresses,	# return a list of host addresses
+	[switch] $verbose)		# verbose report
 
 Begin
 {
+	function Get-Addresses ()
+	{
+		$addresses = @()
+		if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
+		{
+			[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | % `
+			{
+				$props = $_.GetIPProperties()
+
+				$address = $props.UnicastAddresses `
+					| ? { $_.Address.AddressFamily -eq 'InterNetwork' } `
+					| select -first 1 -ExpandProperty Address
+
+				if ($address)
+				{
+					$addresses += $address.IPAddressToString
+				}
+			}
+		}
+
+		$addresses
+	}
+
 	function Get-Preferred ()
 	{
 		if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
@@ -185,9 +209,14 @@ Begin
 }
 Process
 {
-	if ($quick)
+	if ($preferred)
 	{
 		return Get-Preferred
+	}
+
+	if ($addresses)
+	{
+		return Get-Addresses
 	}
 
 	$info = Get-Information

@@ -3,8 +3,8 @@
 .SYNOPSIS
 Show containers and images in a single command.
 #>
-$confirm = [IO.Path]::Combine((Split-Path -parent $PSCommandPath), 'Confirm-Elevated.ps1')
-if (!(. $confirm (Split-Path -Leaf $PSCommandPath) $true)) { return }
+
+if (!(Confirm-Elevated (Split-Path -Leaf $PSCommandPath) $true)) { return }
 
 Write-Host
 Write-Host 'Containers...' -ForegroundColor DarkYellow
