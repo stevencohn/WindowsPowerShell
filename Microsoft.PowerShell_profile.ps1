@@ -46,10 +46,21 @@ if (Test-Path($ChocolateyProfile)) {
 }
 
 # Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively
-# instead set location to a reasonable place
-if (Test-Path 'D:\Code') { Set-Location 'D:\Code'; }
-elseif (Test-Path 'D:\Development') { Set-Location 'D:\Development'; }
-elseif (Test-Path 'D:\Dev') { Set-Location 'D:\Dev'; }
-elseif (Test-Path 'C:\Development') { Set-Location 'C:\Development'; }
-elseif (Test-Path 'C:\Dev') { Set-Location 'C:\Dev'; }
-else { Set-Location '\'; }
+# instead set location to a reasonable place so we force it to somewhere predictable.
+# However we only want to do this when we open a new interactive shell window such
+# as when opened from ConEmu, otherwise it will interfer with command-lines like Flat.bat
+# modifying the current working directory when we don't want it to!
+
+$cmd = (gwmi win32_process -filter ("ProcessID={0}" -f (gwmi win32_process -filter "ProcessID=$PID").ParentProcessID)).CommandLine
+if ($cmd -match 'ConEmu')
+{
+	if (Test-Path 'D:\Code') { Set-Location 'D:\Code'; }
+	elseif (Test-Path 'D:\Development') { Set-Location 'D:\Development'; }
+	elseif (Test-Path 'D:\Dev') { Set-Location 'D:\Dev'; }
+	elseif (Test-Path 'C:\Development') { Set-Location 'C:\Development'; }
+	elseif (Test-Path 'C:\Dev') { Set-Location 'C:\Dev'; }
+	elseif (Test-Path 'D:\Everest') { Set-Location 'D:\Everest'; }
+	elseif (Test-Path 'C:\Everest') { Set-Location 'C:\Everest'; }
+	elseif (Test-Path 'C:\River') { Set-Location 'C:\River'; }
+	else { Set-Location '\'; }
+}
