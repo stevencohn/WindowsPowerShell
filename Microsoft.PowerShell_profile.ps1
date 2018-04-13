@@ -52,7 +52,7 @@ if (Test-Path($ChocolateyProfile)) {
 # modifying the current working directory when we don't want it to!
 
 $cmd = (gwmi win32_process -filter ("ProcessID={0}" -f (gwmi win32_process -filter "ProcessID=$PID").ParentProcessID)).CommandLine
-if ($cmd -match 'ConEmu')
+if ($cmd -notmatch 'cmd\.exe')
 {
 	if (Test-Path 'D:\Code') { Set-Location 'D:\Code'; }
 	elseif (Test-Path 'D:\Development') { Set-Location 'D:\Development'; }

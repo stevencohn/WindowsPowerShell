@@ -33,7 +33,7 @@ Get-Content $file | % `
 			Write-Host $left -NoNewline
 		}
 
-		Write-Host $_.Substring($i) -ForegroundColor DarkGreen
+		Write-Host $_.Substring($i) -ForegroundColor DarkCyan
 	}
 	else
 	{
