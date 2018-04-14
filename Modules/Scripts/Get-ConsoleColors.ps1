@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+Display the console colors as defined in the Registry.
+
+.DESCRIPTION
+Registry values are stored as B-G-R DWord values. This command displays the BGR
+value as well as the RGB and decimal equivalents.
+#>
 
 Write-Host "`nSystem.ConsoleColor :: HKCU:\Console :: -ForegroundColor`n"
 Push-Location HKCU:\Console

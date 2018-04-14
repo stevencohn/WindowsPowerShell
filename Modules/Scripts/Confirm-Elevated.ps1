@@ -2,6 +2,7 @@
 <#
 .SYNOPSIS
 Display an warning message if the current command prompt session does not have elevated permissions.
+
 .DESCRIPTION
 For scripts in this same \Scripts folder, add these two lines exactly:
 
