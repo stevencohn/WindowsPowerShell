@@ -26,17 +26,21 @@ $pairs = Get-ChildItem env: | sort name | % `
 	}
 	elseif ([String]::IsNullOrEmpty($highlight))
 	{
-		if ($_.Name -eq 'ProgramData')
+		if ($_.Name -eq 'COMPUTERNAME' -or $_.Name -eq 'USERDOMAIN')
 		{
 			Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor Blue				
 		}
-		elseif ($_.Name -match 'APPDATA')
+		elseif ($_.Name -match 'APPDATA' -or $_.Name -eq 'ProgramData')
 		{
 			Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor Magenta
 		}
 		elseif ($value -match "$env:USERNAME(?:\\\w+){0,1}$")
 		{
 			Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor DarkGreen
+		}
+		elseif ($_.Name -match 'ConEmu' -or $_.Value.IndexOf('\') -lt 0)
+		{
+			Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor DarkGray
 		}
 		else
 		{
