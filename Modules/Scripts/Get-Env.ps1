@@ -24,7 +24,7 @@ $pairs = Get-ChildItem env: | sort name | % `
 	{
 		Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor Green
 	}
-	else
+	elseif ([String]::IsNullOrEmpty($highlight))
 	{
 		if ($_.Name -eq 'ProgramData')
 		{
@@ -42,5 +42,9 @@ $pairs = Get-ChildItem env: | sort name | % `
 		{
 			Write-Host ("{0,-30} {1}" -f $name, $value)
 		}
+	}
+	else
+	{
+		Write-Host ("{0,-30} {1}" -f $name, $value)
 	}
 }
