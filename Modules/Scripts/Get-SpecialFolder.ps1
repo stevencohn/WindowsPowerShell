@@ -45,7 +45,7 @@ if ($all)
 {
 	Write-Host ("{0,-30} {1}" -f 'Name', 'Value')
 	Write-Host ("{0,-30} {1}" -f '----', '-----')
-		
+
 	$folders = @{}
 	[Enum]::GetValues('System.Environment+SpecialFolder') | % `
 	{
@@ -67,6 +67,25 @@ if ($all)
 		if ($folder -and ($_.Name -match $folder))
 		{
 			Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor Green
+		}
+		elseif ([String]::IsNullOrEmpty($folder))
+		{
+			if ($_.Name -eq 'CommonApplicationData')
+			{
+				Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor Blue				
+			}
+			elseif ($_.Name -match 'ApplicationData')
+			{
+				Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor Magenta
+			}
+			elseif ($value -match "$env:USERNAME(?:\\\w+){0,1}$")
+			{
+				Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor DarkGreen
+			}
+			else
+			{
+				Write-Host ("{0,-30} {1}" -f $name, $value)
+			}
 		}
 		else
 		{
