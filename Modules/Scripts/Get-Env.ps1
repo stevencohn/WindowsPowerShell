@@ -2,53 +2,62 @@
 .SYNOPSIS
 Print environment variables with optional highlighting.
 
-.PARAMETER highlight
-An optional string specifying text to highlight in the output. Only "Names" are matched.
+.PARAMETER name
+A string used to match and highlight entries based on their name.
+
+.PARAMETER value
+A string used to match and highlight entries based on their value.
 #>
 
-param ([string] $highlight)
+param (
+	[string] $name,
+	[string] $value)
 
 Write-Host ("{0,-30} {1}" -f 'Name', 'Value')
 Write-Host ("{0,-30} {1}" -f '----', '-----')
 
 $pairs = Get-ChildItem env: | sort name | % `
 {
-	$name = $_.Name.ToString()
-	if ($name.Length -gt 30) { $name = $name.Substring(0,27) + '...' }
+	$ename = $_.Name.ToString()
+	if ($ename.Length -gt 30) { $ename = $ename.Substring(0,27) + '...' }
 
-	$value = $_.Value.ToString()
+	$evalue = $_.Value.ToString()
 	$max = $host.UI.RawUI.WindowSize.Width - 32
-	if ($value.Length -gt $max) { $value = $value.Substring(0, $max - 3) + '...' }
+	if ($evalue.Length -gt $max) { $evalue = $evalue.Substring(0, $max - 3) + '...' }
 
-	if ($highlight -and ($_.Name -match $highlight))
+	if ($name -and ($_.Name -match $name))
 	{
-		Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor Green
+		Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor Green
 	}
-	elseif ([String]::IsNullOrEmpty($highlight))
+	if ($value -and ($_.Value -match $value))
+	{
+		Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor DarkGreen
+	}
+	elseif ([String]::IsNullOrEmpty($name) -and [String]::IsNullOrEmpty($value))
 	{
 		if ($_.Name -eq 'COMPUTERNAME' -or $_.Name -eq 'USERDOMAIN')
 		{
-			Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor Blue				
+			Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor Blue				
 		}
 		elseif ($_.Name -match 'APPDATA' -or $_.Name -eq 'ProgramData')
 		{
-			Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor Magenta
+			Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor Magenta
 		}
-		elseif ($value -match "$env:USERNAME(?:\\\w+){0,1}$")
+		elseif ($evalue -match "$env:USERNAME(?:\\\w+){0,1}$")
 		{
-			Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor DarkGreen
+			Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor DarkGreen
 		}
 		elseif ($_.Name -match 'ConEmu' -or $_.Value.IndexOf('\') -lt 0)
 		{
-			Write-Host ("{0,-30} {1}" -f $name, $value) -ForegroundColor DarkGray
+			Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor DarkGray
 		}
 		else
 		{
-			Write-Host ("{0,-30} {1}" -f $name, $value)
+			Write-Host ("{0,-30} {1}" -f $ename, $evalue)
 		}
 	}
 	else
 	{
-		Write-Host ("{0,-30} {1}" -f $name, $value)
+		Write-Host ("{0,-30} {1}" -f $ename, $evalue)
 	}
 }
