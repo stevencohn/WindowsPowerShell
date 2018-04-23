@@ -1,3 +1,22 @@
+<#
+.SYNOPSIS
+Convert integer values to Hex string. If one integer is specified then it is converted.
+If three integers are specified then they are assumed to be RGB values and combined into a 
+single Hex string.
+
+.PARAMETER r
+Red vlaue or single integer value
+
+.PARAMETER g
+Green value, optional.
+
+.PARAMETER b
+Blue value, optional.
+
+.DESCRIPTION
+If given three values and any are out of the normal RGB range (0-255) then they will be
+converted independently into three strings, returned as a single text string.
+#>
 
 param(
 	[Parameter(Mandatory=$true,Position=0,HelpMessage="One or three parameters required")] [uint32] $r,
