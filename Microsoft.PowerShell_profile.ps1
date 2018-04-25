@@ -17,7 +17,7 @@ function prompt {
 
 # Aliases
 
-New-Alias ep Invoke-EditProfile
+New-Alias ep Edit-PSProfile
 New-Alias su Invoke-SuperUser
 New-Alias vs Invoke-VsDevCmd
 New-Alias cc Show-ColorizedContent
@@ -29,8 +29,8 @@ function Invoke-Wilma { & 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe' }
 New-Alias wilma Invoke-Wilma 
 
 # Docker helpers
-New-Alias doc Invoke-DockerClean
-New-Alias dos Invoke-DockerShow
+New-Alias doc Remove-DockerTrash
+New-Alias dos Show-Docker
 
 # OK, Go!
 
