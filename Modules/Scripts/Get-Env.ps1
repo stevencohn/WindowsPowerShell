@@ -13,8 +13,10 @@ param (
 	[string] $name,
 	[string] $value)
 
-Write-Host ("{0,-30} {1}" -f 'Name', 'Value')
-Write-Host ("{0,-30} {1}" -f '----', '-----')
+$format = '{0,-30} {1}'
+
+Write-Host ($format -f 'Name', 'Value')
+Write-Host ($format -f '----', '-----')
 
 $pairs = Get-ChildItem env: | sort name | % `
 {
@@ -27,37 +29,37 @@ $pairs = Get-ChildItem env: | sort name | % `
 
 	if ($name -and ($_.Name -match $name))
 	{
-		Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor Green
+		Write-Host ($format -f $ename, $evalue) -ForegroundColor Green
 	}
 	if ($value -and ($_.Value -match $value))
 	{
-		Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor DarkGreen
+		Write-Host ($format -f $ename, $evalue) -ForegroundColor DarkGreen
 	}
 	elseif ([String]::IsNullOrEmpty($name) -and [String]::IsNullOrEmpty($value))
 	{
 		if ($_.Name -eq 'COMPUTERNAME' -or $_.Name -eq 'USERDOMAIN')
 		{
-			Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor Blue				
+			Write-Host ($format -f $ename, $evalue) -ForegroundColor Blue				
 		}
 		elseif ($_.Name -match 'APPDATA' -or $_.Name -eq 'ProgramData')
 		{
-			Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor Magenta
+			Write-Host ($format -f $ename, $evalue) -ForegroundColor Magenta
 		}
 		elseif ($evalue -match "$env:USERNAME(?:\\\w+){0,1}$")
 		{
-			Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor DarkGreen
+			Write-Host ($format -f $ename, $evalue) -ForegroundColor DarkGreen
 		}
 		elseif ($_.Name -match 'ConEmu' -or $_.Value.IndexOf('\') -lt 0)
 		{
-			Write-Host ("{0,-30} {1}" -f $ename, $evalue) -ForegroundColor DarkGray
+			Write-Host ($format -f $ename, $evalue) -ForegroundColor DarkGray
 		}
 		else
 		{
-			Write-Host ("{0,-30} {1}" -f $ename, $evalue)
+			Write-Host ($format -f $ename, $evalue)
 		}
 	}
 	else
 	{
-		Write-Host ("{0,-30} {1}" -f $ename, $evalue)
+		Write-Host ($format -f $ename, $evalue)
 	}
 }
