@@ -45,6 +45,7 @@ else
 }
 
 Write-Host
+$format = "{0,3}  {1}"
 
 foreach ($path in $paths)
 {
@@ -59,17 +60,21 @@ foreach ($path in $paths)
 	}
 	elseif ($duplicates.Contains($path))
 	{
-		Write-Host("{0,3}  {1} ** DUPLICATE" -f $source, $path) -ForegroundColor Yellow
+		Write-Host("$format ** DUPLICATE" -f $source, $path) -ForegroundColor Yellow
 	}
 	else
 	{
-		if ($search -and $path.ToLower().Contains($search.ToLower()))
+		if (!(Test-Path $path))
 		{
-			Write-Host("{0,3}  {1}" -f $source, $path) -ForegroundColor Green
+			Write-Host("$format ** NOT FOUND" -f $source, $path) -ForegroundColor Red
 		}
-		elseif ($source.Contains('P')) { Write-Host("{0,3}  {1}" -f $source, $path) -ForegroundColor White }
-		elseif ($source.Contains('U')) { Write-Host("{0,3}  {1}" -f $source, $path) -ForegroundColor Gray }
-		else { Write-Host("{0,3}  {1}" -f $source, $path) -ForegroundColor DarkGray }
+		elseif ($search -and $path.ToLower().Contains($search.ToLower()))
+		{
+			Write-Host($format -f $source, $path) -ForegroundColor Green
+		}
+		elseif ($source.Contains('P')) { Write-Host($format -f $source, $path) -ForegroundColor White }
+		elseif ($source.Contains('U')) { Write-Host($format -f $source, $path) -ForegroundColor Gray }
+		else { Write-Host($format -f $source, $path) -ForegroundColor DarkGray }
 	}
 
 	$duplicates += $path
