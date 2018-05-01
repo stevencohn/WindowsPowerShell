@@ -22,17 +22,6 @@ param (
 $machpaths = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) -split ';'
 $userpaths = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::User) -split ';'
 
-if ($verbose)
-{
-	Write-Host
-	Write-Host 'Machine Paths' -ForegroundColor Green
-	$machpaths | sort
-
-	Write-Host
-	Write-Host 'User Paths' -ForegroundColor Green
-	$userpaths | sort
-}
-
 $duplicates = @()
 
 if ($sort)
@@ -42,6 +31,21 @@ if ($sort)
 else
 {
 	$paths = $env:Path -split ';'
+}
+
+if ($verbose)
+{
+	Write-Host
+	Write-Host 'Machine Paths' -ForegroundColor Green
+	$machpaths | sort
+
+	Write-Host
+	Write-Host 'User Paths' -ForegroundColor Green
+	$userpaths | sort
+
+	Write-Host
+	Write-Host 'Process Paths' -ForegroundColor Green
+	$paths
 }
 
 Write-Host
