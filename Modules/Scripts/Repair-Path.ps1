@@ -3,11 +3,14 @@
 Clean up the PATH environment variable, removing duplicates, empty values, and
 optionally paths that do not exist.
 
-.PARAMETER invalid
+.PARAMETER Invalid
 Remove invalid paths in addition to empty and duplicate paths.
 
-.PARAMETER yes
+.PARAMETER Yes
 Respond to all prompts automatically with "Yes".
+
+.PARAMETER WhatIf
+Run the command and report changes but don't make any changes.
 
 .DESCRIPTION
 Also checks if there are user-specific paths in the Machine target and attempts to
@@ -15,8 +18,9 @@ move them to the User target.
 #>
 
 param (
-	[switch] $invalid,
-	[switch] $yes)
+	[switch] $Invalid,
+	[switch] $Yes,
+	[switch] $WhatIf)
 
 Begin
 {
@@ -63,6 +67,7 @@ Begin
 
 		foreach ($path in $machpaths)
 		{
+			# if path starts with $env:USERPROFILE then it shouldn't be in Machine
 			if ($path.StartsWith($profile))
 			{
 				if (!$userpaths.Contains($path))
@@ -74,6 +79,11 @@ Begin
 				{
 					Write-Host ... Removing Machine path "$path"
 				}
+			}
+			# prefer User over Machine if in both
+			elseif ($userpaths.Contains($path))
+			{
+				Write-Host ... Removing User path from Machine "$path"
 			}
 			else
 			{
@@ -101,11 +111,18 @@ Process
 
 	if (($machpaths -ne $originalMachpaths) -or ($userpaths -ne $originalUserpaths))
 	{
-		$ans = Read-Host 'Apply changes? (Y/N) [Y]'
-		if (($ans -eq 'y') -or ($ans -eq 'Y'))
+		if ($WhatIf)
 		{
-			[Environment]::SetEnvironmentVariable('PATH', $machpaths, [EnvironmentVariableTarget]::Machine)
-			[Environment]::SetEnvironmentVariable('PATH', $userpaths, [EnvironmentVariableTarget]::User)
+			Write-Host 'WHATIF: pending changes ready to be applied' -ForegroundColor Yellow
+		}
+		else
+		{
+			$ans = Read-Host 'Apply changes? (Y/N) [Y]'
+			if (($ans -eq 'y') -or ($ans -eq 'Y'))
+			{
+				[Environment]::SetEnvironmentVariable('PATH', $machpaths, [EnvironmentVariableTarget]::Machine)
+				[Environment]::SetEnvironmentVariable('PATH', $userpaths, [EnvironmentVariableTarget]::User)
+			}
 		}
 	}
 	else
