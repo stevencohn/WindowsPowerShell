@@ -1,17 +1,22 @@
 <#
-.synopsis
+.SYNOPSIS
 Display the PATH environment variable as a list of strings rathan than a single string
 and displays the source of each value defined in the Registry: Machine, User, or Process
 
-.parameter search
+.PARAMETER search
 An optional search string to find in each path.
 
-.parameter sort
+.PARAMETER sort
 Sorts the strings alphabetically, otherwise displays them in the order in which
 they appear in the PATH environment variable
 
-.parameter verbose
+.PARAMETER verbose
 Dump the list of paths specific to the Machine and User registry entries.
+
+.DESCRIPTION
+Reports whether each path references an existing directory, if it is duplicated in 
+the PATH environment variable, if it is and empty entry. See the Repair-Path command
+for a description of how it cleans up the PATH.
 #>
 
 param (

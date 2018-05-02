@@ -14,7 +14,9 @@ Run the command and report changes but don't make any changes.
 
 .DESCRIPTION
 Also checks if there are user-specific paths in the Machine target and attempts to
-move them to the User target.
+move them to the User target. Those that begin with the path to the user profile should
+be defined in the User target. Those that are duplicated in the Machine and User target
+are presumed to be intended for the User target and are removed from the Machine target.
 #>
 
 param (
