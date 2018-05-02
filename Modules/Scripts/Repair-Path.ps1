@@ -19,10 +19,12 @@ be defined in the User target. Those that are duplicated in the Machine and User
 are presumed to be intended for the User target and are removed from the Machine target.
 #>
 
+# CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
+[CmdletBinding(SupportsShouldProcess=$true)]
+
 param (
 	[switch] $Invalid,
-	[switch] $Yes,
-	[switch] $WhatIf)
+	[switch] $Yes)
 
 Begin
 {
@@ -101,6 +103,19 @@ Process
 	$originalMachpaths = [Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine)
 	$originalUserpaths = [Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::User)
 
+	# Windows tends to append a semicolon to end of these in the Process Block which we can ignore
+	if ($originalMachPaths.EndsWith(';')) { $originalMachpaths = $originalMachpaths.TrimEnd(';') }
+	if ($originalUserPaths.EndsWith(';')) { $originalUserPaths = $originalUserPaths.TrimEnd(';') }
+
+	if ($VerbosePreference -eq 'Continue')
+	{
+		Write-Verbose 'Original Machine Target'
+		$originalMachPaths -split ';' | sort
+		Write-Verbose 'Original User Target'
+		$originalUserPaths -split ';' | sort
+		Write-Host
+	}
+
 	# cleanup empty and invalid path entries
 	$machpaths = CleanByTarget ($originalMachpaths -split ';') [EnvironmentVariableTarget]::Machine
 	$userpaths = CleanByTarget ($originalUserpaths -split ';') [EnvironmentVariableTarget]::User
@@ -108,12 +123,29 @@ Process
 	# cleanup user-specific paths in Machine
 	$machpaths, $userpaths = SkimUserPaths $machpaths $userpaths
 
+	if ((($machpaths -ne $originalMachpaths) -or ($userpaths -ne $originalUserpaths)) `
+		-and ($VerbosePreference -eq 'Continue'))
+	{
+		Write-Host
+		if ($machpaths -ne $originalMachpaths)
+		{
+			Write-Verbose 'Modified Machine Target'
+			$machpaths -split ';' | sort
+		}
+		if ($userpaths -ne $originalUserpaths)
+		{
+			Write-Verbose 'Modified User Target'
+			$userPaths -split ';' | sort
+		}
+		Write-Host
+	}
+
 	$machpaths = $machpaths -join ';'
 	$userpaths = $userpaths -join ';'
 
 	if (($machpaths -ne $originalMachpaths) -or ($userpaths -ne $originalUserpaths))
 	{
-		if ($WhatIf)
+		if ($WhatIfPreference)
 		{
 			Write-Host 'WHATIF: pending changes ready to be applied' -ForegroundColor Yellow
 		}
@@ -129,6 +161,6 @@ Process
 	}
 	else
 	{
-		Write-Host No changes needed
+		Write-Host 'No changes needed'
 	}
 }
