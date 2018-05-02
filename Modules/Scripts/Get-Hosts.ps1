@@ -15,7 +15,7 @@ Get-Content $file | % `
 	}
 	elseif ($i -gt 0)
 	{
-		$left = $_.Substring(0, $i - 1).Replace("`t",' ')
+		$left = $_.Substring(0, $i - 1)
 		$addr = $_.Split(' ')
 		if ($addr.Length -gt 0)
 		{
@@ -33,7 +33,7 @@ Get-Content $file | % `
 			Write-Host $left -NoNewline
 		}
 
-		Write-Host $_.Substring($i) -ForegroundColor DarkCyan
+		Write-Host ("`t" + $_.Substring($i)) -ForegroundColor DarkCyan
 	}
 	else
 	{
