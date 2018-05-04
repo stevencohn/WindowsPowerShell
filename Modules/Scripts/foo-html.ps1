@@ -65,7 +65,7 @@ for ($i = 0; $i -lt $bufferHeight; $i++)
 	$currentForegroundColor = $buffer[$i, 0].Foregroundcolor
 	$currentBackgroundColor = $buffer[$i, 0].Backgroundcolor
 	for ($j = 0; $j -lt $bufferWidth; $j++)
- {
+ 	{
 		$cell = $buffer[$i, $j]
 		# If the colors change, generate an HTML span and append it to the HTML string builder.
 		if (($cell.ForegroundColor -ne $currentForegroundColor) -or ($cell.BackgroundColor -ne $currentBackgroundColor))

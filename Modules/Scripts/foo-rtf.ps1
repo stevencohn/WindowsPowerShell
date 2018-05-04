@@ -66,6 +66,8 @@ function Append-Break
   $backColorIndex = Get-RtfColorIndex $currentBackgroundColor
   $null = $rtfBuilder.Append("\shading0\cbpat$backColorIndex\par`r`n")
 }
+
+
 # Initialize the RTF string builder.
 $rtfBuilder = new-object system.text.stringbuilder
 # Set the desired font
