@@ -13,25 +13,73 @@ Blah
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
-[CmdletBinding(SupportsShouldProcess=$true)]
+[CmdletBinding(SupportsShouldProcess = $true)]
 
 param(
-	[parameter(Position=0, Mandatory=$false)]
+	[parameter(Position = 0, Mandatory = $false)]
 	[string] $OutFile,	# output file name, default is clipboard
 
-	[switch] $All,		# if true, get all lines in buffer
-	[switch] $Rtf,		# capture as RTF, default is HTML
+	[switch] $All, # if true, get all lines in buffer
+	[switch] $Rtf, # capture as RTF, default is HTML
 	[switch] $Trim		# trim lines if true
 )
 
 Begin
 {
-	$font = '9pt Lucida Console'
+	$font = 'Lucida Console'
+	$fontSize = '9pt'
+
+	$comap = @{} 	# color map
 
 	# character translations
 	$cmap = @{[char]'<' = '&lt;'; [char]'>' = '&gt;'; [char]'&' = '&amp;'}
 	#if ($Rtf) { $cmap = @{[char]"`t" = '\tab'; [char]'\' = '\\'; [char]'{' = '\{'; [char]'}' = '\}' } }
-	
+
+	$colors = @{
+		'Black' = 0x1e1e1e
+		'DarkBlue' = 0x006291
+		'DarkGreen' = 0x008000
+		'DarkCyan' = 0x008080
+		'DarkRed' = 0x800000
+		'DarkMagenta' = 0x800080
+		'DarkYellow' = 0x808000
+		'Gray' = 0xdedede
+		'DarkGray' = 0x808080
+		'Blue' = 0x178bff
+		'Green' = 0x00ff00
+		'Cyan' = 0x00ffff
+		'Red' = 0xff0000
+		'Magenta' = 0xff9158 #orange
+		'Yellow' = 0xffff00
+		'White' = 0xffffff
+	}
+
+	function MakeColorMap ()
+	{
+		if ($Rtf)
+		{
+			$map = New-Object System.Text.StringBuilder
+			#{\colortbl;red0\green0\blue128;\red0\green128\blue0;
+			$null = $map.Append('{\colortbl;')
+			foreach ($color in $colors)
+			{
+				$rgb = $colors[$color]
+				$null = $map.Append('\red' + (($rgb -band 0xFF0000) -shr 16))
+				$null = $map.Append('\green' + (($rgb -band 0xFF00) -shr 8))
+				$null = $map.Append('\blue' + ($rgb -band 0xFF))
+			}
+			$map = $map.Append('}').ToString()
+		}
+		else
+		{
+			$comap = @{}
+			foreach ($color in $colors)
+			{
+				$comap.Add($color, '#' + $colors[$color].ToString('X6'))
+			}
+		}
+	}
+
 	# console colour mapping
 	$comap = @{
 		'Black' = '#1e1e1e'
@@ -39,7 +87,7 @@ Begin
 		'DarkGreen' = '#008000'
 		'DarkCyan' = '#008080'
 		'DarkRed' = '#800000'
-		'DarkMagenta' = '8000080'
+		'DarkMagenta' = '#800080'
 		'DarkYellow' = '#808000'
 		'Gray' = '#dedede'
 		'DarkGray' = '#808080'
@@ -113,6 +161,33 @@ Begin
 		return 0, $height
 	}
 
+	function WritePreamble ($builder, $fg, $bg)
+	{
+		if ($Rtf)
+		{
+			# Append RTF header
+			$null = $builder.Append("{\rtf1\fbidis\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 $font;}}")
+			$null = $builder.Append("`r`n")
+			# Append RTF color table which will contain all Powershell console colors.
+			$null = $builder.Append('{\colortbl;red0\green0\blue128;\red0\green128\blue0;\red0\green128\blue128;\red128\green0\blue0;\red1\green36\blue86;\red238\green237\blue240;\red192\green192\blue192;\red128\green128\blue128;\red0\green0\blue255;\red0\green255\blue0;\red0\green255\blue255;\red255\green0\blue0;\red255\green0\blue255;\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue0;}')
+			$null = $builder.Append("`r`n")
+			# Append RTF document settings.
+			$null = $builder.Append('\viewkind4\uc1\pard\ltrpar\f0\fs23 ')
+		}
+		else
+		{
+			$null = $builder.Append("<pre style='color:$(col2htm $fg); background-color:$(col2htm $bg); font-family:$font; font-size:$fontSize; margin:0 10pt 0 0; line-height:normal;'>")
+		}
+	}
+
+	function WritePostscript ($builder)
+	{
+		if (!$Rtf)
+		{
+			$null = $builder.Append('</pre>')
+		}
+	}
+
 	function col2htm { $comap[[string]$args[0]] }
 
 	function ch2htm { if ($cmap[[char]$args[0]]) { $cmap[[char]$args[0]] } else { $args[0] } }
@@ -140,7 +215,7 @@ Process
 
 	$box, $width, $height = GetDimensions
 	Write-Verbose("region top {0} left {1} bottom {2} right {3} ... width {4} height {5}" -f `
-		$box.Top, $box.Left, $box.Bottom, $box.Right, $width, $height)
+			$box.Top, $box.Left, $box.Bottom, $box.Right, $width, $height)
 
 	$cells = $host.UI.RawUI.GetBufferContents($box)
 	Write-Verbose("contents has {0} characters" -f $cells.Length)
@@ -148,14 +223,13 @@ Process
 	$top, $bottom = GetBoundaries $cells $width $height
 	Write-Verbose("boundaries top {0} bottom {1}" -f $top, $bottom)
 
-	# set default colours
 	$defaultfg = $host.UI.RawUI.ForegroundColor
 	$defaultbg = $host.UI.RawUI.BackgroundColor
 	$fg = $defaultfg
 	$bg = $defaultbg
 
 	$builder = New-Object System.Text.StringBuilder
-	$null = $builder.Append("<pre style='color:$(col2htm $fg); background-color:$(col2htm $bg); font:$font; margin:0 10pt 0 0; line-height:normal;'>")
+	WritePreamble $builder $fg $bg
 
 	for ([int]$row = $top; $row -lt $bottom; $row++)
 	{
@@ -197,7 +271,7 @@ Process
 		builder.Append('</span>')
 	}
 
-	$null = $builder.Append('</pre>')
+	WritePostscript $builder
 
 	if ($WhatIfPreference)
 	{
