@@ -1,15 +1,18 @@
 <#
 .SYNOPSIS
-blah
+Copy the contents of the Powershell console window preserving color.
 
 .PARAMETER All
-Blah
+Copy the entire buffer includng areas scrolled out of view. 
+Default is the copy only visible content.
 
 .PARAMETER OutFile
-Blah
+Copy content to specified output file.
+Default is to copy to clipboard.
 
 .PARAMETER Rtf
-Blah
+Copy content as Rich Text Format (RTF).
+Default is to copy as HTML.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -40,13 +43,13 @@ Begin
 		'Green' = 0x00ff00
 		'Cyan' = 0x00ffff
 		'Red' = 0xff0000
-		'Magenta' = 0xff9158 # orange
+		'Magenta' = 0xff9158 # customize as orange
 		'Yellow' = 0xffff00
 		'White' = 0xffffff
 	}
 
 	$font = 'Lucida Console'
-	$fontSize = '9pt'
+	$fontSize = 9
 
 	# color map
 	$comap = @{}
@@ -61,6 +64,9 @@ Begin
 	{
 		if ($Rtf)
 		{
+			# we're not using background colors so darken Yellow so we can see it
+			$colors['Yellow'] = 0xFFC000
+			
 			$map = New-Object System.Text.StringBuilder
 			#{\colortbl;red0\green0\blue128;\red0\green128\blue0;
 			$null = $map.Append('{\colortbl;')
@@ -146,11 +152,11 @@ Begin
 			$null = $builder.Append($comap)
 			$null = $builder.Append("`r`n")
 			# Append RTF document settings.
-			$null = $builder.Append('\viewkind4\uc1\pard\ltrpar\f0\fs23 ')
+			$null = $builder.Append("\viewkind4\uc1\pard\ltrpar\f0\fs$($fontSize * 2) ")
 		}
 		else
 		{
-			$null = $builder.Append("<pre style='color:$($comap[$fg]); background-color:$($comap[$bg]); font-family:$font; font-size:$fontSize; margin:0 10pt 0 0; line-height:normal;'>")
+			$null = $builder.Append("<pre style='color:$($comap[$fg]); background-color:$($comap[$bg]); font-family:$font; font-size:$($fontSize)pt; margin:0 10pt 0 0; line-height:normal;'>")
 		}
 
 		$null = $builder.Append([Environment]::NewLine)
@@ -160,11 +166,13 @@ Begin
 	{
 		if ($Rtf)
 		{
-			$index = [Array]::IndexOf($colors.Keys, $fg)
+			$index = [Array]::IndexOf($colors.Keys, $fg) + 1
 			$null = $builder.Append("{\cf$index")
 			# You can also add \ab* tag here if you want a bold font in the output.
-			$index = [Array]::IndexOf($colors.Keys, $bg)
-			$null = $builder.Append("\chshdng0\chcbpat$index")
+			
+			#... don't know how to set page background so we're just ignore it for now
+			#$index = [Array]::IndexOf($colors.Keys, $bg) + 1
+			#$null = $builder.Append("\chshdng0\chcbpat$index")
 		}
 		else
 		{
