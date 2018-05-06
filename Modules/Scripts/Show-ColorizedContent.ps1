@@ -12,7 +12,7 @@ $replacementColours = @{
     "Grouper"="DarkGray";
     "StatementSeparator"="DarkGray";
     "String"="Magenta";
-    "Number"="Magenta";
+    "Number"="DarkCyan";
     "CommandArgument"="DarkBlue";
     "Keyword"="Blue";
     "Attribute"="DarkBlue";
@@ -34,7 +34,7 @@ function WriteFormattedLine($formatString, [int] $line)
 {
     if($excludeLineNumbers) { return }
     
-    $hColor = "Gray"
+    $hColor = "DarkGray"
     $separator = "|"
     if($highlightRanges -contains $line) { $hColor = $highlightColor; $separator = $highlightCharacter }
     Write-Host -NoNewLine -Fore $hColor ($formatString -f $line,$separator)
