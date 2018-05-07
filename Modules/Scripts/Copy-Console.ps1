@@ -165,14 +165,7 @@ Begin
 
 	function EndColor ($builder)
 	{
-		if ($Rtf)
-		{
-			$null = $builder.Append('}')
-		}
-		else
-		{
-			$null = $builder.Append('</span>')
-		}
+		if ($Rtf) { $null = $builder.Append('}') } else { $null = $builder.Append('</span>') }
 
 		$rawForeground, $rawBackground
 	}
@@ -221,14 +214,7 @@ Begin
 
 	function WritePostscript ($builder)
 	{
-		if ($Rtf)
-		{
-			$null = $builder.Append('}')
-		}
-		else
-		{
-			$null = $builder.Append('</pre>')
-		}
+		if ($Rtf) { $null = $builder.Append('}') } else { $null = $builder.Append('</pre>') }
 	}
 
 	function ch2htm { if ($cmap[[char]$args[0]]) { $cmap[[char]$args[0]] } else { $args[0] } }
@@ -283,12 +269,11 @@ Process
 			$cell = $cells[$r, $c]
 			if ($foreground -ne $cell.ForegroundColor -or $background -ne $cell.BackgroundColor)
 			{
-				if ($foreground -ne $rawForeground -or $background -ne $rawBackground)
-				{
+				if ($foreground -ne $rawForeground -or $background -ne $rawBackground) {
 					$foreground, $background = EndColor $line
 				}
-				if ($cell.ForegroundColor -ne $rawForeground -or $cell.BackgroundColor -ne $rawBackground)
-				{
+
+				if ($cell.ForegroundColor -ne $rawForeground -or $cell.BackgroundColor -ne $rawBackground) {
 					$foreground, $background = StartColor $line $cell.ForegroundColor $cell.BackgroundColor
 				}
 			}
