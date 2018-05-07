@@ -141,27 +141,6 @@ Begin
 		return $top, $bottom
 	}
 
-	function WritePreamble ($builder, [string]$fg, [string]$bg)
-	{
-		if ($Rtf)
-		{
-			# Append RTF header
-			$null = $builder.Append("{\rtf1\fbidis\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 $font;}}")
-			$null = $builder.Append("`r`n")
-			# Append RTF color table which will contain all Powershell console colors.
-			$null = $builder.Append($comap)
-			$null = $builder.Append("`r`n")
-			# Append RTF document settings.
-			$null = $builder.Append("\viewkind4\uc1\pard\ltrpar\f0\fs$($fontSize * 2) ")
-		}
-		else
-		{
-			$null = $builder.Append("<pre style='color:$($comap[$fg]); background-color:$($comap[$bg]); font-family:$font; font-size:$($fontSize)pt; margin:0 10pt 0 0; line-height:normal;'>")
-		}
-
-		$null = $builder.Append([Environment]::NewLine)
-	}
-
 	function StartColor ($builder, [string]$fg, [string]$bg)
 	{
 		if ($Rtf)
@@ -198,6 +177,47 @@ Begin
 		$rawForeground, $rawBackground
 	}
 
+	function MakeContent ($lines, $mintrim, $width)
+	{
+		$builder = New-Object System.Text.StringBuilder
+		WritePreamble $builder $foreground $background
+
+		$mintrim -= 2
+		$dotrim = ($mintrim -lt ($width - 2)) -and -not $Trim
+
+		$eol = if ($Rtf) { '\line' + [Environment]::Newline } else { [Environment]::NewLine }
+
+		foreach ($line in $lines)
+		{
+			if ($dotrim) { $line = $line.Substring(0, $line.Length - $mintrim) }
+			$null = $builder.Append($line + $eol)
+		}
+
+		WritePostscript $builder
+
+		$builder.ToString()
+	}
+
+	function WritePreamble ($builder, [string]$fg, [string]$bg)
+	{
+		if ($Rtf)
+		{
+			# Append RTF header
+			$null = $builder.Append("{\rtf1\fbidis\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 $font;}}")
+			$null = $builder.Append("`r`n")
+			# Append RTF color table which will contain all Powershell console colors.
+			$null = $builder.Append($comap)
+			$null = $builder.Append("`r`n")
+			# Append RTF document settings.
+			$null = $builder.Append("\viewkind4\uc1\pard\ltrpar\f0\fs$($fontSize * 2) ")
+		}
+		else
+		{
+			$null = $builder.Append("<pre style='color:$($comap[$fg]); background-color:$($comap[$bg]); font-family:$font; font-size:$($fontSize)pt; margin:0 10pt 0 0; line-height:normal;'>")
+		}
+
+		$null = $builder.Append([Environment]::NewLine)
+	}
 
 	function WritePostscript ($builder)
 	{
@@ -248,16 +268,16 @@ Process
 
 	$comap = MakeColorMap
 
-	$builder = New-Object System.Text.StringBuilder
+	$lines = @()
+	$mintrim = $width
 
 	$foreground = $rawForeground
 	$background = $rawBackground
 
-	WritePreamble $builder $foreground $background
-
 	for ($r = $top; $r -lt $bottom; $r++)
 	{
 		$line = New-Object System.Text.StringBuilder
+		$raw = New-Object System.Text.StringBuilder
 		for ($c = 0; $c -lt $width; $c++)
 		{
 			$cell = $cells[$r, $c]
@@ -275,32 +295,35 @@ Process
 
 			$ch = ch2htm $cell.Character
 			$null = $line.Append($ch)
+			$null = $raw.Append($cell.Character)
 		}
 
-		$line = if ($Trim) { $line.ToString().Trim() } else { $line.ToString() }
-		$null = $builder.Append($line).Append([Environment]::NewLine)
-	}
+		$line = if ($Trim) { $line.ToString().Trim() + ' ' } else { $line.ToString() }
+		$lines += $line
 
-	$null = $builder.Append([Environment]::NewLine)
+		$rawline = $raw.ToString()
+		$rawtrim = $rawline.Length - $rawline.TrimEnd().Length
+		if ($rawtrim -lt $mintrim) { $mintrim = $rawtrim }
+	}
 
 	if ($fg -ne $defaultfg -or $bg -ne $defaultbg)
 	{
 		# close off any specialisation of colour
-		builder.Append('</span>')
+		$lines += '</span>'
 	}
 
-	WritePostscript $builder
+	$content = MakeContent $lines $mintrim $width
 
 	if ($WhatIfPreference)
 	{
-		Write-Host $builder.ToString()
+		Write-Host $content
 	}
 	elseif ([String]::IsNullOrEmpty($OutFile))
 	{
-		CopyToClipboard $builder.ToString()
+		CopyToClipboard $content
 	}
 	else
 	{
-		$builder.ToString() | Out-File $OutFile -Encoding ASCII
+		$content | Out-File $OutFile -Encoding ASCII
 	}
 }
