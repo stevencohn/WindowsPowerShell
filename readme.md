@@ -28,8 +28,12 @@ Run VSCode with ~Documents\WindowsPowerShell as root folder. Aliased to `ep`
 #### `Get-Account`
 Report the account information for the given username and optionally a specified domain.
 
+![alt text](Images/get-account.png "Get-Account Example")
+
 #### `Get-ChildItemColorized`
 Display a colorized directory listing along with total size. Aliased to `ls`
+
+![alt text](Images/get-childitemcolorized.png "Get-ChildItemColorized Example")
 
 #### `Get-ConsoleColors`
 Display the console colors as defined in the Registry.
@@ -64,10 +68,10 @@ Display the PATH environment variable as a list of strings rather than a single 
 Return the translation of a SpecialFolder by name or show all SpecialFolders with optional search highlighting.
 
 #### `Invoke-SuperUser`
-Open a new command prompt in elevated mode. Aliased to 'su'. Special command for ConEmu emulator.
+Open a new command prompt in elevated mode. Aliased to `su`. Special command for ConEmu emulator.
 
 #### `Invoke-VsDevCmd`
-Invoke the Visual Studio environment batch script. Aliased to 'vs'
+Invoke the Visual Studio environment batch script. Aliased to `vs`
 
 #### `New-CommandWrapper`
 Sepcial internal function from PowerShell Cookbook.
@@ -89,6 +93,8 @@ Set a custom value for the specified Console color table entry.
 
 #### `Show-ColorizedContent`
 Type the contents of a PowerShell script with syntax highlighting.
+
+![alt text](Images/show-colorizedcontent.png "Show-ColorizedContent Example")
 
 #### `Show-Docker`
 Show containers and images in a single command.
