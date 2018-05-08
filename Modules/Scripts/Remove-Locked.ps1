@@ -8,7 +8,7 @@ The path of the file or directory to remove.
 
 param ([string] $name)
 
-if (!(Confirm-Elevated (Split-Path -Leaf $PSCommandPath) $true)) { return }
+if (!(Confirm-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
 
 if ((Get-Item $name) -is [System.IO.DirectoryInfo])

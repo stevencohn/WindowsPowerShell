@@ -20,26 +20,8 @@ The default. Return the value of the named SpecialFolder.
 #>
 
 param (
-	# normally the folder argument could be declared as a [Environment+SpecialFolder] type
-	# but we need it to act as both a SpecialFolder name and a highlight substring. 
-	[Parameter(Mandatory=$True, Position=0, ParameterSetName='One')]
-	[Parameter(Mandatory=$False, Position=0, ParameterSetName='All')]
-	[ValidateScript({
-		if ($all -or [bool]($_ -as [Environment+SpecialFolder] -is [Environment+SpecialFolder])) {
-			$true
-		}
-		else {
-			Throw 'Invalid SpecialFolder name'
-		}
-	})]
-	[string] $folder,
-
-	[Parameter(Mandatory=$True, ParameterSetName='One')]
-	[switch] $one = $true,
-
-	[Parameter(Mandatory=$False, ParameterSetName='All')]
-	[switch] $all
-	)
+	[Parameter(Position=0)] [string] $folder,
+	[switch] $all)
 
 if ($all)
 {
@@ -57,7 +39,7 @@ if ($all)
 		}
 	}
 
-	$pairs = $folders.GetEnumerator() | sort name | % `
+	$folders.GetEnumerator() | sort name | % `
 	{
 		$name = $_.Name.ToString()
 		if ($name.Length -gt 30) { $name = $name.Substring(0,27) + '...' }
@@ -65,6 +47,8 @@ if ($all)
 		$value = $_.Value.ToString()
 		$max = $host.UI.RawUI.WindowSize.Width - 32
 		if ($value.Length -gt $max) { $value = $value.Substring(0, $max - 3) + '...' }
+
+		# when -all then $folder is a match string
 
 		if ($folder -and ($_.Name -match $folder))
 		{
@@ -97,5 +81,16 @@ if ($all)
 }
 else
 {
+	if ([String]::IsNullOrEmpty($folder))
+	{
+		Write-Host "Specify a SpecialFolder name or -all" -ForegroundColor Yellow
+		exit 1
+	}
+	if (-not [bool]($folder -as [Environment+SpecialFolder] -is [Environment+SpecialFolder]))
+	{
+		Write-Host "$folder is not a valid SpecialFolder name" -ForegroundColor Red
+		exit 1
+	}
+
 	[Environment]::GetFolderPath($folder -as [Environment+SpecialFolder])
 }

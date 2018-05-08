@@ -3,6 +3,15 @@
 Determines the most likely candidate for the active Internet-specific network adapter on this
 machine.  All other adpaters such as tunneling and loopbacks are ignored.  Only connected IP
 adapters are considered.
+
+.PARAMETER Preferred
+Only return the preferred network address without report bells and whistles
+
+.PARAMETER Addresses
+Return a @(list) of addresses
+
+.PARAMETER Verbose
+Display extra information including MAC addres and bytes sent/received.
 #>
 
 param(

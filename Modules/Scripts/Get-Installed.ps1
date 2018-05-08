@@ -1,3 +1,15 @@
+<#
+.SYNOPSIS
+Report all installed applications registered on the local system.
+
+.PARAMETER OutFile
+The name of a CSV file to create. Default is to write to the console.
+
+.DESCRIPTION
+When writing to the console, the number of column in the report is 
+governed by the width of the console. When writing to CSV file, all
+possible columns are reported.
+#>
 
 param([string] $outFile)
 
@@ -110,7 +122,7 @@ Begin
 Process
 {
 	$confirm = [IO.Path]::Combine((Split-Path -parent $PSCommandPath), 'Confirm-Elevated.ps1')
-	if (!(. $confirm (Split-Path -Leaf $PSCommandPath) $true)) { return }
+	if (!(. $confirm (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
 	if ($outFile -ne $null -and $outFile.Length -gt 0)
 	{

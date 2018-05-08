@@ -1,6 +1,9 @@
 <#
 .SYNOPSIS
 Clear all events from the Windows Event Log.
+
+.PARAMETER Quiet
+If specified then supress output. Default is to show a dot for each log cleared
 #>
 
 param([switch] $quiet)

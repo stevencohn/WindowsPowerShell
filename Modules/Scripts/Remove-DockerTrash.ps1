@@ -3,7 +3,7 @@
 Prune unused docker containers and dangling images.
 #>
 
-if (!(Confirm-Elevated (Split-Path -Leaf $PSCommandPath) $true)) { return }
+if (!(Confirm-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
 Write-Host
 $trash = $(docker ps -q -f "status=exited")

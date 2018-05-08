@@ -13,6 +13,9 @@ Default is to copy to clipboard.
 .PARAMETER Rtf
 Copy content as Rich Text Format (RTF).
 Default is to copy as HTML.
+
+.PARAMETER Trim
+Trim all lines if true. Default is to trim to a minimal rectangular region.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf

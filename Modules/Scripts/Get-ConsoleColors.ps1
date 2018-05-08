@@ -4,7 +4,7 @@ Display the console colors as defined in the Registry.
 
 .DESCRIPTION
 Registry values are stored as B-G-R DWord values. This command displays the BGR
-value as well as the RGB and decimal equivalents.
+value as well as the RGB, decimal equivalents, and console Esc sequences.
 #>
 
 $esc = [char]27

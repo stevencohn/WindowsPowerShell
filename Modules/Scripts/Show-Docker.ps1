@@ -4,7 +4,7 @@
 Show containers and images in a single command.
 #>
 
-if (!(Confirm-Elevated (Split-Path -Leaf $PSCommandPath) $true)) { return }
+if (!(Confirm-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
 Write-Host
 Write-Host 'docker ps -a' -ForegroundColor DarkYellow
