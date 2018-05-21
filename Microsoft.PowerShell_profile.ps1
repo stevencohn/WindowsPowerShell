@@ -31,6 +31,7 @@ New-Alias wilma Invoke-Wilma
 # Docker helpers
 New-Alias doc Remove-DockerTrash
 New-Alias dos Show-Docker
+New-Alias dow Start-DockerForWindows
 
 # OK, Go!
 
