@@ -55,6 +55,9 @@ Display the console colors for Command console, PowerShell console, and ConEmu c
 #### `Get-DirSize`
 Report the size of all items in the specified folder. Used as a sub-routine of Get-ChildItemColorized.
 
+#### `Get-DotNetVersion`
+Get the versions of.NET Framework installations on the local computer.
+
 #### `Get-Env`
 Report environment variables in colorized categoties with optional search highlighting.
 
@@ -78,6 +81,10 @@ Display the PATH environment variable as a list of strings rather than a single 
 
 #### `Get-SpecialFolder`
 Return the translation of a SpecialFolder by name or show all SpecialFolders with optional search highlighting.
+
+#### `Install-Chocolatey`
+Can be used on new machines to install Chocolately. If already installed then
+checks if it is outdated and prompts to update.
 
 #### `Invoke-SuperUser`
 Open a new command prompt in elevated mode. Aliased to `su`. Special command for ConEmu emulator.
