@@ -47,10 +47,10 @@ Display a colorized directory listing along with total size. Aliased to `ls`
 
 ![alt text](Images/get-childitemcolorized.png "Get-ChildItemColorized Example")
 
-#### `Get-ConsoleColors`
-Display the console colors as defined in the Registry.
+#### `Get-Colors`
+Display the console colors for Command console, PowerShell console, and ConEmu consoles.
 
-![alt text](Images/get-consolecolors.png "Get-ConsoleColors Example")
+![alt text](Images/get-colors.png "Get-Colors Example")
 
 #### `Get-DirSize`
 Report the size of all items in the specified folder. Used as a sub-routine of Get-ChildItemColorized.
@@ -97,8 +97,9 @@ Remove a System-owned file or directory.
 #### `Repair-Path`
 Clean up the PATH environment variable, removing duplicates, empty values, and optionally paths that do not exist.
 
-#### `Set-ConsoleColors`
-Set a custom value for the specified Console color table entry.
+#### `Set-Color`
+Set a custom value for the specified console color table entry in one or all of the
+Cmd, PowerShell, and ConEmu consoles.
 
 #### `Set-OutDefaultOverride`
 (Internal) Helper function for Get-ChildItemColorized.
