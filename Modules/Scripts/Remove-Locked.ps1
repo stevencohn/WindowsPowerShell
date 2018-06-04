@@ -31,6 +31,7 @@ if ((Get-Item $name) -is [System.IO.DirectoryInfo])
 	}
 	catch
 	{
+		Write-Host 'Error taking ownership, trying robocopy method...'
 		$empty = "${env:TEMP}\emptydir"
 		New-Item $empty -Force -Confirm:$false
 		robocopy $empty $name /purge

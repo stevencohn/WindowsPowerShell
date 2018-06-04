@@ -79,6 +79,9 @@ Display the PATH environment variable as a list of strings rather than a single 
 
 ![alt text](Images/get-path.png "Get-Path Example")
 
+#### `Get-Performance`
+Get and report performance metrics using the built-in WinSAT utility.
+
 #### `Get-SpecialFolder`
 Return the translation of a SpecialFolder by name or show all SpecialFolders with optional search highlighting.
 
@@ -99,7 +102,7 @@ Sepcial internal function from PowerShell Cookbook.
 Prune unused docker containers and dangling images.
 
 #### `Remove-Locked`
-Remove a System-owned file or directory.
+Remove a System-owned file or directory. Attempts multiple approaches to remove stubborn items.
 
 #### `Repair-Path`
 Clean up the PATH environment variable, removing duplicates, empty values, and optionally paths that do not exist.
