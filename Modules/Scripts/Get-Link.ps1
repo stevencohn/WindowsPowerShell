@@ -1,5 +1,10 @@
 <#
 .SYNOPSIS
+Parse the contents of a .lnk file, specifically used by Get-Color and Set-Color
+to read and write custom colors for the PowerShell console. These colors are
+stored in the shortcut link that represents the PowerShell command.
+
+.DESCRIPTION
 From https://github.com/shanselman/cmd-colors-solarized
 #>
 

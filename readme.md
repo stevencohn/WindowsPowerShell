@@ -85,6 +85,10 @@ Get and report performance metrics using the built-in WinSAT utility.
 #### `Get-SpecialFolder`
 Return the translation of a SpecialFolder by name or show all SpecialFolders with optional search highlighting.
 
+#### `Get-VMConfig`
+Returns a VM configuration object of the specified .vmcx VM configuration
+file even if the VM is not attached to a Hyper-V server.
+
 #### `Install-Chocolatey`
 Can be used on new machines to install Chocolately. If already installed then
 checks if it is outdated and prompts to update.
@@ -97,6 +101,9 @@ Invoke the Visual Studio environment batch script. Aliased to `vs`
 
 #### `New-CommandWrapper`
 Sepcial internal function from PowerShell Cookbook.
+
+#### `New-VMClone`
+Create a new VM from a registered VM or an exported VM.
 
 #### `Remove-DockerTrash`
 Prune unused docker containers and dangling images.
