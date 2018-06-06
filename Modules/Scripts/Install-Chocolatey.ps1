@@ -3,11 +3,11 @@
 Can be used on new machines to install Chocolately. If already installed then
 checks if it is outdated and prompts to update.
 
-.PARAMETER -Yes
-Upgrade without prompting if an update is available.
+.PARAMETER Upgrade
+Check if Chocolatey is outdated and update if it is.
 #>
 
-param ([switch] $Yes)
+param ([switch] $Upgrade)
 
 if (-not (Get-Command 'choco' -ErrorAction:Ignore))
 {
@@ -26,13 +26,10 @@ if (-not (Get-Command 'choco' -ErrorAction:Ignore))
 	Write-Host 'Install'
 	Invoke-Expression $installer
 }
-else
+elseif ($Upgrade)
 {
-	choco outdated -r
-
-	# TODO: react...
-	if ($Yes)
+	(choco outdated -r) | % { $_ -match 'chocolatey\|'} | % `
 	{
-		# blah...
+		choco upgrade chocolatey -y
 	}
 }
