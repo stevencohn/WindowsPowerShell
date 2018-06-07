@@ -21,6 +21,9 @@ The name of the registered VM to clone, using it as a template.
 
 Mutually exclusive with -Path.
 
+.OUTPUTS
+Returns the VM as a Microsoft.HyperV.PowerShell.VirtualMachine
+
 .EXAMPLE
 Clone-VM -Name 'cds-oracle' -Template 'Win10'
 
@@ -84,42 +87,40 @@ Begin
 			-VirtualMachinePath $vmpath -VhdDestinationPath $vhdpath `
 			-SnapshotFilePath $vhdpath -SmartPagingFilePath $vhdpath
 
-		if ($vm)
+		if (!$vm)
 		{
-			# rename the VM
-			Write-Verbose "... renaming VM to $Name"
-			$vm | Rename-VM -NewName $Name
-
-			# rename disks to match VM name
-			$disks = Get-VMHardDiskDrive -VMName $Name
-			foreach ($disk in $disks)
-			{
-				$diskroot = [Path]::GetDirectoryName($disk.Path)
-				$extension = [Path]::GetExtension($disk.Path)
-
-				$diskname = "{0}_{1}_{2}_{3}{4}" -f $disk.VMName, $disk.ControllerType, `
-					$disk.ControllerNumber, $disk.ControllerLocation, $extension
-
-				$diskPath = Join-Path $diskroot $diskname
-
-				Write-Verbose "... renaming disk to $diskPath"
-				Rename-Item $disk.Path $diskPath
-
-				Write-Verbose "... setting VM disk to $diskPath"
-				$ct = $disk.ControllerType
-				$cl = $disk.ControllerLocation
-				$cn = $disk.ControllerNumber
-
-				# note this command doesn't like to be split across multiple lines!
-				Set-VMHardDiskDrive -VMName $Name -Path $diskPath -ControllerType $ct -ControllerNumber $cn -ControllerLocation $cl
-
-				if ($Checkpoint)
-				{
-					Write-Verbose '... creating checkpoint'
-					$vm | Checkpoint-VM
-				}
-			}
+			throw 'Error creating VM'
 		}
+
+		# rename the VM
+		Write-Verbose "... renaming VM to $Name"
+		$vm | Rename-VM -NewName $Name
+
+		# rename disks to match VM name
+		$disks = Get-VMHardDiskDrive -VMName $Name
+		foreach ($disk in $disks)
+		{
+			$diskroot = [Path]::GetDirectoryName($disk.Path)
+			$extension = [Path]::GetExtension($disk.Path)
+
+			$diskname = "{0}_{1}_{2}_{3}{4}" -f $disk.VMName, $disk.ControllerType, `
+				$disk.ControllerNumber, $disk.ControllerLocation, $extension
+
+			$diskPath = Join-Path $diskroot $diskname
+
+			Write-Verbose "... renaming disk to $diskPath"
+			Rename-Item $disk.Path $diskPath
+
+			Write-Verbose "... setting VM disk to $diskPath"
+			$ct = $disk.ControllerType
+			$cl = $disk.ControllerLocation
+			$cn = $disk.ControllerNumber
+
+			# note this command doesn't like to be split across multiple lines!
+			Set-VMHardDiskDrive -VMName $Name -Path $diskPath -ControllerType $ct -ControllerNumber $cn -ControllerLocation $cl
+		}
+
+		$vm
 	}
 }
 Process
@@ -138,5 +139,13 @@ Process
 		$config = Join-Path $vm.Path (Get-ChildItem -Path $vm.Path -Name "${$vm.Id.ToString().ToUpper()}*.vmcx" -Recurse)
 	}
 
-	ImportVM $config
+	$vm = ImportVM $config
+
+	if ($Checkpoint)
+	{
+		Write-Verbose '... creating checkpoint'
+		$vm | Checkpoint-VM
+	}
+
+	$vm
 }
