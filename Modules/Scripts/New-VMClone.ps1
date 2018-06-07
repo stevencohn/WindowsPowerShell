@@ -2,6 +2,9 @@
 .SYNOPSIS
 Create a new VM from a registered VM or an exported VM
 
+.PARAMETER Checkpoint
+Create a new checkpoint immediate after creating the new VM.
+
 .PARAMETER Name
 The name of the new VM to create.
 
@@ -9,7 +12,7 @@ The name of the new VM to create.
 The path of the VM files to import. Typically this folder contains the folders Snapshots,
 Virtual Hard Disks, and Virtual Machines where Virtual Machines contains a GUID.vmcx
 configuration file. Could instead specify the full path to a .vmcx file. This is generated
-using Export-VM similar to Export-VM -Name 'Win10-Root' -Path 'E:\BackupVMs'
+using Export-VM similar to Export-VM -Name 'Win10' -Path 'E:\BackupVMs'
 
 Mutually exclusive with -Name.
 
@@ -19,13 +22,13 @@ The name of the registered VM to clone, using it as a template.
 Mutually exclusive with -Path.
 
 .EXAMPLE
-Clone-VM -Name 'cds-oracle' -Template 'Win10-Root'
+Clone-VM -Name 'cds-oracle' -Template 'Win10'
 
 .EXAMPLE
-Clone-VM -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10-Root'
+Clone-VM -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10' -Checkpoint
 
 .EXAMPLE
-Clone-VM -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10-Root\Virtual Machines\4FD97BB5-5CD5-4439-BBFF-498B0A5B3CE9.vmcx'
+Clone-VM -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10\Virtual Machines\4FD97BB5-5CD5-4439-BBFF-498B0A5B3CE9.vmcx'
 #>
 
 using namespace System.IO
@@ -61,14 +64,14 @@ param (
 			Throw "Template VM ""${_}"" does not exist"
 		}
 	})]
-	[string] $Template
+	[string] $Template,
+
+	[switch] $Checkpoint
 	)
 
 Begin
 {
-	$config = $null
-
-	function ImportVM ()
+	function ImportVM ($config)
 	{
 		$vmpath, $vhdpath = Get-VMHost | % { $_.VirtualMachinePath, $_.VirtualHardDiskPath }
 
@@ -109,6 +112,12 @@ Begin
 
 				# note this command doesn't like to be split across multiple lines!
 				Set-VMHardDiskDrive -VMName $Name -Path $diskPath -ControllerType $ct -ControllerNumber $cn -ControllerLocation $cl
+
+				if ($Checkpoint)
+				{
+					Write-Verbose '... creating checkpoint'
+					$vm | Checkpoint-VM
+				}
 			}
 		}
 	}
@@ -129,5 +138,5 @@ Process
 		$config = Join-Path $vm.Path (Get-ChildItem -Path $vm.Path -Name "${$vm.Id.ToString().ToUpper()}*.vmcx" -Recurse)
 	}
 
-	ImportVM
+	ImportVM $config
 }
