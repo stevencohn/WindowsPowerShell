@@ -18,16 +18,16 @@ if (!(. $confirm (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 For scripts in other locations, just call Confirm-Elevated [action-name] [show-warning]
 #>
 param (
-	[string] $action = $null,
-	[switch] $warn)
+	[string] $Action = $null,
+	[switch] $Warn)
 
 $isElevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()`
 ).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 
-if ($warn -and !$isElevated -and ($action -ne $null))
+if ($Warn -and !$isElevated -and ($action -ne $null))
 {
 	Write-Host
-	Write-Host ... `'$action`' requires administrative permission -ForegroundColor Yellow
+	Write-Host ... `'$Action`' requires administrative permission -ForegroundColor Yellow
 	Write-Host("    try rerunning from an administrative command prompt") -ForegroundColor Yellow
 	Write-Host
 }
