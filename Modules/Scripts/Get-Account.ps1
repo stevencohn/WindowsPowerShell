@@ -5,82 +5,113 @@ Report the account information for the given username and specified domain.
 .DESCRIPTION
 Can report on either a local user account or an ActiveDirectory account.
 
-.PARAMETER username
+.PARAMETER Username
 The account username to report.
 
-.PARAMETER domain
+.PARAMETER Domain
 The ActiveDirectory domain to use. Default is $env:USERDOMAIN.
+
+.PARAMETER SID
+If specified then return only the Sid
 #>
+
 param(
-	$username = $(throw "Please specify a username"),
-	$domain = $env:USERDOMAIN)
+	[string] $Username = $(throw "Please specify a username"),
+	[string] $Domain = $env:USERDOMAIN,
+	[switch] $SID
+	)
 
-if ($domain -eq $env:COMPUTERNAME)
+Begin
 {
-	# local computer account...
-
-	$account = Get-LocalUser -name $username
-	if (!$account)
+	function GetLocalSid ()
 	{
-		Throw 'Account not found'
+		$account = Get-LocalUser -Name $Username
+		if (!$account) { Throw 'Account not found' }
+
+		$account.SID
 	}
 
-	Write-Host('Account Name     : ' + $account.Name)
-	Write-Host('Display Name     : ' + $account.FullName)
-	Write-Host('Description      : ' + $account.Description)
-	Write-Host('Principal Source : ' + $account.PrincipalSource)
-	Write-Host('Expires          : ' + $account.AccountExpires)
-	Write-Host('Last Logon       : ' + $account.LastLogon)
-	Write-Host('Password Set     : ' + $account.PasswordLastSet)
-	Write-Host('Password Locked  : ' + (-not $account.UserMayChangePassword))
-	Write-Host('Enabled          : ' + $account.Enabled)
-	Write-Host('SID              : ' + $account.SID)
-
-	$groups = @()
-	Get-LocalGroup | % `
+	function ReportLocalUser ()
 	{
-		if ((get-localgroupmember $_.Name | select -property name | ? { $_ -match "\\$username" }) -ne $null)
+		$account = Get-LocalUser -name $Username
+		if (!$account) { Throw 'Account not found' }
+	
+		Write-Host('Account Name     : ' + $account.Name)
+		Write-Host('Display Name     : ' + $account.FullName)
+		Write-Host('Description      : ' + $account.Description)
+		Write-Host('Principal Source : ' + $account.PrincipalSource)
+		Write-Host('Expires          : ' + $account.AccountExpires)
+		Write-Host('Last Logon       : ' + $account.LastLogon)
+		Write-Host('Password Set     : ' + $account.PasswordLastSet)
+		Write-Host('Password Locked  : ' + (-not $account.UserMayChangePassword))
+		Write-Host('Enabled          : ' + $account.Enabled)
+		Write-Host('SID              : ' + $account.SID)
+	
+		$groups = @()
+		Get-LocalGroup | % `
 		{
-			$groups += $_.Name
-		}
-	}
-	write-host("Groups           : {0}" -f ($groups -join ', '))
-}
-else
-{
-	# ActiveDirectory account...
-
-	$found = $false
-	$entry = New-Object System.DirectoryServices.DirectoryEntry('GC://' + $domain)
-	$searcher = New-Object System.DirectoryServices.DirectorySearcher($entry)
-	$searcher.Filter = '(&((&(objectCategory=Person)(objectClass=User)))(samaccountname=' + $username + '))'
-	try
-	{
-		$searcher.FindAll() | % `
-		{
-			$properties = $_.GetDirectoryEntry().Properties
-			Write-Host('Account Name : ' + $properties['sAMAccountName'].Value)
-			Write-Host('Display Name : ' + $properties['displayName'].Value)
-			Write-Host('Mail         : ' + $properties['mail'].Value)
-			Write-Host('Telephone    : ' + $properties['telephoneNumber'].Value)
-
-			$manager = [string]($properties['manager'].Value)
-			if (!([String]::IsNullOrEmpty($manager))) {
-				if ($manager.StartsWith('CN=')) {
-					$manager = $manager.Split(',')[0].Split('=')[1]
-					Write-Host('Manager      : ' + $manager)
-				}
+			if ((get-localgroupmember $_.Name | select -property name | ? { $_ -match "\\$username" }) -ne $null)
+			{
+				$groups += $_.Name
 			}
+		}
+		write-host("Groups           : {0}" -f ($groups -join ', '))	
+	}
 
-			$found = $true
+	function GetDomainSid ()
+	{
+		$user = New-Object System.Security.Principal.NTAccount($Domain, $Username)
+		if (!$user) { Throw 'Account not found' }
+
+		$sidval = $user.Translate([System.Security.Principal.SecurityIdentifier]) 
+		$sidval.Value
+	}
+
+	function ReportDomainUser ()
+	{
+		$found = $false
+		$entry = New-Object System.DirectoryServices.DirectoryEntry('GC://' + $Domain)
+		$searcher = New-Object System.DirectoryServices.DirectorySearcher($entry)
+		$searcher.Filter = '(&((&(objectCategory=Person)(objectClass=User)))(samaccountname=' + $Username + '))'
+		try
+		{
+			$searcher.FindAll() | % `
+			{
+				$properties = $_.GetDirectoryEntry().Properties
+				Write-Host('Account Name : ' + $properties['sAMAccountName'].Value)
+				Write-Host('Display Name : ' + $properties['displayName'].Value)
+				Write-Host('Mail         : ' + $properties['mail'].Value)
+				Write-Host('Telephone    : ' + $properties['telephoneNumber'].Value)
+	
+				$manager = [string]($properties['manager'].Value)
+				if (!([String]::IsNullOrEmpty($manager))) {
+					if ($manager.StartsWith('CN=')) {
+						$manager = $manager.Split(',')[0].Split('=')[1]
+						Write-Host('Manager      : ' + $manager)
+					}
+				}
+	
+				$found = $true
+			}
+		}
+		catch
+		{
+		}
+	
+		if (!$found)
+		{
+			Write-Host ... Count not find user "$domain\$username" -ForegroundColor Yellow
 		}
 	}
-	catch
+}
+Process
+{
+	if ($Domain -eq $env:COMPUTERNAME)
 	{
+		if ($SID) { GetLocalSid } else { ReportLocalUser }
 	}
-
-	if (!$found)
+	else
 	{
-		Write-Host ... Count not find user "$domain\$username" -ForegroundColor Yellow
+		if ($SID) { GetDomainSid } else { ReportDomainUser }
 	}
 }

@@ -129,6 +129,10 @@ Type the contents of a PowerShell script with syntax highlighting.
 #### `Show-Docker`
 Show containers and images in a single command.
 
+#### `Start-VMUntilReady`
+Start the named VM, optionally restoring the latest snapshot, and waiting
+until the OS provides a stable heartbeat.
+
 ## Profiles
 
 #### Microsoft.PowerShell_profile.ps1
