@@ -39,8 +39,9 @@ $skip = 0
 
 if (!$quiet)
 {
+	[double] $kb = $size / 1024
 	Write-Host "`n"
-	Write-Host("Cleared {0} logs saving {1} bytes" -f $count, $size) -Foreground DarkYellow
+	Write-Host("Cleared {0} logs saving {1} KB" -f $count, $kb) -Foreground DarkYellow
 
 	if ($skip -gt 0)
 	{
