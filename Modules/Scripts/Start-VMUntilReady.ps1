@@ -5,6 +5,9 @@ Starts the specified VM and waits until it is ready for use.
 .PARAMETER Name
 The name of the VM to start, default is cds-oracle
 
+.PARAMETER Restart
+If specified then first stop the VM if it is running before restarting.
+
 .PARAMETER Restore
 If specified then restore the latest snapshot of the VM.
 #>
@@ -20,6 +23,7 @@ param (
 	})]
 	[string] $Name,
 
+	[switch] $Restart,
 	[switch] $Restore
 	)
 
@@ -68,5 +72,11 @@ Begin
 }
 Process
 {
+	if ($Restart -and ((Get-VM $Name).State -eq 'Running'))
+	{
+		Write-Verbose 'Stopping VM'
+		Stop-VM $Name -Force
+		Start-Sleep -s 5
+	}
 	StartVM
 }
