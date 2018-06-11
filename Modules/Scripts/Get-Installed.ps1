@@ -121,7 +121,7 @@ Begin
 
 Process
 {
-	$confirm = [IO.Path]::Combine((Split-Path -parent $PSCommandPath), 'Confirm-Elevated.ps1')
+	$confirm = [IO.Path]::Combine((Split-Path -parent $PSCommandPath), 'Test-Elevated.ps1')
 	if (!(. $confirm (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
 	if ($outFile -ne $null -and $outFile.Length -gt 0)

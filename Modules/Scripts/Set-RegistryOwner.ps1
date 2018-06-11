@@ -109,7 +109,7 @@ Begin
 }
 Process
 {
-	Confirm-Elevated -Action 'Take-RegKeyOwnership' -Warn
+	Test-Elevated -Action 'Take-RegKeyOwnership' -Warn
 
 	if (!$SID)
 	{

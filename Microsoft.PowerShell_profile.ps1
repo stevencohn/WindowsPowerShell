@@ -2,7 +2,7 @@
 # override the prompt function
 function prompt {
 	$saveCode = $LASTEXITCODE
-	if (Confirm-Elevated) {
+	if (Test-Elevated) {
 		Write-Host "PS " -NoNewline -ForegroundColor Red
 		Write-Host $pwd -NoNewline -ForegroundColor Blue
 	}

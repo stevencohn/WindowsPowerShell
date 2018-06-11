@@ -25,9 +25,6 @@ These scripts are located in the Modules\Scripts folder.
 ##### `Clear-Events`
 Clear all events from the Windows Event Log.
 
-#### `Confirm-Elevated`
-Determine if the current session is elevated and displays a warning message if not. Can be run without the warning message and simply return a boolean result.
-
 #### `ConvertTo-Hex`
 Convert integer values to a Hex string. If one integer is specified then it is converted. If three integers are specified then they are assumed to be RGB values and combined into a single Hex string.
 
@@ -135,6 +132,9 @@ Set full-access ownership of a specified Registry key.
 #### `Start-VMUntilReady`
 Start the named VM, optionally restoring the latest snapshot, and waiting
 until the OS provides a stable heartbeat.
+
+#### `Test-Elevated`
+Determine if the current session is elevated and displays a warning message if not. Can be run without the warning message and simply return a boolean result.
 
 ## Profiles
 

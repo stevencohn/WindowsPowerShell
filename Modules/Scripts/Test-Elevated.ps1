@@ -12,10 +12,10 @@ If specified then displays a warning message if not elevated
 .DESCRIPTION
 For scripts in this same \Scripts folder, add these two lines exactly:
 
-$confirm = [IO.Path]::Combine((Split-Path -parent $PSCommandPath), 'Confirm-Elevated.ps1')
+$confirm = [IO.Path]::Combine((Split-Path -parent $PSCommandPath), 'Test-Elevated.ps1')
 if (!(. $confirm (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
-For scripts in other locations, just call Confirm-Elevated [action-name] [show-warning]
+For scripts in other locations, just call Test-Elevated [action-name] [show-warning]
 #>
 param (
 	[string] $Action = $null,

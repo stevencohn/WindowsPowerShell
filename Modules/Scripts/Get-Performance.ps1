@@ -11,7 +11,7 @@ if (-not (Get-Command 'winsat' -ErrorAction:Ignore))
 	throw 'WinSAT is not installed on this system'
 }
 
-if (!(Confirm-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
+if (!(Test-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
 $storepath = Join-Path $env:windir 'Performance\WinSAT\DataStore'
 if (!(Test-Path $storepath))

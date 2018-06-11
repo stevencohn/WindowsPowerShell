@@ -16,7 +16,7 @@ of overwriting directory containing gratuitously long paths.
 
 param ([string] $name)
 
-if (!(Confirm-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
+if (!(Test-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
 
 if ((Get-Item $name) -is [System.IO.DirectoryInfo])
