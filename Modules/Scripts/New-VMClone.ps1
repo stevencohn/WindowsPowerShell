@@ -16,6 +16,11 @@ using Export-VM similar to Export-VM -Name 'Win10' -Path 'E:\BackupVMs'
 
 Mutually exclusive with -Name.
 
+.PARAMETER Memory
+Number of bytes applied to memory parameters. This is applied directly to 
+MemoryStartup, 80% of this is applied to MemoryMinimum, 200% of this is applied
+to MemoryMaximum.
+
 .PARAMETER Template
 The name of the registered VM to clone, using it as a template.
 
@@ -32,6 +37,14 @@ Clone-VM -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10' -Checkpoint
 
 .EXAMPLE
 Clone-VM -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10\Virtual Machines\4FD97BB5-5CD5-4439-BBFF-498B0A5B3CE9.vmcx'
+
+.EXAMPLE
+Clone-VM -Name 'cds-oracle' -Template 'Win10' -Memory 12GB
+
+DynamicMemory is enabled
+MemoryStartup is set to 12GB
+MemoryMinimum is set to 9.6GB
+MemoryMaximum is set to 24GB
 #>
 
 using namespace System.IO
@@ -60,6 +73,8 @@ param (
 		$true
 	})]
 	[string] $Path,
+
+	[Int64] $Memory,
 
 	[Parameter(Mandatory=$true, ParameterSetName='clone')]
 	[ValidateScript({
@@ -139,7 +154,13 @@ Process
 		$config = Join-Path $vm.Path (Get-ChildItem -Path $vm.Path -Name "${$vm.Id.ToString().ToUpper()}*.vmcx" -Recurse)
 	}
 
-	$vm = ImportVM $config
+	$vm = (ImportVM $config)
+
+	if ($Memory)
+	{
+		Set-VMMemory -VM $vm -DynamicMemoryEnabled $true -StartupBytes $Memory `
+			-MinimumBytes ($Memory * 0.8) -MaximumBytes ($Memory * 2)
+	}
 
 	if ($Checkpoint)
 	{
