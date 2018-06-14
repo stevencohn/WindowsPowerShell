@@ -32,6 +32,21 @@ param (
 
 Begin
 {
+	# if path is VM host's machine path then the vmms service locks these files even
+	# if the machine is not running so we copy to a temp location and read from there
+	function CopyReadable
+	{
+		$root = [Path]::GetDirectoryName($Path)
+		$name = [Path]::GetFileNameWithoutExtension($Path)
+		$temp = [Path]::GetTempPath()
+
+		# we need *.vmcx, *.vmgs, and *.vmrs
+		Copy-Item (Join-Path $root "$name.vm*") $temp
+		Set-Variable 'wild' (Join-Path $temp "$name.vm*") -Scope 'Script'
+
+		return (Join-Path $temp "$name.vmcx")
+	}
+
 	function GetConfiguration ()
 	{
 		$dummyVhdPath = Join-Path $env:temp ([Path]::GetFileNameWithoutExtension($Path))
@@ -57,5 +72,17 @@ Process
 		$Path = Join-Path $Path ((Get-ChildItem -Path $Path -Name '*.vmcx' -Recurse) | Select -First 1)
 	}
 
+	if ($Path.StartsWith((Join-Path (Get-VMHost).VirtualMachinePath 'Virtual Machines')))
+	{
+		$Path = CopyReadable
+	}
+
 	GetConfiguration
+}
+End
+{
+	if ($wild -and (Test-Path $wild))
+	{
+		Remove-Item $wild -Force -Confirm:$false
+	}
 }
