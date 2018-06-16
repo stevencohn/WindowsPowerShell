@@ -17,6 +17,9 @@ or force an override of the mapped drive letter if already mapped
 Path to the folder to map to DriveLetter. This cannot be a root (C:\) or a top
 level folder (C:\foo) - it must be at least a second level folder.
 
+.PARAMETER Reboot
+If true then prompt to reboot system; default is true.
+
 .PARAMETER SourceDriveLabel
 New label to apply to the source drive; default it to retain the current label.
 #>
@@ -50,6 +53,7 @@ param (
 	[string] $SourceDriveLabel,
 	[string] $DriveLabel,
 
+	[switch] $Reboot,
 	[switch] $Force
 	)
 
@@ -83,9 +87,9 @@ Begin
 			} else {
 				Write-Verbose "Set-ItemProperty ""$DriveIconsKey\$sourceLetter"" -Name 'DefaultLabel' -Value $SourceDriveLabel"
 				if (!(Test-Path "$DriveIconsKey\$sourceLetter")) {
-					New-Item "$DriveIconsKey\$sourceLetter" -Force
+					New-Item "$DriveIconsKey\$sourceLetter" -Force | Out-Null
 				}
-				Set-ItemProperty "$DriveIconsKey\$sourceLetter" -Name 'DefaultLabel' -Value $SourceDriveLabel -Force
+				Set-ItemProperty "$DriveIconsKey\$sourceLetter" -Name 'DefaultLabel' -Value $SourceDriveLabel -Force | Out-Null
 			}
 			Write-Verbose 'set new volume label for source drive'
 		}
@@ -96,9 +100,9 @@ Begin
 		} else {
 			Write-Verbose "Set-ItemProperty ""$DriveIconsKey\$DriveLetter"" -Name 'DefaultLabel' -Value $DriveLabel"
 			if (!(Test-Path "$DriveIconsKey\$DriveLetter")) {
-				New-Item "$DriveIconsKey\$DriveLetter" -Force
+				New-Item "$DriveIconsKey\$DriveLetter" -Force | Out-Null
 			}
-			Set-ItemProperty "$DriveIconsKey\$DriveLetter" -Name 'DefaultLabel' -Value $DriveLabel -Force
+			Set-ItemProperty "$DriveIconsKey\$DriveLetter" -Name 'DefaultLabel' -Value $DriveLabel -Force | Out-Null
 		}
 		Write-Verbose 'set new volume label for mapped drive'
 
@@ -107,12 +111,9 @@ Begin
 			Write-Host "Set-ItemProperty ""$DOSDevicesKey"" -Name ""${DriveLetter}:"" -Value ""\??\$Path""" -ForegroundColor DarkYellow
 		} else {
 			Write-Verbose "Set-ItemProperty ""$DOSDevicesKey"" -Name ""${DriveLetter}:"" -Value ""\??\$Path"""
-			Set-ItemProperty "$DOSDevicesKey" -Name "${DriveLetter}:" -Value "\??\$Path" -Force
+			Set-ItemProperty "$DOSDevicesKey" -Name "${DriveLetter}:" -Value "\??\$Path" -Force | Out-Null
 		}
-		Write-Verbose 'mapped virtual drive'
-
-		# restart (TODO: can we just restart Explorer?)
-		#Restart-Computer -Force -Timeout 0
+		Write-Verbose 'mapped persistent virtual drive'
 	}
 }
 Process
@@ -123,6 +124,7 @@ Process
 	}
 
 	$Path = [Path]::GetFullPath($Path)
+	if ($Path.EndsWith('\')) { $Path = $Path.Substring(0, $Path.Length - 1) }
 
 	if (!$SourceDriveLabel)
 	{
@@ -139,4 +141,14 @@ Process
 	}
 
 	MapFolderToDriveLetter
+
+	if ($Reboot -or !$PSBoundParameters.ContainsKey('Reboot'))
+	{
+		# must reboot in order for this to take effect
+		if ($WhatIfPreference) {
+			Write-Host 'Restart-Computer -Force -Timeout 0' -ForegroundColor DarkYellow
+		} else {
+			Restart-Computer -Force -Timeout 0
+		}
+	}
 }
