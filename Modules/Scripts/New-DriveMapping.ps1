@@ -23,8 +23,10 @@ New label to apply to the source drive; default it to retain the current label.
 
 using namespace System.IO
 
+[CmdletBinding(SupportsShouldProcess = $true)]
+
 param (
-	[Parameter(Mandatory=$true, HelpMessage='Drive letter must not be currently used')]
+	[Parameter(Mandatory=$true, Position=0, HelpMessage='Drive letter must not be currently used')]
 	[ValidateLength(1, 1)]
 	[ValidatePattern('[A-Z]')]
 	[ValidateScript({
@@ -35,7 +37,7 @@ param (
 	})]
 	[string] $DriveLetter,
 
-	[Parameter(Mandatory=$true, HelpMessage='Path must specify a valid folder path')]
+	[Parameter(Mandatory=$true, Position=1, HelpMessage='Path must specify a valid folder path')]
 	[ValidateScript({
 		if (Test-Path $_) {
 			$lev=0; $p = $_; do { $p = split-path $p; $lev++ } while ($p)
@@ -60,34 +62,62 @@ Begin
 	{
 		$sourceLetter = ([Path]::GetPathRoot($Path))[0]
 
-		# In order for this to work, the drive containing the target folder must be given a
+		# In order for this to work, the drive containing the source folder must be given a
 		# label in the Registry but that would conflict with the volume name so we must first
 		# clear the volume label; this will be rectified below by setting it in the Registry.
-		# Filter by drive letter and only if it still have a volume name
-		$filter = "deviceID='{0}:' and VolumeName<>''" -f $sourceLetter
-		Get-CimInstance win32_logicaldisk -Filter $filter | Set-CimInstance -Property @{VolumeName=''}
+		# Filter by drive letter and only if it still has a volume name
+		if ($WhatIfPreference) {
+			Write-Host "clear label of $sourceLetter drive" -ForegroundColor DarkYellow
+		} else {
+			Write-Verbose "clear label of $sourceLetter drive"
+			Get-Volume $sourceLetter | ? { $_.FileSystemLabel -ne '' } | Set-Volume -NewFileSystemLabel ''
+		}
+		Write-Verbose 'cleared label of source drive'
 
-		# create new volume label for source drive if one doesn't already exist or override
+		# create new volume label for source drive if one doesn't already exist or if override
 		if ($Force -or [String]::IsNullOrEmpty((Get-ItemPropertyValue `
 			"$DriveIconsKey\$sourceLetter\DefaultLabel" -Name '(Default)' -ErrorAction 'SilentlyContinue')))
 		{
-			Set-ItemProperty "$DriveIconsKey\$sourceLetter\DefaultLabel" -Value $SourceDriveLabel
+			if ($WhatIfPreference) {
+				Write-Host "Set-ItemProperty ""$DriveIconsKey\$sourceLetter"" -Name 'DefaultLabel' -Value $SourceDriveLabel" -ForegroundColor DarkYellow
+			} else {
+				Write-Verbose "Set-ItemProperty ""$DriveIconsKey\$sourceLetter"" -Name 'DefaultLabel' -Value $SourceDriveLabel"
+				if (!(Test-Path "$DriveIconsKey\$sourceLetter")) {
+					New-Item "$DriveIconsKey\$sourceLetter" -Force
+				}
+				Set-ItemProperty "$DriveIconsKey\$sourceLetter" -Name 'DefaultLabel' -Value $SourceDriveLabel -Force
+			}
+			Write-Verbose 'set new volume label for source drive'
 		}
 
 		# create volume label for mapped drive
-		Set-ItemProperty "$DriveIconsKey\$DriveLetter\DefaultLabel" -Value $DriveLabel
+		if ($WhatIfPreference) {
+			Write-Host "Set-ItemProperty ""$DriveIconsKey\$DriveLetter"" -Name 'DefaultLabel' -Value $DriveLabel" -ForegroundColor DarkYellow
+		} else {
+			Write-Verbose "Set-ItemProperty ""$DriveIconsKey\$DriveLetter"" -Name 'DefaultLabel' -Value $DriveLabel"
+			if (!(Test-Path "$DriveIconsKey\$DriveLetter")) {
+				New-Item "$DriveIconsKey\$DriveLetter" -Force
+			}
+			Set-ItemProperty "$DriveIconsKey\$DriveLetter" -Name 'DefaultLabel' -Value $DriveLabel -Force
+		}
+		Write-Verbose 'set new volume label for mapped drive'
 
 		# map virtual drive
-		Set-ItemProperty $DOSDevicesKey -Name "${DriveLetter}:" -Value "\??\$Path"
+		if ($WhatIfPreference) {
+			Write-Host "Set-ItemProperty ""$DOSDevicesKey"" -Name ""${DriveLetter}:"" -Value ""\??\$Path""" -ForegroundColor DarkYellow
+		} else {
+			Write-Verbose "Set-ItemProperty ""$DOSDevicesKey"" -Name ""${DriveLetter}:"" -Value ""\??\$Path"""
+			Set-ItemProperty "$DOSDevicesKey" -Name "${DriveLetter}:" -Value "\??\$Path" -Force
+		}
+		Write-Verbose 'mapped virtual drive'
 
 		# restart (TODO: can we just restart Explorer?)
-		Restart-Computer -Force -Timeout 0
+		#Restart-Computer -Force -Timeout 0
 	}
 }
 Process
 {
-	if (!$Force -and ((Get-ItemPropertyValue $DOSDevicesKey `
-		-Name ('{0}:' -f $DriveLetter) -ErrorAction 'SilentlyContinue') -ne $null))
+	if (!$Force -and ((Get-ItemPropertyValue "Registry::$DOSDevicesKey" -Name ('{0}:' -f $DriveLetter) -ErrorAction 'SilentlyContinue') -ne $null))
 	{
 		Throw 'Drive letter is already mapped; use -Force to override'
 	}
@@ -97,6 +127,10 @@ Process
 	if (!$SourceDriveLabel)
 	{
 		$SourceDriveLabel = (Get-Volume (([Path]::GetPathRoot($Path))[0])).FileSystemLabel
+		if ([String]::IsNullOrEmpty($SourceDriveLabel))
+		{
+			$SourceDriveLabel = (Get-ItemPropertyValue "$DriveIconsKey\$sourceLetter\DefaultLabel" -Name '(Default)' -ErrorAction 'SilentlyContinue')
+		}
 	}
 
 	if (!$DriveLabel)
