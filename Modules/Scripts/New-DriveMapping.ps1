@@ -26,15 +26,15 @@ New label to apply to the source drive; default it to retain the current label.
 
 using namespace System.IO
 
-[CmdletBinding(SupportsShouldProcess = $true)]
+[CmdletBinding(SupportsShouldProcess=$true)]
 
 param (
-	[Parameter(Mandatory=$true, Position=0, HelpMessage='Drive letter must not be currently used')]
+	[Parameter(Mandatory=$true, Position=0, HelpMessage='Drive letter must not be in use')]
 	[ValidateLength(1, 1)]
 	[ValidatePattern('[A-Z]')]
 	[ValidateScript({
-		if (Get-Volume $_ -ErrorAction 'SilentlyContinue') {
-			Throw 'Cannot reuse a physical drive letter'
+		if ((Get-ItemPropertyValue "Registry::$DOSDevicesKey" -Name ('{0}:' -f $DriveLetter) -ErrorAction 'SilentlyContinue') -eq $null) {
+			Throw 'DriveLetter does not specify a mapped drive'
 		}
 		$true
 	})]
