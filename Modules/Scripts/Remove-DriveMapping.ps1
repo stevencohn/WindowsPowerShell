@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-Remove a persistent mapping of a folder.
+Remove a persistent mapping of a folder created by New-DriveMapping.
 
 .PARAMETER DriveLetter
 The mapped drive letter to remove.
 
 .PARAMETER Force
-Force using SourceDriveLabel, provided DriverLetter is the last mapping
-to the source drive.
+Force overriding volume label with SourceDriveLabel parameter, given that there
+are no more associated mappings to that drive.
 
 .PARAMETER Reboot
 If true then reboot system; default is true.
@@ -94,6 +94,7 @@ Process
 	}
 
 	if (!$SourceDriveLabel) {
+		# if no label specified then choose a default label based on the system drive or a data drive
 		$SourceDriveLabel = if ($DriveLetter -eq ($env:HOMEDRIVE)[0]) { 'System' } else { 'Data' }
 	}
 

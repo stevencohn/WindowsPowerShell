@@ -14,8 +14,7 @@ Force override of the source drive label when a mapping already exists on that d
 or force an override of the mapped drive letter if already mapped
 
 .PARAMETER Path
-Path to the folder to map to DriveLetter. This cannot be a root (C:\) or a top
-level folder (C:\foo) - it must be at least a second level folder.
+Path to the folder to map to DriveLetter. This cannot be a root level folder (C:\)
 
 .PARAMETER Reboot
 If true then prompt to reboot system; default is true.
@@ -42,11 +41,8 @@ param (
 
 	[Parameter(Mandatory=$true, Position=1, HelpMessage='Path must specify a valid folder path')]
 	[ValidateScript({
-		if (Test-Path $_) {
-			$lev=0; $p = $_; do { $p = split-path $p; $lev++ } while ($p)
-			if ($lev -gt 2) { return $true }
-		}
-		Throw 'Path does not exist or is not at least a second level folder'
+		if ((Test-Path $_) -and ((Split-Path $_ -leaf) -ne $_)) { return $true }
+		Throw 'Path does not exist or is a root level folder'
 	})]
 	[string] $Path,
 
@@ -68,7 +64,7 @@ Begin
 
 		# In order for this to work, the drive containing the source folder must be given a
 		# label in the Registry but that would conflict with the volume name so we must first
-		# clear the volume label; this will be rectified below by setting it in the Registry.
+		# clear the volume name; this will be rectified below by setting it in the Registry.
 		# Filter by drive letter and only if it still has a volume name
 		if ($WhatIfPreference) {
 			Write-Host "clear label of $sourceLetter drive" -ForegroundColor DarkYellow
