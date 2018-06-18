@@ -28,12 +28,12 @@ using namespace System.IO
 [CmdletBinding(SupportsShouldProcess=$true)]
 
 param (
-	[Parameter(Mandatory=$true, Position=0, HelpMessage='Drive letter must not be in use')]
+	[Parameter(Mandatory=$true, Position=0, HelpMessage='Drive letter must not be a physical volume')]
 	[ValidateLength(1, 1)]
 	[ValidatePattern('[A-Z]')]
 	[ValidateScript({
-		if ((Get-ItemPropertyValue "Registry::$DOSDevicesKey" -Name ('{0}:' -f $DriveLetter) -ErrorAction 'SilentlyContinue') -eq $null) {
-			Throw 'DriveLetter does not specify a mapped drive'
+		if ((Get-Volume $_ -ErrorAction 'SilentlyContinue') -ne $null) {
+			Throw 'DriveLetter cannot be a physical volume'
 		}
 		$true
 	})]
@@ -79,42 +79,44 @@ Begin
 			"$DriveIconsKey\$sourceLetter\DefaultLabel" -Name '(Default)' -ErrorAction 'SilentlyContinue')))
 		{
 			if ($WhatIfPreference) {
-				Write-Host "Set-ItemProperty ""$DriveIconsKey\$sourceLetter"" -Name 'DefaultLabel' -Value $SourceDriveLabel" -ForegroundColor DarkYellow
+				Write-Host "Set-ItemProperty ""$DriveIconsKey\$sourceLetter\DefaultLabel"" -Name '(Default)' -Value $SourceDriveLabel" -ForegroundColor DarkYellow
 			} else {
-				Write-Verbose "Set-ItemProperty ""$DriveIconsKey\$sourceLetter"" -Name 'DefaultLabel' -Value $SourceDriveLabel"
-				if (!(Test-Path "$DriveIconsKey\$sourceLetter")) {
-					New-Item "$DriveIconsKey\$sourceLetter" -Force | Out-Null
+				Write-Verbose "Set-ItemProperty ""$DriveIconsKey\$sourceLetter\DefaultLabel"" -Name '(Default)' -Value $SourceDriveLabel"
+				if (!(Test-Path "$DriveIconsKey\$sourceLette\DefaultLabel")) {
+					New-Item "$DriveIconsKey\$sourceLetter\DefaultLabel" -Force | Out-Null
 				}
-				Set-ItemProperty "$DriveIconsKey\$sourceLetter" -Name 'DefaultLabel' -Value $SourceDriveLabel -Force | Out-Null
+				Set-ItemProperty "$DriveIconsKey\$sourceLetter\DefaultLabel" -Name '(Default)' -Value $SourceDriveLabel -Force | Out-Null
 			}
 			Write-Verbose 'set new volume label for source drive'
 		}
 
 		# create volume label for mapped drive
 		if ($WhatIfPreference) {
-			Write-Host "Set-ItemProperty ""$DriveIconsKey\$DriveLetter"" -Name 'DefaultLabel' -Value $DriveLabel" -ForegroundColor DarkYellow
+			Write-Host "Set-ItemProperty ""$DriveIconsKey\$DriveLetter\DefaultLabel"" -Name '(Default)' -Value $DriveLabel" -ForegroundColor DarkYellow
 		} else {
-			Write-Verbose "Set-ItemProperty ""$DriveIconsKey\$DriveLetter"" -Name 'DefaultLabel' -Value $DriveLabel"
-			if (!(Test-Path "$DriveIconsKey\$DriveLetter")) {
-				New-Item "$DriveIconsKey\$DriveLetter" -Force | Out-Null
+			Write-Verbose "Set-ItemProperty ""$DriveIconsKey\$DriveLetter\DefaultLabel"" -Name '(Default)' -Value $DriveLabel"
+			if (!(Test-Path "$DriveIconsKey\$DriveLetter\DefaultLabel")) {
+				New-Item "$DriveIconsKey\$DriveLetter\DefaultLabel" -Force | Out-Null
 			}
-			Set-ItemProperty "$DriveIconsKey\$DriveLetter" -Name 'DefaultLabel' -Value $DriveLabel -Force | Out-Null
+			Set-ItemProperty "$DriveIconsKey\$DriveLetter\DefaultLabel" -Name '(Default)' -Value $DriveLabel -Force | Out-Null
 		}
 		Write-Verbose 'set new volume label for mapped drive'
 
 		# map virtual drive
 		if ($WhatIfPreference) {
-			Write-Host "Set-ItemProperty ""$DOSDevicesKey"" -Name ""${DriveLetter}:"" -Value ""\??\$Path""" -ForegroundColor DarkYellow
+			Write-Host "Set-ItemProperty '$DOSDevicesKey' -Name '$DriveLetter`:' -Value '\??\$Path'" -ForegroundColor DarkYellow
 		} else {
-			Write-Verbose "Set-ItemProperty ""$DOSDevicesKey"" -Name ""${DriveLetter}:"" -Value ""\??\$Path"""
-			Set-ItemProperty "$DOSDevicesKey" -Name "${DriveLetter}:" -Value "\??\$Path" -Force | Out-Null
+			Write-Verbose "Set-ItemProperty '$DOSDevicesKey' -Name '$DriveLetter`:' -Value '\??\$Path'"
+			Set-ItemProperty $DOSDevicesKey -Name "$DriveLetter`:" -Value "\??\$Path" -Force | Out-Null
 		}
 		Write-Verbose 'mapped persistent virtual drive'
 	}
 }
 Process
 {
-	if (!$Force -and ((Get-ItemPropertyValue "Registry::$DOSDevicesKey" -Name ('{0}:' -f $DriveLetter) -ErrorAction 'SilentlyContinue') -ne $null))
+    $DriveLetter = $DriveLetter.ToUpper()
+
+	if (!$Force -and ((Get-ItemProperty $DOSDevicesKey | Select-Object "$DriveLetter`:" -Expand "$DriveLetter`:" -ErrorAction 'SilentlyContinue') -ne $null))
 	{
 		Throw 'Drive letter is already mapped; use -Force to override'
 	}
@@ -142,9 +144,9 @@ Process
 	{
 		# must reboot in order for this to take effect
 		if ($WhatIfPreference) {
-			Write-Host 'Restart-Computer -Force -Timeout 0' -ForegroundColor DarkYellow
+			Write-Host 'Restart-Computer -Force' -ForegroundColor DarkYellow
 		} else {
-			Restart-Computer -Force -Timeout 0
+			Restart-Computer -Force
 		}
 	}
 }

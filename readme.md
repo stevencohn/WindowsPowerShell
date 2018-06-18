@@ -99,11 +99,17 @@ Invoke the Visual Studio environment batch script. Aliased to `vs`
 #### `New-CommandWrapper`
 Sepcial internal function from PowerShell Cookbook.
 
+#### `New-DriveMapping`
+Create a persistent mapping of a folder to a new drive letter. (persistent SUBST)
+
 #### `New-VMClone`
 Create a new VM from a registered VM or an exported VM.
 
 #### `Remove-DockerTrash`
 Prune unused docker containers and dangling images.
+
+#### `Remove-DriveMapping`
+Remove a persistent mapping of a folder created by New-DriveMapping.
 
 #### `Remove-Locked`
 Remove a System-owned file or directory. Attempts multiple approaches to remove stubborn items.
