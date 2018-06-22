@@ -7,6 +7,10 @@ Show containers and images in a single command with special color highlighting
 if (!(Test-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
 $e = [char]27
+$Gray = '90'
+$Green = '92'
+$Blue = '94'
+$Cyan = '96'
 
 Write-Host
 Write-Host 'docker ps -a' -ForegroundColor DarkYellow
@@ -27,14 +31,14 @@ $ps.containers | Format-Table id,
 	@{
 		Label = 'name'
 		Expression = {
-			if ($_.status -match '^Up') { $color = '92' } else { $color = '90' }
+			if ($_.status -match '^Up') { $color = $Green } else { $color = $Gray }
 			"$e[{0}m{1}$e[0m" -f $color,$_.names
 		}
 	},
 	@{
 		Label = 'image'
 		Expression = {
-			if ($_.image -match '^Waters') { $color = '94' } else { $color = '96' }
+			if ($_.image -match '^Waters') { $color = $Blue } else { $color = $Cyan }
 			"$e[{0}m{1}$e[0m" -f $color,$_.image
 		}
 	},
@@ -49,9 +53,9 @@ $im = '{{ "images": [ {0} ] }}' -f $im | ConvertFrom-Json
 $im.images | Format-Table @{
 		Label='repository'
 		Expression = {
-			if ($_.repository -eq '<none>') { $color = '90' }
-			elseif ($_.repository -match '^Waters') { $color = '94' }
-			else { $color = '96' }
+			if ($_.repository -eq '<none>') { $color = $Gray }
+			elseif ($_.repository -match '^Waters') { $color = $Blue }
+			else { $color = $Cyan }
 			"$e[{0}m{1}$e[0m" -f $color,$_.repository
 		}
 	},
