@@ -11,9 +11,16 @@ $e = [char]27
 Write-Host
 Write-Host 'docker ps -a' -ForegroundColor DarkYellow
 
+# The --format argument doesn't like to accept double-quotes inside the format string
+# so the hack is to add tildes and then replace them later with double-quotes.
+# Also the command will return an array of strings so first join them into a single
+# string, replace the tildes, and finally build the full Json string...
+
 $format = '{ ~id~: ~{{.ID}}~, ~names~: ~{{.Names}}~, ~image~: ~{{.Image}}~, ~status~: ~{{.Status}}~, ~ports~: ~{{.Ports}}~ }'
 $ps = ((docker ps -a --format $format --no-trunc) -join ',').Replace('~', '"')
 $ps = '{{ "containers": [ {0} ] }}' -f $ps | ConvertFrom-Json
+
+# we used --no-trunc to get full command port strings but we do want to truncate ID
 $ps.containers | % { $_.id = $_.id.Substring(0, 12) }
 
 $ps.containers | Format-Table id,
