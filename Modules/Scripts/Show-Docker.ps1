@@ -45,7 +45,18 @@ if ($ps)
 				"$e[{0}m{1}$e[0m" -f $color,$_.image
 			}
 		},
-		status,ports
+		@{
+			Label = 'status'
+			Expression = {
+				if ($_.status.StartsWith('Exited')) {
+					$words = $_.status -split ' '
+					@($words[0], $words[1], ($words[2] + $words[3][0]), 'ago') -join ' '
+				} else {
+					$_.status
+				}
+			}
+		},
+		ports
 }
 else
 {
