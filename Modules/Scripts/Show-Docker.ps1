@@ -72,16 +72,19 @@ if ($im)
 {
 	$im = '{{ "images": [ {0} ] }}' -f ($im -join ',').Replace('~', '"') | ConvertFrom-Json
 
-	$im.images | Format-Table id,@{
+	$im.images | Format-Table id,
+		@{
 			Label='repository'
 			Expression = {
 				if ($_.repository -eq '<none>') { $color = $Gray }
 				elseif ($_.repository -match '^Waters') { $color = $Blue }
 				else { $color = $Cyan }
-				"$e[{0}m{1}$e[0m" -f $color,$_.repository
+				"$e[{0}m{1}$e[0m " -f $color,$_.repository
 			}
 		},
-		tag,created,size
+		@{ Label='tag'; Expression={ $_.tag + ' ' } },
+		@{ Label='created'; Expression={ $_.created + ' ' } },
+		size
 }
 else
 {
