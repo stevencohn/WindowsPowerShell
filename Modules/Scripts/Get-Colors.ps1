@@ -15,6 +15,9 @@ Display colors for the ConEmu Command console only.
 .PARAMETER PS
 Display colors for the PowerShell console only.
 
+.PARAMETER Script
+Generate a script to set the entire color table.
+
 .DESCRIPTION
 Registry values are stored as B-G-R DWord values. This command displays the BGR
 value as well as the RGB, decimal equivalents, and console Esc sequences.
@@ -22,9 +25,10 @@ value as well as the RGB, decimal equivalents, and console Esc sequences.
 
 param (
 	[switch] $All,
-	[Switch] $Cmd,
-	[Switch] $PS,
-	[Switch] $ConEmu)
+	[switch] $Cmd,
+	[switch] $PS,
+	[switch] $ConEmu,
+	[switch] $Script)
 
 Begin
 {
@@ -38,6 +42,8 @@ Begin
 
 	$esc = [char]27
 	$colors = [System.Enum]::GetNames([System.ConsoleColor])
+
+	$ConEmuFile = "${env:APPDATA}\ConEmu.xml"
 
 	function Box ($text)
 	{
@@ -144,13 +150,12 @@ Begin
 
 	function ShowConEmuColors ()
 	{
-		$file = "${env:APPDATA}\ConEmu.xml"
-		if (Test-Path $file)
+		if (Test-Path $ConEmuFile)
 		{
-			Box @('ConEmu Color Table', "  $file")
+			Box @('ConEmu Color Table', "  $ConEmuFile")
 			Write-Host 'Name         BGR      ConsoleColor  RGB      Decimal'
 
-			$xml = [xml](Get-Content $file) | Select-Xml `
+			$xml = [xml](Get-Content $ConEmuFile) | Select-Xml `
 				-XPath "//key[@name='Software']/key[@name='ConEmu']/key[@name='.Vanilla']/value" | `
 				? { $_.Node.Name -like 'ColorTable*' } | % `
 				{
@@ -173,10 +178,66 @@ Begin
 				}
 		}
 	}
+
+	function GenerateSetScript ()
+	{
+		if (!($Cmd -or $ConEmu -or $PS))
+		{
+			if (Test-Path $ConEmuFile) { $ConEmu = $true }
+			else { $PS = $true }
+		}
+
+		if ($ConEmu -and (Test-Path $ConEmuFile))
+		{
+			write-host '# ConEmu color table'
+			[xml](Get-Content $ConEmuFile) | Select-Xml `
+				-XPath "//key[@name='Software']/key[@name='ConEmu']/key[@name='.Vanilla']/value" | `
+				? { $_.Node.Name -like 'ColorTable*' } | % `
+				{
+					$index = [System.Int32]::Parse($_.Node.Name.Substring(10))
+					if ($index -lt 16)
+					{
+						$name = $colors[$index]
+						$bgr = [System.Convert]::ToInt32($_.Node.Data, 16)
+						Write-Host ('Set-Color -Name {0} -Color 0x{1:X6} -Bgr' -f $name, $bgr)
+					}
+				}
+		}
+		elseif ($Cmd)
+		{
+			write-host '# CMD color table'
+			Push-Location HKCU:\Console
+			For ($i=0; $i -lt $colors.Length; $i++)
+			{
+				$name = $colors[$i]
+				$table = ("ColorTable{0}" -f ($i).ToString('00'))
+				$value = (Get-ItemPropertyValue . -name $table)
+				Write-Host ('Set-Color -Name {0} -Color 0x{1:X6} -Bgr' -f $name, $value)
+			}
+			Pop-Location
+		}
+		else
+		{
+			write-host '# PowerShell color table'
+			$menupath = "${env:APPDATA}\Microsoft\Windows\Start Menu\Programs\Windows PowerShell\Windows PowerShell.lnk"
+			$link = Get-Link -Path $menupath
+			For ($i=0; $i -lt $colors.Length; $i++)
+			{
+				$name = $colors[$i]
+				$lolor = $link.ConsoleColors[$i]
+				$rgb = "{0:X2}{1:X2}{2:X2}" -f $lolor.R, $lolor.G, $lolor.B
+				Write-Host ('Set-Color -Name {0} -Color 0x{1:X6}' -f $name, $rgb)
+			}
+		}
+	}
 }
 Process
 {
-	if ($Cmd)
+	if ($Script)
+	{
+		GenerateSetScript
+	}
+	elseif ($Cmd)
 	{
 		ShowCommandColors
 	}
