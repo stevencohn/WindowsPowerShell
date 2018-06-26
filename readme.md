@@ -132,6 +132,8 @@ Type the contents of a PowerShell script with syntax highlighting.
 #### `Show-Docker`
 Show containers and images in a single command.
 
+![alt text](Images/show-docker.png "Show-Docker Example")
+
 #### `Set-RegistryOwner`
 Set full-access ownership of a specified Registry key.
 
