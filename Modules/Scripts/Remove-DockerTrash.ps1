@@ -1,7 +1,12 @@
 <#
 .SYNOPSIS
 Prune unused docker containers and dangling images.
+
+.PARAMETER Volumes
+Prune unused volumes.
 #>
+
+param ([switch] $Volumes)
 
 if (!(Test-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
@@ -23,6 +28,19 @@ if ($trash -ne $null) {
 }
 else {
 	Write-Host "No dangling images" -ForegroundColor DarkYellow
+}
+
+if ($Volumes)
+{
+	Write-Host
+	$trash = $(docker volume ls --filter "dangling=true" -q)
+	if ($trash -ne $null) {
+		Write-Host ('Removing {0} dangling volumes...' -f $trash.Count) -ForegroundColor DarkYellow
+		docker volume prune -f
+	}
+	else {
+		Write-Host "No dangling volumes" -ForegroundColor DarkYellow
+	}
 }
 
 Write-Host

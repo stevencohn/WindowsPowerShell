@@ -25,8 +25,8 @@ New-Alias cc Show-ColorizedContent
 . $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
 Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
 
-function Invoke-Wilma { & 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe' }
-New-Alias wilma Invoke-Wilma 
+function Start-Wilma { & 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe' }
+New-Alias wilma Start-Wilma 
 
 # Docker helpers
 New-Alias doc Remove-DockerTrash

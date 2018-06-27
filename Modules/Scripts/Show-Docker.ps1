@@ -2,7 +2,12 @@
 <#
 .SYNOPSIS
 Show containers and images in a single command with special color highlighting
+
+.PARAMETER Volumes
+Show volume.
 #>
+
+param ([switch] $Volumes)
 
 if (!(Test-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
@@ -89,4 +94,28 @@ if ($im)
 else
 {
 	Write-Host "No images`n" -ForegroundColor DarkGray
+}
+
+if ($Volumes)
+{
+	Write-Host 'docker volume ls' -ForegroundColor DarkYellow
+
+	$vo = docker volume ls --format '{ ~name~: ~{{.Name}}~, ~driver~: ~{{.Driver}}~, ~mountpoint~: ~{{.Mountpoint}}~ }'
+
+	if ($vo)
+	{
+		$dangling = $(docker volume ls --filter "dangling=true" -q)
+
+		$vo = '{{ "volumes": [ {0} ] }}' -f ($vo -join ',').Replace('~', '"').Replace('\','\\') | ConvertFrom-Json
+
+		$vo.volumes | Format-Table driver,
+			@{
+				Label='mountpoint'
+				Expression = {
+					if ($dangling -contains $_.name) { $color = $Gray }
+					else { $color = '0' }
+					"$e[{0}m{1}$e[0m " -f $color,$_.mountpoint
+				}
+			}
+		}
 }
