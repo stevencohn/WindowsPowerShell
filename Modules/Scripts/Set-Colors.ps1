@@ -25,6 +25,12 @@ Update just the ConEmu console color table.
 .PARAMETER PS
 Update just the PowerShell console color table.
 
+.PARAMETER Background
+Set the specified color as the console background color.
+
+.PARAMETER Foreground
+Set the specified color as the console foreground color.
+
 .PARAMETER WhatIf
 Run the command and report changes but don't make any changes.
 
@@ -56,7 +62,9 @@ param (
 	[switch] $Bgr,
 	[switch] $Cmd,
 	[switch] $ConEmu,
-	[switch] $PS
+	[switch] $PS,
+	[switch] $Background,
+	[switch] $Foreground
 )
 
 Begin
@@ -105,6 +113,14 @@ Begin
 			Write-Host 'Setting command console color'
 			Push-Location HKCU:\Console
 			Set-ItemProperty . -Name $entry -Value $value -Type DWord
+
+			if ($Background -or $Foreground)
+			{
+				$screen =  (Get-ItemPropertyValue . 'ScreenColors')
+				if ($Background) { $screen = ($screen -band 0xFFFF) + ($index -shl 16) }
+				else { $screen = ($screen -band 0xFFFF0000) + $index }
+				Set-ItemProperty . -Name 'ScreenColors' -Value $screen -Type DWord -Force
+			}
 			Pop-Location
 		}
 	}
@@ -127,10 +143,12 @@ Begin
 			$link = Get-Link -Path $linkpath
 			$link.ConsoleColors[$index] = $rgb
 
+			# set one or the other; don't allow both because that would be stupid
+			if ($Background) { $link.ScreenBackgroundColor = $index }
+			elseif ($Foreground) { $link.ScreenTextColor = $index }
+
 			#$lnk.PopUpBackgroundColor=0x...
 			#$lnk.PopUpTextColor=0x...
-			#$lnk.ScreenBackgroundColor=0x...
-			#$lnk.ScreenTextColor=0x...
 
 			if ($WhatIfPreference) {
 				Write-Host "PWS: Update x64 LNK -Name $Name -Index $index -Value $rgb" -ForegroundColor DarkGray
@@ -172,9 +190,13 @@ Begin
 			$value = ("{0:X8}" -f $value).ToUpper()
 
 			$xml = [xml](Get-Content $file)
-			$xml | Select-Xml -XPath "//value[@name='$entry']" | % `
-			{
-				$_.Node.data = $value
+			$xml | Select-Xml -XPath "//value[@name='$entry']" | % { $_.Node.data = $value }
+
+			if ($Background) {
+				$xml | Select-Xml -XPath "//value[@name='BackColorIdx']" | % { $_.Node.data = $index }
+			}
+			elseif ($Foreground) {
+				$xml | Select-Xml -XPath "//value[@name='TextColorIdx']" | % { $_.Node.data = $index }
 			}
 
 			if ($WhatIfPreference) {

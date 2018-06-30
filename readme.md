@@ -117,9 +117,9 @@ Remove a System-owned file or directory. Attempts multiple approaches to remove 
 #### `Repair-Path`
 Clean up the PATH environment variable, removing duplicates, empty values, and optionally paths that do not exist.
 
-#### `Set-Color`
+#### `Set-Colors`
 Set a custom value for the specified console color table entry in one or all of the
-Cmd, PowerShell, and ConEmu consoles.
+Cmd, PowerShell, and ConEmu consoles. Also optionally set foreground or background color.
 
 #### `Set-OutDefaultOverride`
 (Internal) Helper function for Get-ChildItemColorized.
