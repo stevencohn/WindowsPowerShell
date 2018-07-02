@@ -1,32 +1,82 @@
+<#
+.SYNOPSIS
+Initialize a new VM environment, optionally creating a secondary local admin account.
+
+.PARAMETER EnableHyperV
+Enable Hyper-V.
+
+.PARAMETER Password
+The password of the new local admin account to create.
+
+.PARAMETER RemoveOneDrive
+Remove OneDrive support; default is to keep OneDrive.
+
+.PARAMETER Username
+The username of the new local admin account to create.
+
+.DESCRIPTION
+This scripts runs in multiple stages. After a new local admin is created, the script
+will log off the current session so you can log back in as that local admin account.
+Later, the computer will need to be restarted after Hyper-V is enabled before
+finializing the setup.
+#>
+
 param (
 	[string] $Username,
-	[string] $Password
+	[securestring] $Password,
+	[switch] $EnableHyperV,
+	[switch] $RemoveOneDrive
 )
 
 Begin
 {
+	$stage = 0
+	$stagefile = (Join-Path $env:APPDATA 'intialize-vm.stage')
+
 	function NewPrimaryUser ()
 	{
-		# as initial user, create user layer1builder
-		$pwd = ConvertTo-SecureString $Password -AsPlainText -Force
-		New-LocalUser $Username -Password $pwd -Description "Build admin"
-		Add-LocalGroupMember -Group Administrators -Member $Username
+		$go = Read-Host 'Create local administrator? (y/n) [y]'
+		if ($go.ToLower() -eq 'y')
+		{
+			if (!$Username) { $Username = Read-Host 'Username?' }
+			if (!$Password) { $Password = Read-Host 'Password?' -AsSecureString }
+
+			# as initial user, create user layer1builder
+			#$Password = ConvertTo-SecureString $Password -AsPlainText -Force
+			New-LocalUser $Username -Password $Password -Description "Build admin"
+			Add-LocalGroupMember -Group Administrators -Member $Username
+
+			Set-Content $stagefile '1' -Force
+
+			Write-Host
+			$go = Read-Host "Logout to log back in as $Username`? (y/n) [y]"
+			if ($go.ToLower() -eq 'y')
+			{
+				logoff; exit
+			}
+		}
+		else
+		{
+			Set-Content $stagefile '1' -Force
+		}
 	}
 
 	function SetExecutionPolicy ()
 	{
-		# allow it all
+		Write-Verbose 'setting execution policy'
 		Set-ExecutionPolicy RemoteSigned
 	}
 
 	function SetTimeZone ()
 	{
-		# set timezone for VM
+		Write-Verbose 'setting time zone'
 		tzutil /s 'Eastern Standard Time'
 	}
 
 	function SetExplorerProperties ()
 	{
+		Write-Verbose 'setting explorer properties'
+
 		# desktop view small icons (is this section needed or just TaskbarSmallIcons below?)
 		$0 = 'HKCU:\Software\Microsoft\Windows\Shell\Bags\1\Desktop'
 		Set-ItemProperty $0 -Name 'IconSize' -Value 32 -Type DWord
@@ -67,6 +117,8 @@ Begin
 
 	function RemoveCrapware ()
 	{
+		Write-Verbose 'removing crapware (some exceptions may appear)'
+
 		# Microsoft crapware
 		Get-AppxPackage *commsphone* | Remove-AppxPackage
 		Get-AppxPackage *contactsupport* | Remove-AppxPackage
@@ -166,7 +218,8 @@ Begin
 
 	function UninstallOneDrive ()
 	{
-		# Uninstall OneDrive
+		Write-Verbose 'uninstalling OneDrive'
+
 		Write-Output "Uninstalling OneDrive..."
 		Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue
 		Start-Sleep -s 2
@@ -191,6 +244,8 @@ Begin
 
 	function InstallInstallTools ()
 	{
+		Write-Verbose 'installing helper tools'
+
 		# install chocolatey
 		Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
@@ -200,14 +255,16 @@ Begin
 
 	function GetPowerShellProfile ()
 	{
-		# PowerShell profile
+		Write-Verbose 'fetching WindowsPowerShell environment'
+
 		Set-Location $env:USERPROFILE\Documents
 		git clone https://github.com/stevencohn/WindowsPowerShell.git
 	}
 
 	function GetYellowCursors ()
 	{
-		# yellow mouse cursors
+		Write-Verbose 'enabling yellow mouse cursors'
+
 		Set-Location $env:USERPROFILE\Documents
 		git clone https://github.com/stevencohn/YellowCursors.git
 		Push-Location YellowCursors
@@ -218,6 +275,8 @@ Begin
 
 	function SetConsoleProperties ()
 	{
+		Write-Verbose 'setting console properties'
+
 		# customize console colors for CMD, PS, and ConEmu
 		Set-Colors -Name Black -Color 0x292929 -Bgr -Background
 		Set-Colors -Name DarkBlue -Color 0x916200 -Bgr
@@ -247,20 +306,23 @@ Begin
 
 	function EnableHyperV ()
 	{
-		# Hyper-V - will force reboot
+		# set stage before hyper-v forces a reboot
+		Set-Content $stagefile '2' -Force
+
+		Write-Verbose 'enabling Hyper-V (will force reboot)'
 		Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V –All
 	}
 
 	function SetHyperVProperties ()
 	{
-		# customize Hyper-V host
+		Write-Verbose 'setting Hyper-V properties'
 		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
 		Restart-Service vmms
 	}
 
 	function InstallDocker ()
 	{
-		# Docker for Windows
+		Write-Verbose 'installing Docker for Windows'
 		choco install docker-for-windows -y
 		# may need to add other users to docker-users group
 		#Add-LocalGroupMember -Group docker-users -Member layer1builder
@@ -268,28 +330,45 @@ Begin
 }
 Process
 {
-	# STAGE 0
+	if (Test-Path $stagefile)
+	{
+		$stage = (Get-Content $stagefile) -as [int]
+		if ($stage -eq $null) { $stage = 0 }
+	}
 
-	NewLocalUser
-	# Log out as initial user and log in as layer1builder...
+	if ($stage -eq 0)
+	{
+		NewLocalUser
+	}
 
-	# STAGE 1
+	if ($stage -eq 1)
+	{
+		SetExecutionPolicy
+		SetTimeZone
+		SetExplorerProperties
+		UninstallCrapware
 
-	SetExecutionPolicy
-	SetTimeZone
-	SetExplorerProperties
-	UninstallCrapware
-	UninstallOneDrive
+		if ($RemoveOneDrive) {
+			UninstallOneDrive
+		}
 
-	InstallInstallTools
-	GetPowerShellProfile
-	GetYellowCursors
-	SetConsoleProperties
+		InstallInstallTools
+		GetPowerShellProfile
+		GetYellowCursors
+		SetConsoleProperties
 
-	EnableHyperV
+		Set-Content $stagefile '2' -Force
 
-	#STAGE 2
+		if ($EnableHyperV) {
+			EnableHyperV
+		}
+	}
 
-	SetHyperVProperties
-	InstallDocker
+	if ($stage -eq 2)
+	{
+		SetHyperVProperties
+		InstallDocker
+
+		Remove-Item $stagefile -Force -Confirm:$false
+	}
 }
