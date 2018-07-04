@@ -25,6 +25,9 @@ Later, the computer will need to be restarted after Hyper-V is enabled before
 finializing the setup.
 #>
 
+# CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
+[CmdletBinding(SupportsShouldProcess=$true)]
+
 param (
 	[string] $Username,
 	[securestring] $Password,
@@ -37,7 +40,7 @@ Begin
 	$stage = 0
 
 	# needs to be in ProgramData because we're switching users between stages
-	$stagefile = (Join-Path $env:PROGRAMDATA 'intialize-vm.stage')
+	$stagefile = (Join-Path $env:PROGRAMDATA 'initialize-vm.stage')
 
 	# Stage 0... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -55,7 +58,7 @@ Begin
 			Add-LocalGroupMember -Group Administrators -Member $Username
 
 			Set-Content $stagefile '1' -Force
-			$stage = 1
+			$script:stage = 1
 
 			Write-Host
 			$go = Read-Host "Logout to log back in as $Username`? (y/n) [y]"
@@ -67,7 +70,7 @@ Begin
 		else
 		{
 			Set-Content $stagefile '1' -Force
-			$stage = 1
+			$script:stage = 1
 		}
 	}
 
@@ -265,7 +268,7 @@ Begin
 		choco install git -y
 
 		Set-Content $stagefile '2' -Force
-		$stage = 2
+		$script:stage = 2
 
 		Write-Host 'Reopen administrative command prompt to recognize Git path'
 		exit
@@ -387,7 +390,7 @@ Process
 
 		# set stage before hyper-v forces a reboot
 		Set-Content $stagefile '3' -Force
-        $stage = 3
+		$stage = 3
 
 		if ($EnableHyperV) {
 			EnableHyperV
@@ -398,6 +401,9 @@ Process
 	{
 		SetHyperVProperties
 		InstallDocker
+
+		Write-Host
+		Write-Host 'Initialization compelte' -ForegroundColor Yellow
 
 		Remove-Item $stagefile -Force -Confirm:$false
 	}
