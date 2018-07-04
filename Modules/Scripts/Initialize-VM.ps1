@@ -15,6 +15,10 @@ Remove OneDrive support; default is to keep OneDrive.
 The username of the new local admin account to create.
 
 .DESCRIPTION
+Copy this script to $env:PROGRAMDATA and run from there as an administrator. After
+the first step (creating a secondary admin) then log out and log in as that admin
+to proceed to run subsequent stages.
+
 This scripts runs in multiple stages. After a new local admin is created, the script
 will log off the current session so you can log back in as that local admin account.
 Later, the computer will need to be restarted after Hyper-V is enabled before
@@ -31,12 +35,16 @@ param (
 Begin
 {
 	$stage = 0
-	$stagefile = (Join-Path $env:APPDATA 'intialize-vm.stage')
+
+	# needs to be in ProgramData because we're switching users between stages
+	$stagefile = (Join-Path $env:PROGRAMDATA 'intialize-vm.stage')
+
+	# Stage 0... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function NewPrimaryUser ()
 	{
 		$go = Read-Host 'Create local administrator? (y/n) [y]'
-		if ($go.ToLower() -eq 'y')
+		if (($go -eq '') -or ($go.ToLower() -eq 'y'))
 		{
 			if (!$Username) { $Username = Read-Host 'Username?' }
 			if (!$Password) { $Password = Read-Host 'Password?' -AsSecureString }
@@ -47,10 +55,11 @@ Begin
 			Add-LocalGroupMember -Group Administrators -Member $Username
 
 			Set-Content $stagefile '1' -Force
+			$stage = 1
 
 			Write-Host
 			$go = Read-Host "Logout to log back in as $Username`? (y/n) [y]"
-			if ($go.ToLower() -eq 'y')
+			if (($go -eq '') -or ($go.ToLower() -eq 'y'))
 			{
 				logoff; exit
 			}
@@ -58,8 +67,11 @@ Begin
 		else
 		{
 			Set-Content $stagefile '1' -Force
+			$stage = 1
 		}
 	}
+
+	# Stage 1... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function SetExecutionPolicy ()
 	{
@@ -251,7 +263,15 @@ Begin
 
 		# Git
 		choco install git -y
+
+		Set-Content $stagefile '2' -Force
+		$stage = 2
+
+		Write-Host 'Reopen administrative command prompt to recognize Git path'
+		exit
 	}
+
+	# Stage 2... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function GetPowerShellProfile ()
 	{
@@ -265,12 +285,13 @@ Begin
 	{
 		Write-Verbose 'enabling yellow mouse cursors'
 
-		Set-Location $env:USERPROFILE\Documents
+		Push-Location $env:USERPROFILE\Documents
 		git clone https://github.com/stevencohn/YellowCursors.git
 		Push-Location YellowCursors
 		.\Install.ps1
 		Pop-Location
 		Remove-Item YellowCursors -Recurse -Force
+		Pop-Location
 	}
 
 	function SetConsoleProperties ()
@@ -306,12 +327,11 @@ Begin
 
 	function EnableHyperV ()
 	{
-		# set stage before hyper-v forces a reboot
-		Set-Content $stagefile '2' -Force
-
 		Write-Verbose 'enabling Hyper-V (will force reboot)'
 		Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V –All
 	}
+
+	# Stage 3... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function SetHyperVProperties ()
 	{
@@ -326,6 +346,10 @@ Begin
 		choco install docker-for-windows -y
 		# may need to add other users to docker-users group
 		#Add-LocalGroupMember -Group docker-users -Member layer1builder
+
+		Write-Host 'Must logout and log in again to update Docker path'
+		Write-Host 'After you log in and start Docker for first time, it will prompt'
+		Write-Host 'to enable containerization and then force a reboot...'
 	}
 }
 Process
@@ -338,7 +362,7 @@ Process
 
 	if ($stage -eq 0)
 	{
-		NewLocalUser
+		NewPrimaryUser
 	}
 
 	if ($stage -eq 1)
@@ -346,25 +370,31 @@ Process
 		SetExecutionPolicy
 		SetTimeZone
 		SetExplorerProperties
-		UninstallCrapware
+		RemoveCrapware
 
 		if ($RemoveOneDrive) {
 			UninstallOneDrive
 		}
 
 		InstallInstallTools
+	}
+
+	if ($stage -eq 2)
+	{
 		GetPowerShellProfile
 		GetYellowCursors
 		SetConsoleProperties
 
-		Set-Content $stagefile '2' -Force
+		# set stage before hyper-v forces a reboot
+		Set-Content $stagefile '3' -Force
+        $stage = 3
 
 		if ($EnableHyperV) {
 			EnableHyperV
 		}
 	}
 
-	if ($stage -eq 2)
+	if ($stage -eq 3)
 	{
 		SetHyperVProperties
 		InstallDocker
