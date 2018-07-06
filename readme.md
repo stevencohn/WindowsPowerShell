@@ -10,7 +10,7 @@ This entire repo can be overlayed ontop of your Documents\WindowsPowerShell fold
 If downloading the repo as a Zip file then you'll need to unblock all files:
 
 ```powershell
-Get-ChildItem -Path "${env:USERPROFILE}\Documents\WindowsPowerShell' -Recurse | Unblock-File
+Get-ChildItem -Path "${env:USERPROFILE}\Documents\WindowsPowerShell" -Recurse | Unblock-File
 ```
 
 And if installing on a brand new machine or VM then loosen up the execution policy:
