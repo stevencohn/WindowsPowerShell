@@ -86,6 +86,11 @@ Return the translation of a SpecialFolder by name or show all SpecialFolders wit
 Returns a VM configuration object of the specified .vmcx VM configuration
 file even if the VM is not attached to a Hyper-V server.
 
+#### `Initialize-Machine`
+This is a top-level script meant to be downloaded independently from this repo and run to configure and
+initialize new machines. This script will download this repo to the current user's Document folder,
+setting it up as the default PowerShell profile. Best to download it to and run from $env:PROGRAMDATA
+
 #### `Install-Chocolatey`
 Can be used on new machines to install Chocolately. If already installed then
 checks if it is outdated and prompts to update.

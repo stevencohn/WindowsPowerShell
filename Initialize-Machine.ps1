@@ -1,9 +1,12 @@
 <#
 .SYNOPSIS
-Initialize a new VM environment, optionally creating a secondary local admin account.
+Configures a new machine with custom settings and sets up the PowerShell profile.
 
-.PARAMETER EnableHyperV
+.PARAMETER AddHyperV
 Enable Hyper-V.
+
+.PARAMETER AddDocker
+Installer Docker for Windows
 
 .PARAMETER Password
 The password of the new local admin account to create.
@@ -31,7 +34,8 @@ finializing the setup.
 param (
 	[string] $Username,
 	[securestring] $Password,
-	[switch] $EnableHyperV,
+	[switch] $AddHyperV,
+	[switch] $AddDocker,
 	[switch] $RemoveOneDrive
 )
 
@@ -40,37 +44,35 @@ Begin
 	$stage = 0
 
 	# needs to be in ProgramData because we're switching users between stages
-	$stagefile = (Join-Path $env:PROGRAMDATA 'initialize-vm.stage')
+	$stagefile = (Join-Path $env:PROGRAMDATA 'initialize-machine.stage')
 
 	# Stage 0... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function NewPrimaryUser ()
 	{
-		$go = Read-Host 'Create local administrator? (y/n) [y]'
-		if (($go -eq '') -or ($go.ToLower() -eq 'y'))
+		Set-Content $stagefile '1' -Force
+		$script:stage = 1
+
+		if ($Username -or ($env:USERNAME -eq 'Administrator'))
 		{
-			if (!$Username) { $Username = Read-Host 'Username?' }
-			if (!$Password) { $Password = Read-Host 'Password?' -AsSecureString }
-
-			# as initial user, create user layer1builder
-			#$Password = ConvertTo-SecureString $Password -AsPlainText -Force
-			New-LocalUser $Username -Password $Password -Description "Build admin"
-			Add-LocalGroupMember -Group Administrators -Member $Username
-
-			Set-Content $stagefile '1' -Force
-			$script:stage = 1
-
-			Write-Host
-			$go = Read-Host "Logout to log back in as $Username`? (y/n) [y]"
+			$go = Read-Host 'Create local administrator? (y/n) [y]'
 			if (($go -eq '') -or ($go.ToLower() -eq 'y'))
 			{
-				logoff; exit
+				if (!$Username) { $Username = Read-Host 'Username?' }
+				if (!$Password) { $Password = Read-Host 'Password?' -AsSecureString }
+
+				# as initial user, create user layer1builder
+				#$Password = ConvertTo-SecureString $Password -AsPlainText -Force
+				New-LocalUser $Username -Password $Password -Description "Build admin"
+				Add-LocalGroupMember -Group Administrators -Member $Username
+
+				Write-Host
+				$go = Read-Host "Logout to log back in as $Username`? (y/n) [y]"
+				if (($go -eq '') -or ($go.ToLower() -eq 'y'))
+				{
+					logoff; exit
+				}
 			}
-		}
-		else
-		{
-			Set-Content $stagefile '1' -Force
-			$script:stage = 1
 		}
 	}
 
@@ -328,7 +330,7 @@ Begin
 		Set-ItemProperty -Path HKCU:\Console -Name 'ScreenBufferSize' -Value 0x2329008c -Force
 	}
 
-	function EnableHyperV ()
+	function AddHyperV ()
 	{
 		Write-Verbose 'enabling Hyper-V (will force reboot)'
 		Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V –All
@@ -338,12 +340,15 @@ Begin
 
 	function SetHyperVProperties ()
 	{
-		Write-Verbose 'setting Hyper-V properties'
-		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
-		Restart-Service vmms
+		if (Get-Command Set-VMHost -ErrorAction 'SilentlyContinue')
+		{
+			Write-Verbose 'setting Hyper-V properties'
+			Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
+			Restart-Service vmms
+		}
 	}
 
-	function InstallDocker ()
+	function AddDocker ()
 	{
 		Write-Verbose 'installing Docker for Windows'
 		choco install docker-for-windows -y
@@ -392,15 +397,18 @@ Process
 		Set-Content $stagefile '3' -Force
 		$stage = 3
 
-		if ($EnableHyperV) {
-			EnableHyperV
+		if ($AddHyperV) {
+			AddHyperV
 		}
 	}
 
 	if ($stage -eq 3)
 	{
 		SetHyperVProperties
-		InstallDocker
+
+		if ($AddDocker) {
+			AddDocker
+		}
 
 		Write-Host
 		Write-Host 'Initialization compelte' -ForegroundColor Yellow
