@@ -7,6 +7,11 @@ a custom "Dark Selenitic" theme for ISE.
 
 This entire repo can be overlayed ontop of your Documents\WindowsPowerShell folder.
 
+```powershell
+Set-Location $env:USERPROFILE\Documents
+git clone https://github.com/stevencohn/WindowsPowerShell.git
+```
+
 If downloading the repo as a Zip file then you'll need to unblock all files:
 
 ```powershell
