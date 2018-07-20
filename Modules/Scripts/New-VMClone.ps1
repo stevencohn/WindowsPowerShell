@@ -3,7 +3,7 @@
 Create a new VM from a registered VM or an exported VM
 
 .PARAMETER Checkpoint
-Create a new checkpoint immediate after creating the new VM.
+Create a new checkpoint immediately after creating the new VM.
 
 .PARAMETER Name
 The name of the new VM to create.
@@ -30,16 +30,16 @@ Mutually exclusive with -Path.
 Returns the VM as a Microsoft.HyperV.PowerShell.VirtualMachine
 
 .EXAMPLE
-Clone-VM -Name 'cds-oracle' -Template 'Win10'
+New-VMClone -Name 'cds-oracle' -Template 'Win10'
 
 .EXAMPLE
-Clone-VM -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10' -Checkpoint
+New-VMClone -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10' -Checkpoint
 
 .EXAMPLE
-Clone-VM -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10\Virtual Machines\4FD97BB5-5CD5-4439-BBFF-498B0A5B3CE9.vmcx'
+New-VMClone -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10\Virtual Machines\4FD97BB5-5CD5-4439-BBFF-498B0A5B3CE9.vmcx'
 
 .EXAMPLE
-Clone-VM -Name 'cds-oracle' -Template 'Win10' -Memory 12GB
+New-VMClone -Name 'cds-oracle' -Template 'Win10' -Memory 12GB
 
 DynamicMemory is enabled
 MemoryStartup is set to 12GB

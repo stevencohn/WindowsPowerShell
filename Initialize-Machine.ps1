@@ -58,12 +58,12 @@ Begin
 			$go = Read-Host 'Create local administrator? (y/n) [y]'
 			if (($go -eq '') -or ($go.ToLower() -eq 'y'))
 			{
-				if (!$Username) { $Username = Read-Host 'Username?' }
-				if (!$Password) { $Password = Read-Host 'Password?' -AsSecureString }
+				if (!$Username) { $Username = Read-Host 'Username' }
+				if (!$Password) { $Password = Read-Host 'Password' -AsSecureString }
 
 				# as initial user, create user layer1builder
 				#$Password = ConvertTo-SecureString $Password -AsPlainText -Force
-				New-LocalUser $Username -Password $Password -Description "Build admin"
+				New-LocalUser $Username -Password $Password -PasswordNeverExpires -Description "Build admin"
 				Add-LocalGroupMember -Group Administrators -Member $Username
 
 				Write-Host
@@ -227,7 +227,7 @@ Begin
 		Get-AppxPackage "Microsoft.XboxGameOverlay" | Remove-AppxPackage
 		Get-AppxPackage "Microsoft.Xbox.TCUI" | Remove-AppxPackage
 		Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0
-		If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR")) {
+		if (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR")) {
 			New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" | Out-Null
 		}
 		Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -Type DWord -Value 0
@@ -241,22 +241,32 @@ Begin
 		Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue
 		Start-Sleep -s 2
 		$onedrive = "$env:SYSTEMROOT\SysWOW64\OneDriveSetup.exe"
-		If (!(Test-Path $onedrive)) {
+		if (!(Test-Path $onedrive)) {
 			$onedrive = "$env:SYSTEMROOT\System32\OneDriveSetup.exe"
 		}
-		Start-Process $onedrive "/uninstall" -NoNewWindow -Wait
-		Start-Sleep -s 2
-		Stop-Process -Name "explorer" -Force -ErrorAction SilentlyContinue
-		Start-Sleep -s 2
-		Remove-Item -Path "$env:USERPROFILE\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
-		Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
-		Remove-Item -Path "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
-		Remove-Item -Path "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse -ErrorAction SilentlyContinue
-		If (!(Test-Path "HKCR:")) {
-			New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+
+		try
+		{
+			Start-Process $onedrive "/uninstall" -NoNewWindow -Wait -ErrorAction Stop
+			Start-Sleep -s 2
+			Stop-Process -Name "explorer" -Force -ErrorAction SilentlyContinue
+			Start-Sleep -s 2
+			Remove-Item -Path "$env:USERPROFILE\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+			Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+			Remove-Item -Path "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+			Remove-Item -Path "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse -ErrorAction SilentlyContinue
+			if (!(Test-Path "HKCR:")) {
+				New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+			}
+			Remove-Item -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
+			Remove-Item -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
 		}
-		Remove-Item -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
-		Remove-Item -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
+		catch
+		{
+			$log = "${env:PROGRAMDATA}\Initialize-Machine-Exception.log"
+			ConvertTo-Json $_.Exception | Out-File $log
+			Write-Verbose "EXCEPTION written to $log"
+		}
 	}
 
 	function InstallInstallTools ()
@@ -282,8 +292,9 @@ Begin
 	{
 		Write-Verbose 'fetching WindowsPowerShell environment'
 
-		Set-Location $env:USERPROFILE\Documents
+		Push-Location $env:USERPROFILE\Documents
 		git clone https://github.com/stevencohn/WindowsPowerShell.git
+		Pop-Location
 	}
 
 	function GetYellowCursors ()
@@ -333,7 +344,7 @@ Begin
 	function AddHyperV ()
 	{
 		Write-Verbose 'enabling Hyper-V (will force reboot)'
-		Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V –All
+		Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
 	}
 
 	# Stage 3... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
