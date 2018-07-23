@@ -100,6 +100,9 @@ setting it up as the default PowerShell profile. Best to download it to and run 
 Can be used on new machines to install Chocolately. If already installed then
 checks if it is outdated and prompts to update.
 
+#### `Install-Docker`
+Installs Docker for Windows, enabling Hyper-V as a prerequisite if not already installed.
+
 #### `Invoke-SuperUser`
 Open a new command prompt in elevated mode. Aliased to `su`. Special command for ConEmu emulator.
 

@@ -1,12 +1,6 @@
 <#
 .SYNOPSIS
-Configures a new machine with custom settings and sets up the PowerShell profile.
-
-.PARAMETER AddHyperV
-Enable Hyper-V.
-
-.PARAMETER AddDocker
-Installer Docker for Windows
+Sets up a new machine with a custom configuration and PowerShell profile.
 
 .PARAMETER Password
 The password of the new local admin account to create.
@@ -18,14 +12,14 @@ Remove OneDrive support; default is to keep OneDrive.
 The username of the new local admin account to create.
 
 .DESCRIPTION
-Copy this script to $env:PROGRAMDATA and run from there as an administrator. After
-the first step (creating a secondary admin) then log out and log in as that admin
-to proceed to run subsequent stages.
+This script will run in multiple stages under different accounts so it's easiest to
+copy the script to $env:PROGRAMDATA and run from there in an administrative shell.
 
-This scripts runs in multiple stages. After a new local admin is created, the script
-will log off the current session so you can log back in as that local admin account.
-Later, the computer will need to be restarted after Hyper-V is enabled before
-finializing the setup.
+If creating a secondary administrator, this script will create the account and then
+force a logout. After logging in as that secondary admin, continue running the script
+and it will pick up where it left off. 
+
+If skipping the secondary admin then the script only runs once in a single stage.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -34,8 +28,6 @@ finializing the setup.
 param (
 	[string] $Username,
 	[securestring] $Password,
-	[switch] $AddHyperV,
-	[switch] $AddDocker,
 	[switch] $RemoveOneDrive
 )
 
@@ -80,6 +72,7 @@ Begin
 
 	function SetExecutionPolicy ()
 	{
+		# of course, policy must be set just to invoke the script in the first place!
 		Write-Verbose 'setting execution policy'
 		Set-ExecutionPolicy RemoteSigned
 	}
@@ -135,14 +128,10 @@ Begin
 	function RemoveCrapware ()
 	{
 		Write-Verbose 'removing crapware (some exceptions may appear)'
+		$ProgressPreference = 'SilentlyContinue'
 
 		# Microsoft crapware
-		Get-AppxPackage *commsphone* | Remove-AppxPackage
 		Get-AppxPackage *contactsupport* | Remove-AppxPackage
-		Get-AppxPackage *maps* | Remove-AppxPackage
-		Get-AppxPackage *onenote* | Remove-AppxPackage
-		Get-AppxPackage *weather* | Remove-AppxPackage
-		Get-AppxPackage *xbox* | Remove-AppxPackage
 		Get-AppxPackage "Microsoft.3DBuilder" | Remove-AppxPackage
 		Get-AppxPackage "Microsoft.BingFinance" | Remove-AppxPackage
 		Get-AppxPackage "Microsoft.BingNews" | Remove-AppxPackage
@@ -231,10 +220,16 @@ Begin
 			New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" | Out-Null
 		}
 		Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -Type DWord -Value 0
+
+		$ProgressPreference = 'Continue'
 	}
 
-	function UninstallOneDrive ()
+	function RemoveOneDrive ()
 	{
+		if ($PSVersionTable.PSEdition -ne 'Desktop') {
+			return
+		}
+
 		Write-Verbose 'uninstalling OneDrive'
 
 		Write-Output "Uninstalling OneDrive..."
@@ -279,14 +274,10 @@ Begin
 		# Git
 		choco install git -y
 
-		Set-Content $stagefile '2' -Force
-		$script:stage = 2
-
-		Write-Host 'Reopen administrative command prompt to recognize Git path'
-		exit
+		# Git adds its path to the Machine PATH but not the Process PATH; copy it so we don't need to restart the shell
+		$gitpath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) -split ';' | ? { $_ -match 'Git\\cmd' }
+		$env:Path = "${env:Path};$gitpath"
 	}
-
-	# Stage 2... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function GetPowerShellProfile ()
 	{
@@ -340,36 +331,6 @@ Begin
 		Set-ItemProperty -Path HKCU:\Console -Name 'HistoryBufferSize' -Value 0x64 -Force
 		Set-ItemProperty -Path HKCU:\Console -Name 'ScreenBufferSize' -Value 0x2329008c -Force
 	}
-
-	function AddHyperV ()
-	{
-		Write-Verbose 'enabling Hyper-V (will force reboot)'
-		Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
-	}
-
-	# Stage 3... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	function SetHyperVProperties ()
-	{
-		if (Get-Command Set-VMHost -ErrorAction 'SilentlyContinue')
-		{
-			Write-Verbose 'setting Hyper-V properties'
-			Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
-			Restart-Service vmms
-		}
-	}
-
-	function AddDocker ()
-	{
-		Write-Verbose 'installing Docker for Windows'
-		choco install docker-for-windows -y
-		# may need to add other users to docker-users group
-		#Add-LocalGroupMember -Group docker-users -Member layer1builder
-
-		Write-Host 'Must logout and log in again to update Docker path'
-		Write-Host 'After you log in and start Docker for first time, it will prompt'
-		Write-Host 'to enable containerization and then force a reboot...'
-	}
 }
 Process
 {
@@ -392,34 +353,14 @@ Process
 		RemoveCrapware
 
 		if ($RemoveOneDrive) {
-			UninstallOneDrive
+			RemoveOneDrive
 		}
 
 		InstallInstallTools
-	}
 
-	if ($stage -eq 2)
-	{
 		GetPowerShellProfile
 		GetYellowCursors
 		SetConsoleProperties
-
-		# set stage before hyper-v forces a reboot
-		Set-Content $stagefile '3' -Force
-		$stage = 3
-
-		if ($AddHyperV) {
-			AddHyperV
-		}
-	}
-
-	if ($stage -eq 3)
-	{
-		SetHyperVProperties
-
-		if ($AddDocker) {
-			AddDocker
-		}
 
 		Write-Host
 		Write-Host 'Initialization compelte' -ForegroundColor Yellow
