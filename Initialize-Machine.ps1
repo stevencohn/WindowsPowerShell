@@ -93,22 +93,18 @@ Begin
 		Set-ItemProperty $0 -Name 'Mode' -Value 1 -Type DWord
 		Set-ItemProperty $0 -Name 'LogicalViewMode' -Value 3 -Type DWord
 
-		# taskbar small buttons
-		$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-		Set-ItemProperty $0 -Name 'TaskbarSmallIcons' -Value 1 -Type DWord
-		# replace cmd prompt with PowerShell
-		Set-ItemProperty $0 -Name 'DontUsePowerShellOnWinX' -Value 0 -Type DWord
-
 		# hide taskbar search box
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search'
 		Set-ItemProperty $0 -Name 'SearchboxTaskbarMode' -Type DWord -Value 0
 
+		$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+		# taskbar small buttons
+		Set-ItemProperty $0 -Name 'TaskbarSmallIcons' -Value 1 -Type DWord
+		# replace cmd prompt with PowerShell
+		Set-ItemProperty $0 -Name 'DontUsePowerShellOnWinX' -Value 0 -Type DWord
 		# show known file extensions - must restart Explorer.exe
-		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 		Set-ItemProperty $0 -Name 'HideFileExt' -Type DWord -Value 0
-
 		# show hidden files
-		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 		Set-ItemProperty $0 -Name 'Hidden' -Type DWord -Value 1
 		# expand to current folder
 		Set-ItemProperty $0 -Name 'NavPaneExpandToCurrentFolder' -Type DWord -Value 1
