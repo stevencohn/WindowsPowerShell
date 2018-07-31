@@ -110,6 +110,10 @@ Begin
 		# show hidden files
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 		Set-ItemProperty $0 -Name 'Hidden' -Type DWord -Value 1
+		# expand to current folder
+		Set-ItemProperty $0 -Name 'NavPaneExpandToCurrentFolder' -Type DWord -Value 1
+		# show all folders
+		Set-ItemProperty $0 -Name 'NavPaneShowAllFolders' -Type DWord -Value 1
 
 		# restart explorer.exe
 		Stop-Process -Name explorer
