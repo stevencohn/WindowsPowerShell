@@ -165,6 +165,12 @@ Process
 	if ($Checkpoint)
 	{
 		Write-Verbose '... creating checkpoint'
+
+		if ($vm.CheckpointType -eq 'Disabled')
+		{
+			Set-VM -VM $vm -CheckpointType 'Standard'
+		}
+
 		$vm | Checkpoint-VM
 	}
 
