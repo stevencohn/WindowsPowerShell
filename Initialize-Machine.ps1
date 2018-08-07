@@ -111,6 +111,10 @@ Begin
 		# show all folders
 		Set-ItemProperty $0 -Name 'NavPaneShowAllFolders' -Type DWord -Value 1
 
+		# expand the ribbon bar
+		$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Ribbon'
+		Set-ItemProperty $0 -Name 'MinimizedStateTabletModeOff' -Type DWord -Value 0
+
 		# restart explorer.exe
 		Stop-Process -Name explorer
 
