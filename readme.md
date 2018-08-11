@@ -94,7 +94,8 @@ file even if the VM is not attached to a Hyper-V server.
 #### `Initialize-Machine`
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
-setting it up as the default PowerShell profile. Best to download it to and run from $env:PROGRAMDATA
+setting it up as the default PowerShell profile. Best to download it to and run from $env:PROGRAMDATA.
+Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use of PowerShell.
 
 #### `Install-Chocolatey`
 Can be used on new machines to install Chocolately. If already installed then

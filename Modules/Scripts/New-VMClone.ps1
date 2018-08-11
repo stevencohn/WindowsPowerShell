@@ -98,6 +98,13 @@ Begin
 
 		Write-Verbose "... importing $config"
 		$ProgressPreference = 'SilentlyContinue'
+
+		if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent)
+		{
+			Write-Host "Import-VM -Path $config -GenerateNewId -Copy -VirtualMachinePath $vmpath " + `
+				"-VhdDestinationPath $vhdpath -SnapshotFilePath $vhdpath -SmartPagingFilePath $vhdpath" -ForegroundColor DarkYellow
+		}
+
 		$vm = Import-VM -Path $config -GenerateNewId -Copy `
 			-VirtualMachinePath $vmpath -VhdDestinationPath $vhdpath `
 			-SnapshotFilePath $vhdpath -SmartPagingFilePath $vhdpath
@@ -151,7 +158,8 @@ Process
 	else
 	{
 		$vm = (Get-VM $Template)
-		$config = Join-Path $vm.Path (Get-ChildItem -Path $vm.Path -Name "${$vm.Id.ToString().ToUpper()}*.vmcx" -Recurse)
+		$id = $vm.Id.ToString().ToUpper()
+		$config = Join-Path $vm.Path (Get-ChildItem -Path $vm.Path -Name "$id`*.vmcx" -Recurse)
 	}
 
 	$vm = (ImportVM $config)
