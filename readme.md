@@ -97,6 +97,22 @@ initialize new machines. This script will download this repo to the current user
 setting it up as the default PowerShell profile. Best to download it to and run from $env:PROGRAMDATA.
 Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use of PowerShell.
 
+   This script can optionally create a new local administrator so it runs in two phases:
+
+   1. Log on as an administrator
+   1. Download (Initialize-Machine.ps1)[https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1] to $env:ProgramData
+   1. Open an administrative PowerShell window
+   1. PS> `Set-ExecutionPolicy RemoteSigned`
+   1. PS> `cd $env:ProgramData`
+   1. PS> `.\Initialize-Machine.ps1 -User <new-admin-username>`
+   1. ... Create new local administrator (y/n) [y]: `y`
+   1. ... Password: *********
+   1. ... Logout to log back in as `user` (y/n) [y]: `y`
+   1. Log on as &lt;new-admin-username>
+   1. Open an administrative PowerShell window
+   1. PS> `cd $env:ProgramData`
+   1. PS> ``.\Initialize-Machine.ps1 -Verbose`
+
 #### `Install-Chocolatey`
 Can be used on new machines to install Chocolately. If already installed then
 checks if it is outdated and prompts to update.
