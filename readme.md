@@ -113,6 +113,8 @@ Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use
    1. PS> `cd $env:ProgramData`
    1. PS> `.\Initialize-Machine.ps1 -Verbose`
 
+   Finally, since this updates the PowerShell console colors, you can close and reopen the console to appreciate these fantastic new colors.
+
 #### `Install-Chocolatey`
 Can be used on new machines to install Chocolately. If already installed then
 checks if it is outdated and prompts to update.
