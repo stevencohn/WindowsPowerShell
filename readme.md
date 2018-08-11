@@ -100,7 +100,7 @@ Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use
    This script can optionally create a new local administrator so it runs in two phases:
 
    1. Log on as an administrator
-   1. Download (Initialize-Machine.ps1)[https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1] to $env:ProgramData
+   1. Download [Initialize-Machine.ps1](https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1) to $env:ProgramData
    1. Open an administrative PowerShell window
    1. PS> `Set-ExecutionPolicy RemoteSigned`
    1. PS> `cd $env:ProgramData`
