@@ -107,7 +107,7 @@ Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use
    1. PS> `.\Initialize-Machine.ps1 -User <new-admin-username>`
    1. ... Create new local administrator (y/n) [y]: `y`
    1. ... Password: *********
-   1. ... Logout to log back in as `user` (y/n) [y]: `y`
+   1. ... Logout to log back in as &lt;new-admin-username> (y/n) [y]: `y`
    1. Log on as &lt;new-admin-username>
    1. Open an administrative PowerShell window
    1. PS> `cd $env:ProgramData`
