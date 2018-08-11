@@ -258,7 +258,7 @@ Begin
 		Set-ItemProperty $0 -Name 'CortanaConsent' -Type DWord -Value 0
 
 		# DisableCortana
-		Write-Output "Disabling Cortana..."
+		Write-Verbose "Disabling Cortana..."
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Personalization\Settings'
 		If (!(Test-Path $0)) { New-Item -Path $0 -Force | Out-Null }
 		Set-ItemProperty $0 -Name 'AcceptedPrivacyPolicy' -Type DWord -Value 0
