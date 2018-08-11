@@ -111,7 +111,7 @@ Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use
    1. Log on as &lt;new-admin-username>
    1. Open an administrative PowerShell window
    1. PS> `cd $env:ProgramData`
-   1. PS> ``.\Initialize-Machine.ps1 -Verbose`
+   1. PS> `.\Initialize-Machine.ps1 -Verbose`
 
 #### `Install-Chocolatey`
 Can be used on new machines to install Chocolately. If already installed then
