@@ -120,6 +120,7 @@ Begin
 
 		# expand the ribbon bar
 		$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Ribbon'
+		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
 		Set-ItemProperty $0 -Name 'MinimizedStateTabletModeOff' -Type DWord -Value 0
 
 		# hide recent shortcuts
@@ -271,13 +272,19 @@ Begin
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
 		if (!(Test-Path $0)) { New-Item -Path $0 -Force | Out-Null }
 		Set-ItemProperty $0 -Name 'AllowCortana' -Type DWord -Value 0
+	}
 
+	function DisableHomeGroups ()
+	{
 		# DisableHomeGroups
 		Write-Verbose 'stopping and disabling Home Groups services'
-		Stop-Service 'HomeGroupListener' -WarningAction SilentlyContinue
-		Set-Service 'HomeGroupListener' -StartupType Disabled
-		Stop-Service 'HomeGroupProvider' -WarningAction SilentlyContinue
-		Set-Service 'HomeGroupProvider' -StartupType Disabled
+		if (Get-Service HomeGroupListener -ErrorAction:SilentlyContinue)
+		{
+			Stop-Service 'HomeGroupListener' -WarningAction SilentlyContinue
+			Set-Service 'HomeGroupListener' -StartupType Disabled
+			Stop-Service 'HomeGroupProvider' -WarningAction SilentlyContinue
+			Set-Service 'HomeGroupProvider' -StartupType Disabled
+		}
 	}
 
 	function RemoveCrapware ()
@@ -480,6 +487,8 @@ Process
 		SetExecutionPolicy
 		SetTimeZone
 		SetExplorerProperties
+		SetExtras
+		DisableHomeGroups
 		EnablePhotoViewer
 		EnableRemoteDesktop
 		RemoveCrapware
@@ -493,7 +502,6 @@ Process
 		GetPowerShellProfile
 		GetYellowCursors
 		SetConsoleProperties
-		SetExtras
 
 		Write-Host
 		Write-Host 'Initialization compelte' -ForegroundColor Yellow
