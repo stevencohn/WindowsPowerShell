@@ -330,7 +330,7 @@ Begin
 		}
 
 		# Xbox
-		@('XboxApp', 'XboxIdentityProvider', 'XboxSpeechToTextOverlay', 'XboxGameOverlay', 'Xbox.TCUI') | % `
+		@('XboxApp', 'XboxIdentityProvider', 'XboxSpeechToTextOverlay', 'XboxGamingOverlay', 'Xbox.TCUI') | % `
 		{
 			Get-AppxPackage "Microsoft.$_" | Remove-AppxPackage
 		}
