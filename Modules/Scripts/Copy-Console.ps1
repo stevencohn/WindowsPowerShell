@@ -185,7 +185,9 @@ Begin
 
 		foreach ($line in $lines)
 		{
-			if ($dotrim) { $line = $line.Substring(0, $line.Length - $mintrim) }
+			if ($dotrim -and ($mintrim -gt $line.length)) {
+				$line = $line.Substring(0, $line.Length - $mintrim)
+			}
 			$null = $builder.Append($line + $eol)
 		}
 
