@@ -15,6 +15,7 @@ $e = [char]27
 $Gray = '90'
 $Green = '92'
 $Blue = '94'
+$Magenta = '95'
 $Cyan = '96'
 
 Write-Host
@@ -83,6 +84,8 @@ if ($im)
 			Expression = {
 				if ($_.repository -eq '<none>') { $color = $Gray }
 				elseif ($_.repository -match '^Waters') { $color = $Blue }
+				elseif ($_.repository -match 'azurecr') { $color = $Magenta }
+				elseif ($_.repository -match 'amazonaws') { $color = $Magenta }
 				else { $color = $Cyan }
 				"$e[{0}m{1}$e[0m " -f $color,$_.repository
 			}
