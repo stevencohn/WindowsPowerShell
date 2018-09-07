@@ -310,7 +310,11 @@ Begin
 		$0 = 'Registry::HKEY_CLASSES_ROOT\SystemFileAssociations'
 		@('3mf', 'bmp', 'fbx', 'gif', 'jfif', 'jpe', 'jpeg', 'jpg', 'png', 'tif', 'tiff') | % `
 		{
-			Remove-Item "$0\.$_\Shell\3D Edit" -Force -Recurse -Confirm:$false
+			$keypath = "$0\.$_\Shell\3D Edit"
+			if (Test-Path $keypath)
+			{
+				Remove-Item $keypath -Force -Recurse -Confirm:$false
+			}
 		}
 
 		# third party crap
@@ -405,15 +409,20 @@ Begin
 		Write-Verbose 'installing helper tools'
 
 		# install chocolatey
-		Set-ExecutionPolicy Bypass -Scope Process -Force
-		Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+		if ((Get-Command choco) -eq $null)
+		{
+			Set-ExecutionPolicy Bypass -Scope Process -Force
+			Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+		}
 
-		# Git
-		choco install git -y
-
-		# Git adds its path to the Machine PATH but not the Process PATH; copy it so we don't need to restart the shell
-		$gitpath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) -split ';' | ? { $_ -match 'Git\\cmd' }
-		$env:Path = "${env:Path};$gitpath"
+		# install Git
+		if ((Get-Command git) -eq $null)
+		{
+			choco install git -y
+			# Git adds its path to the Machine PATH but not the Process PATH; copy it so we don't need to restart the shell
+			$gitpath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) -split ';' | ? { $_ -match 'Git\\cmd' }
+			$env:Path = "${env:Path};$gitpath"
+		}
 	}
 
 	function GetPowerShellProfile ()
