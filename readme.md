@@ -122,6 +122,10 @@ checks if it is outdated and prompts to update.
 #### `Install-Docker`
 Installs Docker for Windows, enabling Hyper-V as a prerequisite if not already installed.
 
+#### `Invoke-NormalUser`
+Execute a given command as a non-evelated context. Aliased to `nu`. 
+Convenient when you need to run as a normal user from an elevated prompt.
+
 #### `Invoke-SuperUser`
 Open a new command prompt in elevated mode. Aliased to `su`. Special command for ConEmu emulator.
 
