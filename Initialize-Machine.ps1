@@ -409,14 +409,14 @@ Begin
 		Write-Verbose 'installing helper tools'
 
 		# install chocolatey
-		if ((Get-Command choco) -eq $null)
+		if ((Get-Command choco -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			Set-ExecutionPolicy Bypass -Scope Process -Force
 			Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 		}
 
 		# install Git
-		if ((Get-Command git) -eq $null)
+		if ((Get-Command git -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			choco install git -y
 			# Git adds its path to the Machine PATH but not the Process PATH; copy it so we don't need to restart the shell

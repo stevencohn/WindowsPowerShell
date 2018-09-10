@@ -119,6 +119,9 @@ Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use
 
    Finally, since this updates the PowerShell console colors, you can close and reopen the console to appreciate these fantastic new colors.
 
+#### `Install-BuildTools`
+Install minimal Microsoft build and test tools required for CI/CD.
+
 #### `Install-Chocolatey`
 Can be used on new machines to install Chocolately. If already installed then
 checks if it is outdated and prompts to update.
