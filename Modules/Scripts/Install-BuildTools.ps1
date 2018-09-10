@@ -30,7 +30,7 @@ Begin
 		# try to find vswhere.exe. ProgramData is open and can be found easily by all users
 		$script:vswhere = Join-Path $env:ProgramData 'vswhere.exe'
 		if (!(Test-Path $vswhere)) { $script:vswhere = '.\vswhere.exe' }
-		if (!(Test-Path $vswhere)) { $script:vswhere = (Get-Command 'vswhere').Source }
+		if (!(Test-Path $vswhere)) { $script:vswhere = (Get-Command 'vswhere' -ErrorAction:SilentlyContinue).Source }
 
 		# didn't find it so download it
 		if (!$vswhere)
@@ -39,7 +39,7 @@ Begin
 			[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
 			$response = Invoke-WebRequest $0/releases/latest -Headers @{"Accept"="application/json"} -UseBasicParsing
 			$version = ($response.Content | ConvertFrom-Json).tag_name
-			$script:vswhere = Join_path $env:ProgramData 'vswhere.exe'
+			$script:vswhere = Join-Path $env:ProgramData 'vswhere.exe'
 			Invoke-WebRequest "$0/releases/download/$version/vswhere.exe" -OutFile $vswhere
 		}
 	}
