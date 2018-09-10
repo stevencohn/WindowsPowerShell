@@ -39,6 +39,10 @@ Copy the contents of the Powershell console window preserving color. Can be sent
 #### `Edit-PSProfile`
 Run VSCode with ~Documents\WindowsPowerShell as root folder. Aliased to `ep`
 
+#### `Enable-TrustedRemoting`
+Enable PowerShell remoting and trusted hosts for the current machine,
+typically run on a VM that will be used for automated tasks such as CI/CD.
+
 #### `Get-Account`
 Report the account information for the given username and optionally a specified domain.
 
