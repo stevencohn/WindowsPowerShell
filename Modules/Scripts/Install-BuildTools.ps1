@@ -2,11 +2,6 @@
 .SYNOPSIS
 Install minimal Microsoft build and test tools required for CI/CD.
 
-.PARAMETER Commands
-Return an object specfying the full paths of the tools. If this is
-run after initially installed then the tools are not re-installed but
-the object is returned.
-
 .PARAMETER Force
 To prevent these lightweight tools from being installed ontop of an
 already configured developer machine with full tools, this script will
@@ -15,10 +10,13 @@ not make any changes (beyond adding vswhere) unless -Force is specified.
 .PARAMETER VSWhere
 Install just the vswhere tool and return its path. This overrides all
 other switches.
+
+.OUTPUTS
+An object specifying the home and path of msbuild, mstest, vswhere, and
+the .NET SDK. If -VsWhere is specified then only returns the path to vswhere.
 #>
 
 param(
-	[switch] $Commands,
 	[switch] $Force,
 	[switch] $VSWhereCommand
 )
@@ -105,7 +103,7 @@ Process
 	if (!$Force)
 	{
 		Write-Host "`n... Specify -Force to hide this prompt" -ForegroundColor DarkYellow
-		$answer = Read-Host -Prompt '... Are you should you want to install light-weight tools'
+		$answer = Read-Host -Prompt '... Are you sure you want to install light-weight tools'
 		if (($answer -ne 'y') -and ($answer -ne 'Y'))
 		{
 			exit 0
@@ -114,15 +112,12 @@ Process
 
 	InstallTools
 
-	if ($Commands)
-	{
-		[PSCustomObject]@{
-			'MSBuildHome' = $msbuildHome;
-			'MSBuildCommand' = Join-Path $msbuildHome 'MSBuild\15.0\Bin\MSBuild.exe';
-			'MSTestHome' = $mstestHome;
-			'MSTestCommand' = Join-Path $mstestHome 'Common7\IDE\mstest.exe';
-			'VSWhereCommand' = $vswhere;
-			'SDKHome' = $sdkHome;
-		}
+	[PSCustomObject]@{
+		'MSBuildHome' = $msbuildHome;
+		'MSBuildCommand' = Join-Path $msbuildHome 'MSBuild\15.0\Bin\MSBuild.exe';
+		'MSTestHome' = $mstestHome;
+		'MSTestCommand' = Join-Path $mstestHome 'Common7\IDE\mstest.exe';
+		'VSWhereCommand' = $vswhere;
+		'SDKHome' = $sdkHome;
 	}
 }
