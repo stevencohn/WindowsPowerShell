@@ -83,9 +83,8 @@ if ($im)
 			Label='repository'
 			Expression = {
 				if ($_.repository -eq '<none>') { $color = $Gray }
-				elseif ($_.repository -match '^Waters') { $color = $Blue }
-				elseif ($_.repository -match 'azurecr') { $color = $Magenta }
-				elseif ($_.repository -match 'amazonaws') { $color = $Magenta }
+				elseif ($_.repository -match 'azurecr|amazonaws') { $color = $Magenta }
+				elseif ($_.repository -match '^Waters|^cds') { $color = $Blue }
 				else { $color = $Cyan }
 				"$e[{0}m{1}$e[0m " -f $color,$_.repository
 			}
