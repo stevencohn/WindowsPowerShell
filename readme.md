@@ -21,6 +21,7 @@ Get-ChildItem -Path "${env:USERPROFILE}\Documents\WindowsPowerShell" -Recurse | 
 And if installing on a brand new machine or VM then loosen up the execution policy:
 
 ```powershell
+Set-Executionpolicy -Scope CurrentUser -ExecutionPolicy UnRestricted
 Set-ExecutionPolicy RemoteSigned
 ```
 
