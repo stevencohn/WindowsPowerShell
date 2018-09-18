@@ -418,10 +418,16 @@ Begin
 		# install Git
 		if ((Get-Command git -ErrorAction:SilentlyContinue) -eq $null)
 		{
-			choco install git -y
+			choco install -y git
 			# Git adds its path to the Machine PATH but not the Process PATH; copy it so we don't need to restart the shell
 			$gitpath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) -split ';' | ? { $_ -match 'Git\\cmd' }
 			$env:Path = "${env:Path};$gitpath"
+		}
+
+		# install Chrome
+		if (!(Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe'))
+		{
+			choco install -y googlechrome
 		}
 	}
 
