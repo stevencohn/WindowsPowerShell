@@ -7,6 +7,9 @@ To prevent these lightweight tools from being installed ontop of an
 already configured developer machine with full tools, this script will
 not make any changes (beyond adding vswhere) unless -Force is specified.
 
+.PARAMETER Full
+Install the full version of VS Enterprise instead of just the command line tools.
+
 .PARAMETER VSWhere
 Install just the vswhere tool and return its path. This overrides all
 other switches.
@@ -18,6 +21,7 @@ the .NET SDK. If -VsWhere is specified then only returns the path to vswhere.
 
 param(
 	[switch] $Force,
+	[switch] $Full,
 	[switch] $VSWhereCommand
 )
 
@@ -42,7 +46,7 @@ Begin
 		}
 	}
 
-	function InstallTools
+	function InstallHelperTools
 	{
 		if ((Get-Command git -ErrorAction:SilentlyContinue) -eq $null)
 		{
@@ -53,7 +57,43 @@ Begin
 		{
 			choco install -y nuget.commandline
 		}
+	}
 
+	function InstallFullVS
+	{
+		# download the installer
+		Invoke-WebRequest "<url goes here!>/vs_Enterprise.exe" -OutFile C:\vs2017.exe
+
+		# run the installer
+		Start-Process -FilePAth C:\vs2017.exe '--add Microsoft.VisualStudio.Workload.NetWeb `
+			--add Microsoft.VisualStudio.Workload.ManagedDesktop `
+			--add Component.GitHub.VisualStudio `
+			--add Microsoft.VisualStudio.Workload.NativeCrossPlat `
+			--add Microsoft.VisualStudio.Workload.NativeDesktop;includeRecommended `
+			--add Microsoft.VisualStudio.Workload.NetCoreTools `
+			--add Microsoft.VisualStudio.Component.TestTools.Core `
+			--add Microsoft.VisualStudio.Component.TestTools.WebLoadTest `
+			--add Microsoft.VisualStudio.Component.Windows10SDK.15063.Desktop `
+			--add Microsoft.VisualStudio.Component.Windows10SDK.14393 `
+			--add Microsoft.VisualStudio.Component.Windows10SDK.16299.Desktop `
+			--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+			--add Microsoft.VisualStudio.Component.VC.ATLMFC `
+			--add Microsoft.VisualStudio.Component.VC.ATL `
+			--add Microsoft.VisualStudio.Component.VC.DiagnosticTools `
+			--add Microsoft.Net.Component.4.7.SDK `
+			--add Microsoft.Net.Component.4.7.TargetingPack `
+			--add Microsoft.Net.Component.4.7.1.SDK `
+			--add Microsoft.Net.Component.4.7.1.TargetingPack `
+			--add Microsoft.VisualStudio.Component.Workflow `
+			--includeRecommended `
+			--quiet --wait' -Wait
+
+		# delete the installer
+		Remove-Item C:\vs2017.exe -Force -Confirm:$false
+	}
+
+	function InstallLiteVS
+	{
 		# MSBuild
 
 		$where = "$vswhere -products Microsoft.VisualStudio.Product.BuildTools -property installationPath" 
@@ -110,7 +150,16 @@ Process
 		}
 	}
 
-	InstallTools
+	InstallHelperTools
+
+	if ($Full)
+	{
+		InstallFullVS
+	}
+	else
+	{
+		InstallLiteVS
+	}
 
 	[PSCustomObject]@{
 		'MSBuildHome' = $msbuildHome;
