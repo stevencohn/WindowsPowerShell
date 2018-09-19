@@ -18,7 +18,14 @@ If downloading the repo as a Zip file then you'll need to unblock all files:
 Get-ChildItem -Path "${env:USERPROFILE}\Documents\WindowsPowerShell" -Recurse | Unblock-File
 ```
 
-And if installing on a brand new machine or VM then loosen up the execution policy:
+To download just the Initialize-Machine.ps1 script:
+
+```powershell
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1' -OutFile C:\Initialize-Machine.ps1
+```
+
+Loosen up the execution policy:
 
 ```powershell
 Set-Executionpolicy -Scope CurrentUser -ExecutionPolicy UnRestricted
@@ -99,23 +106,23 @@ file even if the VM is not attached to a Hyper-V server.
 #### `Initialize-Machine`
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
-setting it up as the default PowerShell profile. Best to download it to and run from $env:PROGRAMDATA.
+setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
 Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use of PowerShell.
 
    This script can optionally create a new local administrator so it runs in two phases:
 
    1. Log on as an administrator
-   1. Download [Initialize-Machine.ps1](https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1) to $env:ProgramData
+   1. Download [Initialize-Machine.ps1](https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1) to C:\Initialize-Machine.ps1
    1. Open an administrative PowerShell window
    1. PS> `Set-ExecutionPolicy RemoteSigned`
-   1. PS> `cd $env:ProgramData`
+   1. PS> `cd C:\`
    1. PS> `.\Initialize-Machine.ps1 -User <new-admin-username>`
    1. ... Create new local administrator (y/n) [y]: `y`
    1. ... Password: *********
    1. ... Logout to log back in as &lt;new-admin-username> (y/n) [y]: `y`
    1. Log on as &lt;new-admin-username>
    1. Open an administrative PowerShell window
-   1. PS> `cd $env:ProgramData`
+   1. PS> `cd C:\`
    1. PS> `.\Initialize-Machine.ps1 -Verbose`
 
    Finally, since this updates the PowerShell console colors, you can close and reopen the console to appreciate these fantastic new colors.
