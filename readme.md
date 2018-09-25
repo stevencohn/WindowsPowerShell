@@ -8,7 +8,7 @@ a custom "Dark Selenitic" theme for ISE.
 This entire repo can be overlayed ontop of your Documents\WindowsPowerShell folder.
 
 ```powershell
-Set-Location $env:USERPROFILE\Documents
+Set-Location $env:USERPROFILE\Documents;
 git clone https://github.com/stevencohn/WindowsPowerShell.git
 ```
 
@@ -21,15 +21,15 @@ Get-ChildItem -Path "${env:USERPROFILE}\Documents\WindowsPowerShell" -Recurse | 
 To download just the Initialize-Machine.ps1 script:
 
 ```powershell
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
 Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1' -OutFile C:\Initialize-Machine.ps1
 ```
 
 Loosen up the execution policy:
 
 ```powershell
-Set-Executionpolicy -Scope CurrentUser -ExecutionPolicy UnRestricted
-Set-ExecutionPolicy RemoteSigned
+Set-ExecutionPolicy RemoteSigned -Force -Confirm:$false;
+Set-Executionpolicy -Scope CurrentUser -ExecutionPolicy UnRestricted -Force -Confirm:$false
 ```
 
 ## Commands

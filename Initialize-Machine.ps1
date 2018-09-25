@@ -404,7 +404,7 @@ Begin
 		}
 	}
 
-	function InstallInstallTools ()
+	function InstallTools ()
 	{
 		Write-Verbose 'installing helper tools'
 
@@ -422,6 +422,12 @@ Begin
 			# Git adds its path to the Machine PATH but not the Process PATH; copy it so we don't need to restart the shell
 			$gitpath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) -split ';' | ? { $_ -match 'Git\\cmd' }
 			$env:Path = "${env:Path};$gitpath"
+		}
+
+		# install 7-Zip
+		if ((Get-Command 7z -ErrorAction:SilentlyContinue) -eq $null)
+		{
+			choco install -y 7zip
 		}
 
 		# install Chrome
@@ -512,7 +518,7 @@ Process
 			RemoveOneDrive
 		}
 
-		InstallInstallTools
+		InstallTools
 
 		GetPowerShellProfile
 		GetYellowCursors
