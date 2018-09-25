@@ -70,13 +70,6 @@ Begin
 
 	# Stage 1... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	function SetExecutionPolicy ()
-	{
-		# of course, policy must be set just to invoke this script in the first place!
-		Write-Verbose 'setting execution policy'
-		Set-ExecutionPolicy RemoteSigned
-	}
-
 	function SetTimeZone ()
 	{
 		Write-Verbose 'setting time zone'
@@ -505,7 +498,6 @@ Process
 
 	if ($stage -eq 1)
 	{
-		SetExecutionPolicy
 		SetTimeZone
 		SetExplorerProperties
 		SetExtras
