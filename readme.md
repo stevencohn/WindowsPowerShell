@@ -177,7 +177,7 @@ Determine if the current session is elevated and displays a warning message if n
 #### `Test-RebootPending` [-Report]
 Check the pending reboot status of the local computer.
 
-## `Initialize-Machine`
+## Initialize-Machine
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
 setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
