@@ -18,7 +18,7 @@ If downloading the repo as a Zip file then you'll need to unblock all files:
 Get-ChildItem -Path "${env:USERPROFILE}\Documents\WindowsPowerShell" -Recurse | Unblock-File
 ```
 
-To download just the Initialize-Machine.ps1 script:
+To download just the [Initialize-Machine.ps1](#initmach) script:
 
 ```powershell
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
@@ -177,6 +177,7 @@ Determine if the current session is elevated and displays a warning message if n
 #### `Test-RebootPending` [-Report]
 Check the pending reboot status of the local computer.
 
+<a name="initmach"></a>
 ## Initialize-Machine
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
