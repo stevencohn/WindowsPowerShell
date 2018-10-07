@@ -108,30 +108,6 @@ Return the translation of a SpecialFolder by name or show all SpecialFolders wit
 Returns a VM configuration object of the specified .vmcx VM configuration
 file even if the VM is not attached to a Hyper-V server.
 
-#### `Initialize-Machine`
-This is a top-level script meant to be downloaded independently from this repo and run to configure and
-initialize new machines. This script will download this repo to the current user's Document folder,
-setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
-Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use of PowerShell.
-
-   This script can optionally create a new local administrator so it runs in two phases:
-
-   1. Log on as an administrator
-   1. Download [Initialize-Machine.ps1](https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1) to C:\Initialize-Machine.ps1
-   1. Open an administrative PowerShell window
-   1. PS> `Set-ExecutionPolicy RemoteSigned`
-   1. PS> `cd C:\`
-   1. PS> `.\Initialize-Machine.ps1 -User <new-admin-username>`
-   1. ... Create new local administrator (y/n) [y]: `y`
-   1. ... Password: *********
-   1. ... Logout to log back in as &lt;new-admin-username> (y/n) [y]: `y`
-   1. Log on as &lt;new-admin-username>
-   1. Open an administrative PowerShell window
-   1. PS> `cd C:\`
-   1. PS> `.\Initialize-Machine.ps1 -Verbose`
-
-   Finally, since this updates the PowerShell console colors, you can close and reopen the console to appreciate these fantastic new colors.
-
 #### `Install-BuildTools` [-Force] [-Full] [-VsWhere]
 Install minimal Microsoft build and test tools required for CI/CD.
 
@@ -200,6 +176,30 @@ Determine if the current session is elevated and displays a warning message if n
 
 #### `Test-RebootPending` [-Report]
 Check the pending reboot status of the local computer.
+
+## `Initialize-Machine`
+This is a top-level script meant to be downloaded independently from this repo and run to configure and
+initialize new machines. This script will download this repo to the current user's Document folder,
+setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
+Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use of PowerShell.
+
+   This script can optionally create a new local administrator so it runs in two phases:
+
+   1. Log on as an administrator
+   1. Download [Initialize-Machine.ps1](https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1) to C:\Initialize-Machine.ps1
+   1. Open an administrative PowerShell window
+   1. PS> `Set-ExecutionPolicy RemoteSigned`
+   1. PS> `cd C:\`
+   1. PS> `.\Initialize-Machine.ps1 -User <new-admin-username>`
+   1. ... Create new local administrator (y/n) [y]: `y`
+   1. ... Password: *********
+   1. ... Logout to log back in as &lt;new-admin-username> (y/n) [y]: `y`
+   1. Log on as &lt;new-admin-username>
+   1. Open an administrative PowerShell window
+   1. PS> `cd C:\`
+   1. PS> `.\Initialize-Machine.ps1 -Verbose`
+
+   Finally, since this updates the PowerShell console colors, you can close and reopen the console to appreciate these fantastic new colors.
 
 ## Profiles
 
