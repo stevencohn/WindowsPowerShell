@@ -133,7 +133,7 @@ Sepcial internal function from PowerShell Cookbook.
 #### `New-DriveMapping` -DriveLetter d -Path p [-SourceDriveLabel s] [-DriveLabel l] [-Reboot] [-Force]
 Create a persistent mapping of a folder to a new drive letter. (persistent SUBST)
 
-#### `New-Host` -IP -Name
+#### `New-Host` -IP a -Name n
 Adds or updates an entry in the Windows hosts file
 
 #### `New-VMClone` -Name n -Path p -Template t [-Checkpoint]
