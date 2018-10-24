@@ -283,7 +283,7 @@ Begin
 	function RemoveCrapware ()
 	{
 		Write-Verbose 'removing crapware (some exceptions may appear)'
-		$ProgressPreference = 'SilentlyContinue'
+		$global:ProgressPreference = 'SilentlyContinue'
 
 		# Microsoft crapware
 		Get-AppxPackage *contactsupport* | Remove-AppxPackage
@@ -336,7 +336,7 @@ Begin
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
 		Set-ItemProperty $0 -Name 'AllowGameDVR' -Type DWord -Value 0
 
-		$ProgressPreference = 'Continue'
+		$global:ProgressPreference = 'Continue'
 
 		# unpin Microsoft Store game links
 		<# 
