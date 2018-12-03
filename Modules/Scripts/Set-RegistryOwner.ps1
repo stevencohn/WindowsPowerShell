@@ -22,16 +22,16 @@ Show actions but do not perform them.
 
 .EXAMPLE
 # take ownership of all Compressed Folders keys (e.g. replacing with 7-Zip)
-Set-RegistryOwner 'HKCR' 'CLSID\{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}'
-Set-RegistryOwner 'HKCR' 'CLSID\{0CD7A5C0-9F37-11CE-AE65-08002B2E1262}'
-Set-RegistryOwner 'HKLM' 'SOFTWARE\WOW6432Node\Classes\CLSID\{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}'
-Set-RegistryOwner 'HKLM' 'SOFTWARE\WOW6432Node\Classes\CLSID\{0CD7A5C0-9F37-11CE-AE65-08002B2E1262}'
+Set-RegistryOwner 'HKCR' 'CLSID\{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}';
+Set-RegistryOwner 'HKCR' 'CLSID\{0CD7A5C0-9F37-11CE-AE65-08002B2E1262}';
+Set-RegistryOwner 'HKLM' 'SOFTWARE\WOW6432Node\Classes\CLSID\{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}';
+Set-RegistryOwner 'HKLM' 'SOFTWARE\WOW6432Node\Classes\CLSID\{0CD7A5C0-9F37-11CE-AE65-08002B2E1262}';
 
 # remove all Compressed Folders keys; back-ticks required to escape curly braces
-remove-item -path Registry::HKEY_CLASSES_ROOT\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -force -recurse
-remove-item -path Registry::HKEY_CLASSES_ROOT\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -force -recurse
-remove-item -path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -force -recurse
-remove-item -path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -force -recurse
+Remove-Item -Path Registry::HKEY_CLASSES_ROOT\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -Force -Recurse;
+Remove-Item -Path Registry::HKEY_CLASSES_ROOT\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -Force -Recurse;
+Remove-Item -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -Force -Recurse;
+Remove-Item -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -Force -Recurse;
 
 .NOTES
 http://shrekpoint.blogspot.ru/2012/08/taking-ownership-of-dcom-registry.html
