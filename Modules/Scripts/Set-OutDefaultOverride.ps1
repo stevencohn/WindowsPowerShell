@@ -8,26 +8,26 @@ New-CommandWrapper Out-Default -Process {
 		if (-not ($notfirst)) {
 			$parent = [IO.Path]::GetDirectoryName($_.FullName)
 			Write-Host "`n    Directory: $parent`n"
-			Write-Host "Mode        Last Write Time       Length   Name"
-			Write-Host "----        ---------------       ------   ----"
+			Write-Host 'Mode        Last Write Time       Length   Name'
+			Write-Host '----        ---------------       ------   ----'
 			$notfirst = $true
 		}
 
 		if ($_ -is [IO.DirectoryInfo]) {
-			Write-Host ("{0}   {1}               " -f $_.mode, ([String]::Format("{0,10} {1,8}", $_.LastWriteTime.ToString("d"), $_.LastWriteTime.ToString("t")))) -NoNewline
-			Write-Host $_.name -ForegroundColor "Blue"
+			Write-Host ('{0} {1,12} {2,8} {3,14}' -f $_.mode, $_.LastWriteTime.ToString('d'), $_.LastWriteTime.ToString('t'), '') -NoNewline
+			if ($_.LinkType) {
+				Write-Host $_.name -ForegroundColor Blue -NoNewline
+				$target = ($_ | select -expand Target).Replace('UNC\','\\')
+				Write-Host " -> $target" -ForegroundColor DarkBlue
+			}
+			else { Write-Host $_.name -ForegroundColor Blue }
 		}
 		else {
-			if ($compressed.IsMatch($_.Name)) {
-				$color = "Magenta"
-			}
-			elseif ($executable.IsMatch($_.Name)) {
-				$color = "DarkGreen"
-			}
-			else {
-				$color = "Gray"
-			}
-			Write-Host ("{0}   {1}   {2,10}  " -f $_.mode, ([String]::Format("{0,10} {1,8}", $_.LastWriteTime.ToString("d"), $_.LastWriteTime.ToString("t"))), $_.length) -NoNewline
+			if ($compressed.IsMatch($_.Name)) { $color = 'Magenta' }
+			elseif ($executable.IsMatch($_.Name)) { $color = 'DarkGreen' }
+			else { $color = 'Gray' }
+
+			Write-Host ('{0} {1,12} {2,8} {3,12}  ' -f $_.mode, $_.LastWriteTime.ToString('d'), $_.LastWriteTime.ToString('t'), $_.length) -NoNewline
 			Write-Host $_.name -ForegroundColor $color
 		}
 
