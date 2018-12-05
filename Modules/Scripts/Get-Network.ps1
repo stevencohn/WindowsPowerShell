@@ -14,10 +14,15 @@ Return a @(list) of addresses
 Display extra information including MAC addres and bytes sent/received.
 #>
 
+using namespace System.Net
+using namespace System.Net.NetworkInformation
+
+[CmdletBinding()]
+
 param(
 	[switch] $preferred,	# just return the preferred address
-	[switch] $addresses,	# return a list of host addresses
-	[switch] $verbose)		# verbose report
+	[switch] $addresses		# return a list of host addresses
+)
 
 Begin
 {
@@ -163,12 +168,20 @@ Begin
 		Write-Host
 		if ($preferred -eq $null)
 		{
-			Write-Host ('{0} Preferred address is unknown' -f $env:COMPUTERNAME) -ForegroundColor DarkGreen
+			Write-Host ('{0} Preferred address is unknown' -f $env:COMPUTERNAME) -ForegroundColor DarkGreen -NoNewline
 		}
 		else
 		{
-			Write-Host ("{0} Preferred address is {1}" -f $env:COMPUTERNAME, $preferred) -ForegroundColor Green
+			Write-Host ("{0} Preferred address is {1}" -f $env:COMPUTERNAME, $preferred) -ForegroundColor Green -NoNewline
 		}
+
+		# make FQDN
+		$domain = [IPGlobalProperties]::GetIPGlobalProperties().DomainName
+		if ([String]::IsNullOrEmpty($domain)) { $domain = [Dns]::GetHostName() }
+		$domain = "." + $domain
+		$name = [Dns]::GetHostName()
+		if (-not $name.EndsWith($domain)) { $name = $name + $domain }
+		Write-Host " ($name)" -ForegroundColor DarkGreen
 	}
 
 	function Get-ForeColor ($item, $preferred)
