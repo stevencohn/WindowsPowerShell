@@ -179,7 +179,7 @@ Begin
 		$domain = [IPGlobalProperties]::GetIPGlobalProperties().DomainName
 		if ([String]::IsNullOrEmpty($domain)) { $domain = [Dns]::GetHostName() }
 		$name = [Dns]::GetHostName()
-		if ($name -ne $domain) { $name = $name + $domain }
+		if ($name -ne $domain) { $name = $name + '.' + $domain }
 		Write-Host " ($name)" -ForegroundColor DarkGreen
 	}
 
