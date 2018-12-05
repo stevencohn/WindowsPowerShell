@@ -178,9 +178,8 @@ Begin
 		# make FQDN
 		$domain = [IPGlobalProperties]::GetIPGlobalProperties().DomainName
 		if ([String]::IsNullOrEmpty($domain)) { $domain = [Dns]::GetHostName() }
-		$domain = "." + $domain
 		$name = [Dns]::GetHostName()
-		if (-not $name.EndsWith($domain)) { $name = $name + $domain }
+		if ($name -ne $domain) { $name = $name + $domain }
 		Write-Host " ($name)" -ForegroundColor DarkGreen
 	}
 
