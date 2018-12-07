@@ -49,6 +49,9 @@ Convert integer values to a Hex string. If one integer is specified then it is c
 #### `Copy-Console` [-OutFile f] [-All] [-Rtf] [-Trim]
 Copy the contents of the Powershell console window preserving color. Can be sent to an out file or pasted into Word or OneNote.
 
+#### `Edit-Hosts`
+Open the hosts file in Notepad.
+
 #### `Edit-PSProfile`
 Run VSCode with ~Documents\WindowsPowerShell as root folder. Aliased to `ep`
 
