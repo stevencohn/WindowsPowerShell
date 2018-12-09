@@ -183,6 +183,10 @@ Determine if the current session is elevated and displays a warning message if n
 #### `Test-RebootPending` [-Report]
 Check the pending reboot status of the local computer.
 
+#### `Update-Profile`
+Quick command line to pull latest source of this WindowsPowerShell repo from Github
+and update the content in $home\Documents\WindowsPowerShell.
+
 <a name="initmach"></a>
 ## Initialize-Machine
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
