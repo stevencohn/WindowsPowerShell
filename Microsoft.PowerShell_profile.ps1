@@ -18,6 +18,7 @@ function prompt {
 # Aliases
 
 New-Alias ep Edit-PSProfile
+New-Alias gs Get-Services
 New-Alias nu Invoke-NormalUser
 New-Alias su Invoke-SuperUser
 New-Alias vs Invoke-VsDevCmd
