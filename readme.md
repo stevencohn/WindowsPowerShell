@@ -104,6 +104,9 @@ Display the PATH environment variable as a list of strings rather than a single 
 #### `Get-Performance`
 Get and report performance metrics using the built-in WinSAT utility.
 
+#### `Get-Scripts`
+List all external scripts and their parameter names.
+
 #### `Get-Services` [-Name n] [-Running || -Stopped]
 Get a list of services ordered by status and name. Aliased to `gs`
 
