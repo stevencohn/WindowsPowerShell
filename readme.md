@@ -148,6 +148,9 @@ Adds or updates an entry in the Windows hosts file
 #### `New-VMClone` -Name n -Path p -Template t [-Checkpoint]
 Create a new VM from a registered VM or an exported VM.
 
+#### `PrettyPrint-File` -Path p [-Dedent] [-Overwrite]
+Format or pretty-pretty JSON and XML files.
+
 #### `Remove-DockerTrash` [-Volumes]
 Prune unused docker containers and dangling images.
 
