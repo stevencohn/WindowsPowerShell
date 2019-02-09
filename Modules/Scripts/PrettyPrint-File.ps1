@@ -6,7 +6,7 @@ Format or pretty-pretty JSON and XML files.
 The path to the file.
 
 .PARAMETER Dedent
-For Json, will step unwanted extra spaces from the output, mostly.
+For Json, will strip unwanted extra spaces from the output, mostly.
 
 .PARAMETER Overwrite
 Overwrite the input file. Default is to print to the console.
@@ -76,26 +76,17 @@ Begin
 }
 Process
 {
-	$Path = Resolve-Path $Path
-	if (!(Test-Path $Path))
+	$filepath = Resolve-Path $Path -ErrorAction SilentlyContinue
+	if (!$filepath)
 	{
 		Write-Host "Could not find file $Path" -ForegroundColor Yellow
 		return
 	}
 
-	$extension = [IO.Path]::GetExtension($Path)
-	if ($extension -ne '.json' -and $extension -ne '.xml')
+	switch ((Get-Item $filepath).Extension)
 	{
-		Write-Host 'File must have an extension of either .json or .xml' -ForegroundColor Yellow
-		return
-	}
-
-	if ($extension -eq '.json')
-	{
-		FormatJson $Path
-	}
-	elseif ($extension -eq '.xml')
-	{
-		FormatXml $Path
+		'.json' { FormatJson $filepath }
+		'.xml' { FormatXml $filepath }
+		default { Write-Host 'File must have an extension of either .json or .xml' -ForegroundColor Yellow }
 	}
 }
