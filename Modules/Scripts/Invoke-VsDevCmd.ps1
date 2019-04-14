@@ -3,21 +3,21 @@
 Invoke the Visual Studio environment batch script. Should alias this with 'vs'
 #>
 
-$0 = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\Tools"
+$0 = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\Tools"
 if (Test-Path $0)
 {
 	Push-Location $0
 }
 else
 {
-	$0 = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\Tools"
+	$0 = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\Tools"
 	if (Test-Path $0)
 	{
 		Push-Location $0
 	}
 	else
 	{
-		Write-Host '... cannot find Visual Studio 2017' -ForegroundColor Red
+		Write-Host '... cannot find Visual Studio 2019' -ForegroundColor Red
 		return
 	}
 }

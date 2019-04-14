@@ -163,6 +163,10 @@ Remove a System-owned file or directory. Attempts multiple approaches to remove 
 #### `Repair-Path` [-Invalid] [-Yes]
 Clean up the PATH environment variable, removing duplicates, empty values, and optionally paths that do not exist.
 
+#### `Restart-Bluetooth` [-Show]
+Restarts the Bluetooth radio device on the current machine. This is useful when the radio stops
+communicating with a device such as a mouse. The alternative would be to reboot the system.
+
 #### `Set-Colors` -Name n -Color c [-Bgr] [-Cmd] [-ConEmu] [-PS] [-Background] [-Foreground]
 Set a custom value for the specified console color table entry in one or all of the Cmd, PowerShell, and ConEmu consoles. Also optionally set foreground or background color.
 
