@@ -76,6 +76,13 @@ Begin
 		tzutil /s 'Eastern Standard Time'
 	}
 
+	function SecurePagefile ()
+	{
+		# set to 1 to cause pagefile to be deleted upon shutdown
+		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management'
+		Set-ItemProperty $0 -Name 'ClearPageFileAtShutdown' -value 1 -Type DWord
+	}
+
 	function SetExplorerProperties ()
 	{
 		Write-Verbose 'setting explorer properties'
@@ -505,6 +512,7 @@ Process
 		EnablePhotoViewer
 		EnableRemoteDesktop
 		RemoveCrapware
+		SecurePagefile
 
 		if ($RemoveOneDrive) {
 			RemoveOneDrive
