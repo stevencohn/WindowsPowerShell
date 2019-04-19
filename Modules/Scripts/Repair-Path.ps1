@@ -85,7 +85,7 @@ Begin
 				}
 			}
 			# prefer User over Machine if in both
-			elseif ($userpaths.Contains($path))
+			elseif (!$path.StartsWith($env:SystemRoot) -and $userpaths.Contains($path))
 			{
 				Write-Host ... Removing User path from Machine "$path"
 			}
