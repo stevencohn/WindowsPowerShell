@@ -14,7 +14,7 @@ Virtual Hard Disks, and Virtual Machines where Virtual Machines contains a GUID.
 configuration file. Could instead specify the full path to a .vmcx file. This is generated
 using Export-VM similar to Export-VM -Name 'Win10' -Path 'E:\BackupVMs'
 
-Mutually exclusive with -Name.
+Mutually exclusive with -Template.
 
 .PARAMETER Memory
 Number of bytes applied to memory parameters. This is applied directly to 
@@ -36,7 +36,8 @@ New-VMClone -Name 'cds-oracle' -Template 'Win10'
 New-VMClone -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10' -Checkpoint
 
 .EXAMPLE
-New-VMClone -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10\Virtual Machines\4FD97BB5-5CD5-4439-BBFF-498B0A5B3CE9.vmcx'
+[SMC] This one works most reliably, after using the Export-VM command shown above:
+New-VMClone -Name 'cds-oracle' -Path 'E:\BackupVMs\Win10\Virtual Machines\4FD97BB5-5CD5-4439-BBFF-498B0A5B3CE9.vmcx' -Verbose
 
 .EXAMPLE
 New-VMClone -Name 'cds-oracle' -Template 'Win10' -Memory 12GB
