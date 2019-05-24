@@ -35,6 +35,8 @@ param (
 
 Begin
 {
+	# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	# Remove empty and unknown paths from the given collection
 	function RemoveInvalidPaths
 	{
 		param (
@@ -76,6 +78,9 @@ Begin
 		return $list
 	}
 
+	# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	# Consolidate duplicates into high collection from low collection
+	# Move high prefix paths from low collection into high collection
 	function BalancePaths
 	{
 		param (
@@ -118,11 +123,15 @@ Begin
 		return $highpaths, $lpaths
 	}
 
+	# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	# Rebuild the $env:PATH after the Machine and User paths have been cleaned
+	# so the current session has the updated PATH settings
 	function RebuildPath ($mpaths, $upaths)
 	{
 		$psroot = @((Join-Path $env:USERPROFILE 'Documents\WindowsPowerShell'))
 		$ppaths = @()
 		
+		# find process-only entries
 		$env:Path -split ';' | % `
 		{
 			if (!$mpaths.contains($_) -and !$upaths.contains($_) -and !$_.StartsWith($psroot))
@@ -131,6 +140,7 @@ Begin
 			}
 		}
 
+		# build with Process + User + Machine and the PowerShell root at the end
 		$path = ($ppaths + $upaths + $mpaths + $psroot) -join ';'
 
 		if ($WhatIfPreference)
