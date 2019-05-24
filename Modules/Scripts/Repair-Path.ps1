@@ -6,6 +6,10 @@ optionally paths that do not exist.
 .PARAMETER Invalid
 Remove invalid paths in addition to empty and duplicate paths.
 
+.PARAMETER MachinePriority
+Prefer machine target values over user target values when resolving duplicates;
+default is to prefer user target values, removing duplicates from the machine target.
+
 .PARAMETER Yes
 Respond to all prompts automatically with "Yes".
 
@@ -15,8 +19,10 @@ Run the command and report changes but don't make any changes.
 .DESCRIPTION
 Also checks if there are user-specific paths in the Machine target and attempts to
 move them to the User target. Those that begin with the path to the user profile should
-be defined in the User target. Those that are duplicated in the Machine and User target
-are presumed to be intended for the User target and are removed from the Machine target.
+be defined in the User target. Those that begin with the SystemRoot path should be
+defined in the Machine target. Those that are duplicated in the Machine and User target
+are presumed to be intended for the User target and are removed from the Machine target,
+unless -MachinePriority is specified.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -24,22 +30,28 @@ are presumed to be intended for the User target and are removed from the Machine
 
 param (
 	[switch] $Invalid,
+	[switch] $MachinePriority,
 	[switch] $Yes)
 
 Begin
 {
-	function CleanByTarget ($paths, $target)
+	function RemoveInvalidPaths
 	{
+		param (
+			[string[]] $paths,
+			[EnvironmentVariableTarget] $target
+		)
+
 		$list = @()
 		foreach ($path in $paths)
 		{
 			if ($path -eq '')
 			{
-				Write-Host ... removing empty path in $target
+				Write-Host "... removing empty $target path"
 			}
 			elseif ($list.Contains($path))
 			{
-				Write-Host ... removing duplicate path "$path" in $target
+				Write-Host "... removing duplicate $target path: $path"
 			}
 			else
 			{
@@ -51,7 +63,7 @@ Begin
 					}
 					else
 					{
-						Write-Host ... removing invalid path "$path" in $target
+						Write-Host "... removing invalid $target path: $path"
 					}
 				}
 				else
@@ -64,78 +76,119 @@ Begin
 		return $list
 	}
 
-	function SkimUserPaths ($machpaths, $userpaths)
+	function BalancePaths
 	{
-		$profile = $env:USERPROFILE
-		$mpaths = @()
+		param (
+			[EnvironmentVariableTarget] $highname,
+			[string[]] $highpaths,
+			[string] $highprefix,
+			[EnvironmentVariableTarget] $lowname,
+			[string[]] $lowpaths,
+			[string] $lowprefix
+		)
 
-		foreach ($path in $machpaths)
+		$lpaths = @()
+
+		foreach ($path in $lowpaths)
 		{
-			# if path starts with $env:USERPROFILE then it shouldn't be in Machine
-			if ($path.StartsWith($profile))
+			# if path starts with specified highprefix then move it to highpaths
+			if ($path.StartsWith($highprefix))
 			{
-				if (!$userpaths.Contains($path))
+				if (!$highpaths.Contains($path))
 				{
-					$userpaths += $path
-					Write-Host ... Moving to User path "$path"
+					$highpaths += $path
+					Write-Host ... moving to $highname`: "$path"
 				}
 				else
 				{
-					Write-Host ... Removing Machine path "$path"
+					Write-Host ... removing $lowname`: "$path"
 				}
 			}
-			# prefer User over Machine if in both
-			elseif (!$path.StartsWith($env:SystemRoot) -and $userpaths.Contains($path))
+			# prefer High over Low if in both
+			elseif (!$path.StartsWith($lowprefix) -and $highpaths.Contains($path))
 			{
-				Write-Host ... Removing User path from Machine "$path"
+				Write-Host ... removing $highname path from $lowname`: "$path"
 			}
 			else
 			{
-				$mpaths += $path
+				$lpaths += $path
 			}
 		}
 
-		return $mpaths, $userpaths
+		return $highpaths, $lpaths
+	}
+
+	function RebuildPath ($mpaths, $upaths)
+	{
+		$psroot = @((Join-Path $env:USERPROFILE 'Documents\WindowsPowerShell'))
+		$ppaths = @()
+		
+		$env:Path -split ';' | % `
+		{
+			if (!$mpaths.contains($_) -and !$upaths.contains($_) -and !$_.StartsWith($psroot))
+			{
+				$ppaths += $_
+			}
+		}
+
+		$path = ($ppaths + $upaths + $mpaths + $psroot) -join ';'
+
+		if ($WhatIfPreference)
+		{
+			$path = ($ppaths + $upaths + $mpaths + $psroot) -join [Environment]::NewLine
+			Write-Host 'Newly updated env:PATH' -ForegroundColor DarkYellow
+			Write-Host $path -ForegroundColor DarkGray
+		}
+		else
+		{
+			$env:Path = ($ppaths + $upaths + $mpaths + $psroot) -join ';'
+		}
 	}
 }
 Process
 {
-	$originalMachpaths = [Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine)
-	$originalUserpaths = [Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::User)
-
+	# get Machine PATH and User PATH; Note that ($env:PATH - (Mach + User)) == Process PATH
 	# Windows tends to append a semicolon to end of these in the Process Block which we can ignore
-	if ($originalMachPaths.EndsWith(';')) { $originalMachpaths = $originalMachpaths.TrimEnd(';') }
-	if ($originalUserPaths.EndsWith(';')) { $originalUserPaths = $originalUserPaths.TrimEnd(';') }
+	$originalMachpaths = [Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine).TrimEnd(';')
+	$originalUserpaths = [Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::User).TrimEnd(';')
 
 	if ($VerbosePreference -eq 'Continue')
 	{
-		Write-Verbose 'Original Machine Target'
-		$originalMachPaths -split ';' | sort
-		Write-Verbose 'Original User Target'
-		$originalUserPaths -split ';' | sort
+		Write-Host 'Original Machine Paths' -ForegroundColor DarkYellow
+		Write-Host (($originalMachPaths -split ';' | sort) -join [Environment]::NewLine) -ForegroundColor DarkGray
+		Write-Host 'Original User Target' -ForegroundColor DarkYellow
+		Write-Host (($originalUserPaths -split ';' | sort) -join [Environment]::NewLine) -ForegroundColor DarkGray
 		Write-Host
 	}
 
 	# cleanup empty and invalid path entries
-	$machpaths = CleanByTarget ($originalMachpaths -split ';') [EnvironmentVariableTarget]::Machine
-	$userpaths = CleanByTarget ($originalUserpaths -split ';') [EnvironmentVariableTarget]::User
+	$machpaths = RemoveInvalidPaths ($originalMachpaths -split ';') 'Machine'
+	$userpaths = RemoveInvalidPaths ($originalUserpaths -split ';') 'User'
 
-	# cleanup user-specific paths in Machine
-	$machpaths, $userpaths = SkimUserPaths $machpaths $userpaths
+	if ($MachinePriority)
+	{
+		# move machine-specific paths from User to Machine
+		$machpaths, $userpaths = BalancePaths 'Machine' $machpaths $env:SystemRoot 'User' $userpaths $env:USERPROFILE
+	}
+	else
+	{
+		# cleanup user-specific paths in Machine
+		$userpaths, $machpaths = BalancePaths 'User' $userpaths $env:USERPROFILE 'Machine' $machpaths $env:SystemRoot
+	}
 
-	if ((($machpaths -ne $originalMachpaths) -or ($userpaths -ne $originalUserpaths)) `
-		-and ($VerbosePreference -eq 'Continue'))
+	if (($VerbosePreference -eq 'Continue') `
+		-and (($machpaths -ne $originalMachpaths) -or ($userpaths -ne $originalUserpaths)))
 	{
 		Write-Host
 		if ($machpaths -ne $originalMachpaths)
 		{
-			Write-Verbose 'Modified Machine Target'
-			$machpaths -split ';' | sort
+			Write-Host 'Modified Machine Paths' -ForegroundColor DarkYellow
+			Write-Host (($machpaths -split ';' | sort) -join [Environment]::NewLine) -ForegroundColor DarkGray
 		}
 		if ($userpaths -ne $originalUserpaths)
 		{
-			Write-Verbose 'Modified User Target'
-			$userPaths -split ';' | sort
+			Write-Host 'Modified User Paths' -ForegroundColor DarkYellow
+			Write-Host (($userPaths -split ';' | sort) -join [Environment]::NewLine) -ForegroundColor DarkGray
 		}
 		Write-Host
 	}
@@ -147,15 +200,20 @@ Process
 	{
 		if ($WhatIfPreference)
 		{
-			Write-Host 'WHATIF: pending changes ready to be applied' -ForegroundColor Yellow
+			RebuildPath $machpaths $userpaths
+
+			Write-Host
+			Write-Host 'WHATIF: run again without the -WhatIf parameter to apply changes' -ForegroundColor Yellow
 		}
 		else
 		{
 			$ans = Read-Host 'Apply changes? (Y/N) [Y]'
-			if (($ans -eq 'y') -or ($ans -eq 'Y'))
+			if (($ans -eq 'y') -or ($ans -eq 'Y') -or ($ans -eq ''))
 			{
 				[Environment]::SetEnvironmentVariable('PATH', $machpaths, [EnvironmentVariableTarget]::Machine)
 				[Environment]::SetEnvironmentVariable('PATH', $userpaths, [EnvironmentVariableTarget]::User)
+
+				RebuildPath $machpaths $userpaths
 			}
 		}
 	}
