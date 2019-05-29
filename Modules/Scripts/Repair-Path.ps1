@@ -3,11 +3,6 @@
 Clean up the PATH environment variable, removing duplicates, empty values, and
 optionally paths that do not exist.
 
-.PARAMETER Balance
-Move user-specific paths from System target to User target and system-specific
-paths from User target to System target. Duplicate paths that are in both will
-remain in the User target.
-
 .PARAMETER Yes
 Respond to all prompts automatically with "Yes".
 
@@ -19,8 +14,8 @@ Run the command and report changes but don't make any changes.
 [CmdletBinding(SupportsShouldProcess=$true)]
 
 param (
-	[switch] $Balance,
-	[switch] $Yes)
+	[switch] $Yes
+)
 
 Begin
 {
@@ -87,18 +82,20 @@ Begin
 
 
 	# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	# Balances paths between User and System targets, moving user-specific paths to System and
+	# system-specific paths to User. Paths that exist in both will remain in the User target.
 	# Consolidate duplicates into high collection from low collection
 	# Move high prefix paths from low collection into high collection
 	function BalancePaths
 	{
 		param (
-			[string[]] $highpaths,
-			[string[]] $highExpos,
-			[string] $highprefix,
-			[string] $highname,
-			[string[]] $lowpaths,
-			[string] $lowprefix,
-			[string] $lowname
+			[string[]] $highpaths,		# preferred collection
+			[string[]] $highExpos,		# entries that contain variables
+			[string] $highprefix,		# prefix that should be moved to preferred collection
+			[string] $highname,			# name of the preferred collection (User or System)
+			[string[]] $lowpaths,		# other collection
+			[string] $lowprefix,		# prefix that should remain in other collection
+			[string] $lowname			# name of the other collection (System or User)
 		)
 
 		Write-Host "... balancing $lowname to $highname" -ForegroundColor DarkYellow
@@ -138,6 +135,8 @@ Begin
 		return $highpaths, $lpaths
 	}
 
+	# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	# Replace hard-coded path prefixes with given environment %variable% name
 	function InjectVariables ($paths, $name)
 	{
 		$value = [System.Environment]::GetEnvironmentVariable($name)
@@ -232,13 +231,10 @@ Process
 	$sysPaths = RemoveInvalidPaths $sysPaths $sysExpos 'System'
 	$usrPaths = RemoveInvalidPaths $usrPaths $usrExpos 'User'
 
-	if ($Balance)
-	{
-		# move user paths from System to User
-		$usrPaths, $sysPaths = BalancePaths $usrPaths $usrExpos $env:USERPROFILE 'User' $sysPaths $env:SystemRoot 'System'
-		# move system paths from User to System
-		$sysPaths, $usrPaths = BalancePaths $sysPaths $sysExpos $env:SystemRoot 'System' $usrPaths $env:USERPROFILE 'User'
-	}
+	# move user paths from System to User
+	$usrPaths, $sysPaths = BalancePaths $usrPaths $usrExpos $env:USERPROFILE 'User' $sysPaths $env:SystemRoot 'System'
+	# move system paths from User to System
+	$sysPaths, $usrPaths = BalancePaths $sysPaths $sysExpos $env:SystemRoot 'System' $usrPaths $env:USERPROFILE 'User'
 
 	$sysPaths = InjectVariables $sysPaths 'SystemRoot'
 	$usrPaths = InjectVariables $usrPaths 'USERPROFILE'
