@@ -24,6 +24,8 @@ param (
 
 Begin
 {
+	$script:MaxLength = [Int16]::MaxValue
+
 	# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	# Remove empty and unknown paths from the given collection
 	# Also remove expanded duplicates of non-expanded variables
@@ -136,6 +138,29 @@ Begin
 		return $highpaths, $lpaths
 	}
 
+	function InjectVariables ($paths, $name)
+	{
+		$value = [System.Environment]::GetEnvironmentVariable($name)
+		$subst = "%$name%"
+
+		$result = @()
+		$paths | % `
+		{
+			if ($_.StartsWith($value, 'CurrentCultureIgnoreCase'))
+			{
+				$path = $_.Replace($value, $subst)
+				Write-Host "... injecting $name`: $path"
+				$result += $path
+			}
+			else
+			{
+				$result += $_
+			}
+		}
+
+		$result
+	}
+
 	# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	# Rebuild the $env:PATH after the System and User paths have been cleaned
 	# so the current session has the updated PATH settings
@@ -215,6 +240,9 @@ Process
 		$sysPaths, $usrPaths = BalancePaths $sysPaths $sysExpos $env:SystemRoot 'System' $usrPaths $env:USERPROFILE 'User'
 	}
 
+	$sysPaths = InjectVariables $sysPaths 'SystemRoot'
+	$usrPaths = InjectVariables $usrPaths 'USERPROFILE'
+
 	$newSysPath = $sysPaths -join ';'
 	$newUsrPath = $usrPaths -join ';'
 	
@@ -235,7 +263,12 @@ Process
 
 	if (($newSysPath -ne $sysPath) -or ($newUsrPath -ne $usrPath))
 	{
-		if (-not $WhatIfPreference)
+		if ($WhatIfPreference)
+		{
+			# if WhatIfPreference then this will just report
+			RebuildSessionPath $sysPaths $usrPaths
+		}
+		else
 		{
 			if ($Yes) { $ans = 'y' } else { $ans = Read-Host 'Apply changes? (Y/N) [Y]' }
 			if (($ans -eq 'y') -or ($ans -eq 'Y') -or ($ans -eq ''))
@@ -245,11 +278,6 @@ Process
 
 				RebuildSessionPath $sysPaths $usrPaths
 			}
-		}
-		else
-		{
-			# if WhatIfPreference then this will just report
-			RebuildSessionPath $sysPaths $usrPaths
 		}
 	}
 	else
