@@ -97,7 +97,8 @@ Determines the most likely candidate for the active Internet-specific network ad
 ![alt text](Images/get-network.png "Get-Network Example")
 
 #### `Get-Path` [-Search s] [-Sort] [-Verbose]
-Display the PATH environment variable as a list of strings rather than a single string and displays the source of each value defined in the Registry: Machine, User, or Process
+Display the PATH environment variable as a list of strings rather than a single string and displays the source of each value defined in the Registry: Machine, User, or Process. Verbose mode dumps the User and System Paths as
+stored in the Windows Registry.
 
 ![alt text](Images/get-path.png "Get-Path Example")
 
@@ -160,8 +161,10 @@ Remove a persistent mapping of a folder created by New-DriveMapping.
 #### `Remove-Locked` -Name n
 Remove a System-owned file or directory. Attempts multiple approaches to remove stubborn items.
 
-#### `Repair-Path` [-Invalid] [-Yes]
-Clean up the PATH environment variable, removing duplicates, empty values, and optionally paths that do not exist.
+#### `Repair-Path` [-Yes]
+Clean up the PATH environment variable, removing duplicates, empty values, invalid paths, repairs
+variable substitutions, and moves paths between User and System paths appropriately.
+Verbose mode dumps the User and System Paths as stored in the Windows Registry.
 
 #### `Restart-Bluetooth` [-Show]
 Restarts the Bluetooth radio device on the current machine. This is useful when the radio stops

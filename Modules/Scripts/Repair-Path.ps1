@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
-Clean up the PATH environment variable, removing duplicates, empty values, and
-optionally paths that do not exist.
+Clean up the PATH environment variable, removing duplicates, empty values, invalid paths, repairs
+variable substitutions, and moves paths between User and System paths appropriately.
 
 .PARAMETER Yes
 Respond to all prompts automatically with "Yes".
