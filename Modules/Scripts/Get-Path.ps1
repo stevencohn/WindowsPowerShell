@@ -129,7 +129,7 @@ Process
 	Write-Host
 	Write-Host "PATH contains $($env:Path.Length) bytes" -NoNewline
 
-	if (($env:Path).Length -gt ([Int16]::MaxValue * 0.0080))
+	if (($env:Path).Length -gt ([Int16]::MaxValue * 0.80))
 	{
 		Write-Host ' .. exceeds 80% capacity; consider removing unused entries' -ForegroundColor Red
 	}
