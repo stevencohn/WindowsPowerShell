@@ -13,7 +13,8 @@ they appear in the PATH environment variable
 .DESCRIPTION
 Reports whether each path references an existing directory, if it is duplicated in 
 the PATH environment variable, if it is and empty entry. See the Repair-Path command
-for a description of how it cleans up the PATH.
+for a description of how it cleans up the PATH. Also reports the PATH length and
+warns when it exceeds 80% capacity.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -124,4 +125,13 @@ Process
 
 		$duplicates += $path
 	}
+
+	Write-Host
+	Write-Host "PATH contains $($env:Path.Length) bytes" -NoNewline
+
+	if (($env:Path).Length -gt ([Int16]::MaxValue * 0.0080))
+	{
+		Write-Host ' .. exceeds 80% capacity; consider removing unused entries' -ForegroundColor Red
+	}
+	Write-Host
 }
