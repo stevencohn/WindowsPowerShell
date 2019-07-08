@@ -1,0 +1,31 @@
+{
+	"_comment": "All numeric values in Hex; color values are RGB",
+
+	"Theme": "DarkSelenitic",
+
+	"Black": "292929",
+	"DarkBlue": "006291",
+	"DarkGreen": "008000",
+	"DarkCyan": "008080",
+	"DarkRed": "800000",
+	"DarkMagenta": "800080",
+	"DarkYellow": "808000",
+	"Gray": "C0C0C0",
+	"DarkGray": "808080",
+	"Blue": "178BFF",
+	"Green": "00FF00",
+	"Cyan": "00FFFF",
+	"Red": "FF0000",
+	"Magenta": "BB5E00",
+	"Yellow": "FFFF00",
+	"White": "FFFFFF",
+
+	"_Background": "Black",
+	"_Foreground": "Gray",
+
+	"FaceName": "Lucida Console",
+	"FontSize": "0C",
+
+	"HistoryBufferSize": "64",
+	"ScreenBufferSize": "239008C"
+}

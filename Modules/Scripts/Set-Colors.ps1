@@ -31,6 +31,14 @@ Set the specified color as the console background color.
 .PARAMETER Foreground
 Set the specified color as the console foreground color.
 
+.PARAMETER Theme
+Apply the specified theme file from the Themes folder; this folder must be
+relative to this script and named ..\Themes\Theme_<name>.json. -Theme is
+mutually exclusive with -Name and -Color.
+
+.PARAMETER Verbose
+Report each setting as it is changed; default is to run silently.
+
 .PARAMETER WhatIf
 Run the command and report changes but don't make any changes.
 
@@ -44,7 +52,7 @@ stored in the shortcut link file used to start the PowerShell console.
 [CmdletBinding(SupportsShouldProcess=$true)]
 
 param (
-	[parameter(Position=0, Mandatory=$true, HelpMessage="First parameter is table entry name")]
+	[Parameter(ParameterSetName="Color", Position=0, Mandatory=$true, HelpMessage="First parameter is table entry name")]
 	[ValidateScript({
 		if ([bool]($_ -as [System.ConsoleColor] -is [System.ConsoleColor])) { $true } else {
 			Throw 'Name must specify a known System.ConsoleColor name'
@@ -52,19 +60,37 @@ param (
 	})]
 	[string] $Name,
 
-	[parameter(Position=1, Mandatory=$true, HelpMessage="Second parameter is the color hex value")]
+	[parameter(ParameterSetName="Color", Position=1, Mandatory=$true, HelpMessage="Second parameter is the color hex value")]
 	[ValidateScript({
 		if ($_ -match '^(0x|#)?[A-Fa-f0-9]{1,6}$') { $true } else {
 			Throw 'Value must specify a color hex value of 1-6 characters '
 		}
 	})]
 	[string] $Color,
+
+	[Parameter(ParameterSetName="Color")]
 	[switch] $Bgr,
+
+	[Parameter(ParameterSetName="Color")]
+	[switch] $Background,
+
+	[Parameter(ParameterSetName="Color")]
+	[switch] $Foreground,
+
+	[Parameter(ParameterSetName="Theme", HelpMessage="Name of a theme")]
+	[ValidateScript({
+		$p = Split-Path $Script:MyInvocation.MyCommand.Path -Parent | Split-Path -Parent | Split-Path -Parent
+		$t = Join-Path $p "Themes\Theme_$_.json"
+		if (Test-Path $t) { $true } else {
+			Write-Host "Cannot find $t" -ForegroundColor Yellow
+			Throw "Theme must specify a known theme file, e.g. ..\Themes\Theme_<name>.json $p"
+		}
+	})]
+	[string] $Theme,
+
 	[switch] $Cmd,
 	[switch] $ConEmu,
-	[switch] $PS,
-	[switch] $Background,
-	[switch] $Foreground
+	[switch] $PS
 )
 
 Begin
@@ -110,7 +136,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'Setting command console color'
+			Write-Verbose "Setting command console color $Name to $value ($entry)"
 			Push-Location HKCU:\Console
 			Set-ItemProperty . -Name $entry -Value $value -Type DWord
 
@@ -154,7 +180,7 @@ Begin
 				Write-Host "PWS: Update x64 LNK -Name $Name -Index $index -Value $rgb" -ForegroundColor DarkGray
 			}
 			else {
-				Write-Host 'Setting PowerShell console color'
+				Write-Verbose "Setting PowerShell console color $Name to $value"
 				$link.Save()
 			}
 		}
@@ -170,7 +196,7 @@ Begin
 				Write-Host "PWS: Update x86 LNK -Name $Name -Index $index -Value $rgb" -ForegroundColor DarkGray
 			}
 			else {
-				Write-Host 'Setting PowerShell x86 console color'
+				Write-Verbose 'Setting PowerShell x86 console color'
 				$link.Save()
 			}
 		}
@@ -193,27 +219,98 @@ Begin
 			$xml | Select-Xml -XPath "//value[@name='$entry']" | % { $_.Node.data = $value }
 
 			if ($Background) {
-				$xml | Select-Xml -XPath "//value[@name='BackColorIdx']" | % { $_.Node.data = $index }
+				$xml | Select-Xml -XPath "//value[@name='BackColorIdx']" | % { 
+					$_.Node.data = "{0:X2}" -f $index
+				}
 			}
 			elseif ($Foreground) {
-				$xml | Select-Xml -XPath "//value[@name='TextColorIdx']" | % { $_.Node.data = $index }
+				$xml | Select-Xml -XPath "//value[@name='TextColorIdx']" | % {
+					$_.Node.data = "{0:X2}" -f $index
+				}
 			}
 
 			if ($WhatIfPreference) {
 				Write-Host "EMU: Set attribute $entry to $value" -ForegroundColor DarkGray
 			}
 			else {
-				Write-Host 'Setting ConEmu console color'
+				Write-Verbose "Setting ConEmu console color $Name to $value"
 				# convert XmlDocument to XElement to output formatted XML better
 				$null = [Reflection.Assembly]::LoadWithPartialName("System.Xml.Linq")
 				$xml = [System.Xml.Linq.XElement]::Parse($xml.OuterXml)
 				$xml.Save($file)
 			}
 		}
+		else
+		{
+			Write-Host "*** ConEmu config file not found: $file" -ForegroundColor Yellow
+		}
+	}
+
+	function SetTheme ()
+	{
+		$p = Split-Path $Script:MyInvocation.MyCommand.Path -Parent | Split-Path -Parent | Split-Path -Parent
+		$file = Join-Path $p "Themes\Theme_$Theme.json"
+		$props = Get-Content $file | ConvertFrom-Json
+
+		$bg = 'Black'
+		if ($props.Background) { $bg = $props.Background }
+
+		$fg = 'White'
+		if ($props.Foreground) { $fg = $props.Foreground }
+
+		$names = [System.Enum]::GetNames([System.ConsoleColor])
+
+		0..15 | % `
+		{
+			$script:Name = $names[$_]
+			if ($props.$Name)
+			{
+				$script:Color = $props.$Name
+				$script:Background = ($bg -eq $Name)
+				$script:Foreground = ($fg -eq $Name)
+
+				if ($Cmd) {
+					SetCommandColor
+				}
+				elseif ($ConEmu) {
+					SetConEmuColor
+				}
+				elseif ($PS) {
+					SetPowerShellColor
+				}
+				else {
+					SetCommandColor
+					SetConEmuColor
+					SetPowerShellColor
+				}
+			}
+		}
+
+		if ($props.FaceName) {
+			Write-Verbose "Setting FaceName to '$($props.FaceName)'"
+			Set-ItemProperty HKCU:\Console -Name 'FaceName' -Value $props.FaceName -Force
+		}
+
+		if ($props.FontSize) {
+			$size = [System.Convert]::ToInt16($props.Fontsize, 16)
+			$size = "$($size.ToString('X4'))0000"
+			Write-Verbose "Setting FontSize to '$size'"
+			Set-ItemProperty HKCU:\Console -Name 'FontSize' -Value $props.FontSize -Force
+		}
+
+		# history=100, rows=9999
+		#Set-ItemProperty HKCU:\Console -Name 'HistoryBufferSize' -Value 0x64 -Force
+		#Set-ItemProperty HKCU:\Console -Name 'ScreenBufferSize' -Value 0x2329008c -Force
 	}
 }
 Process
 {
+	if ($Theme)
+	{
+		SetTheme
+		return
+	}
+
 	if ($Cmd)
 	{
 		SetCommandColor

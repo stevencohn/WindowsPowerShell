@@ -153,7 +153,7 @@ Begin
 
 	function EnablePhotoViewer ()
 	{
-		Write-Verbose 'associated the good old Photo Viewer'
+		Write-Verbose 'associating the good old Photo Viewer'
 
 		# global preferences for all users
 		$pvcmd = '%SystemRoot%\System32\rundll32.exe "%ProgramFiles%\Windows Photo Viewer\PhotoViewer.dll", ImageView_Fullscreen %1'
