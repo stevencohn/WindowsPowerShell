@@ -170,8 +170,8 @@ Verbose mode dumps the User and System Paths as stored in the Windows Registry.
 Restarts the Bluetooth radio device on the current machine. This is useful when the radio stops
 communicating with a device such as a mouse. The alternative would be to reboot the system.
 
-#### `Set-Colors` -Name n -Color c [-Bgr] [-Cmd] [-ConEmu] [-PS] [-Background] [-Foreground]
-Set a custom value for the specified console color table entry in one or all of the Cmd, PowerShell, and ConEmu consoles. Also optionally set foreground or background color.
+#### `Set-Colors` -Theme t | [-Name n -Color c [-Bgr] [-Background] [-Foreground]] [-Cmd] [-ConEmu] [-PS]
+Set the color theme for command line consoles or set a specific named color.
 
 #### `Set-OutDefaultOverride`
 (Internal) Helper function for Get-ChildItemColorized.

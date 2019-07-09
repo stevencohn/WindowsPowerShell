@@ -1,16 +1,18 @@
 <#
 .SYNOPSIS
-Set a custom value for the specified console color table entry.
-By default, the all color tables - Command, PowerShell, and ConEmu - are
-updated unless one table is specified.
+Set the color theme for command line consoles or set a specific named color.
+By default, updates all colors tables for Command, PowerShell, and if installed
+ConEmu.
 
 .PARAMETER Name
 The name of the color table entry to set. Must be one of the known
-System.ConsoleColor enumeration names.
+System.ConsoleColor enumeration names. -Name and -Color are mutually exclusive
+with -Theme.
 
 .PARAMETER Color
 The RGB or BGR color expressed as a six digit hex value.
-The default is RGB unless the -Bgr switch is specified.
+The default is RGB unless the -Bgr switch is specified. -Color and -Name are
+mutually exclusive with -Theme.
 
 .PARAMETER Bgr
 Indicates that the Color parameter specifies a BGR value; 
