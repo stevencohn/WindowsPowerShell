@@ -1,0 +1,31 @@
+{
+	"_comment": "All numeric values in Hex; color values are RGB",
+
+	"Theme": "Ubuntu",
+
+	"Black": "2e3436",
+	"DarkBlue": "3465a4",
+	"DarkGreen": "4e9a06",
+	"DarkCyan": "06989a",
+	"DarkRed": "cc0000",
+	"DarkMagenta": "75507b",
+	"DarkYellow": "c4a000",
+	"Gray": "d3d7cf",
+	"DarkGray": "555753",
+	"Blue": "729fcf",
+	"Green": "8ae234",
+	"Cyan": "34e2e2",
+	"Red": "ef2929",
+	"Magenta": "ad7fa8",
+	"Yellow": "fce94f",
+	"White": "eeeeec",
+
+	"_Background": "Black",
+	"_Foreground": "Gray",
+
+	"FaceName": "Lucida Console",
+	"FontSize": "0C",
+
+	"HistoryBufferSize": "64",
+	"ScreenBufferSize": "239008C"
+}
