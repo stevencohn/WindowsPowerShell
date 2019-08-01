@@ -55,6 +55,10 @@ Open the hosts file in Notepad.
 #### `Edit-PSProfile`
 Run VSCode with ~Documents\WindowsPowerShell as root folder. Aliased to `ep`
 
+#### `Enable-PersonalOneDrive`
+Enable Personal OneDrive sync when both Business and Personal accounts are registered
+on the local machine. Will indicate when either is account not available.
+
 #### `Enable-TrustedRemoting`
 Enable PowerShell remoting and trusted hosts for the current machine,
 typically run on a VM that will be used for automated tasks such as CI/CD.
