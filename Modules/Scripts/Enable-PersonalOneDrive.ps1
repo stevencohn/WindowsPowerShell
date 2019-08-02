@@ -54,19 +54,16 @@ Process
 		}
 	}
 
-	if (-not ($foundPersonal -or $foundBusiness))
+	if (-not $foundPersonal)
 	{
-		if (-not $foundPersonal)
-		{
-			Write-Host '... did not find personal account' -ForegroundColor Yellow
-			Write-Host '... Right-click OneDrive tray icon and add account' -ForegroundColor DarkYellow
-		}
+		Write-Host '... did not find personal account' -ForegroundColor Yellow
+		Write-Host '... Right-click OneDrive tray icon and add account' -ForegroundColor DarkYellow
+		return
+	}
 
-		if (-not $foundBusiness)
-		{
-			Write-Host '... did not find business account' -ForegroundColor Yellow
-		}
-
+	if (-not $foundBusiness)
+	{
+		Write-Host '... did not find business account; nothing further to do'
 		return
 	}
 
