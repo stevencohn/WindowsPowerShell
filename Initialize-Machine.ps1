@@ -296,11 +296,12 @@ Begin
 		Get-AppxPackage *contactsupport* | Remove-AppxPackage
 
 		@('3DBuilder', 'BingFinance', 'BingNews', 'BingSports', 'BingTranslator', 'BingWeather',
-		'CommsPhone', 'Microsoft3DViewer', 'MicrosoftOfficeHub', 'MicrosoftPowerBIForWindows',
+		'CommsPhone', 'Messaging', 'Microsoft3DViewer', 'MicrosoftOfficeHub', 'MicrosoftPowerBIForWindows',
 		'MicrosoftSolitaireCollection', 'MicrosoftStickyNotes', 'MinecraftUWP', 'NetworkSpeedTest',
 		'Office.OneNote', 'Office.Sway', 'OneConnect', 'People', 'Print3D', 'SkypeApp', 'Wallet',
-		'WindowsAlarms', 'WindowsCamera', 'WindowsCommunicationsapps', 'WindowsFeedbackHub', 'WindowsMaps',
-		'WindowsPhone', 'Windows.Photos', 'WindowsSoundRecorder', 'ZuneMusic', 'ZuneVideo') | % `
+		'Whiteboard', 'WindowsAlarms', 'WindowsCamera', 'WindowsCommunicationsapps', 'WindowsFeedbackHub',
+		'WindowsMaps', 'WindowsPhone', 'Windows.Photos', 'WindowsSoundRecorder', 'YourPhone',
+		'ZuneMusic', 'ZuneVideo') | % `
 		{
 			Get-AppxPackage "Microsoft.$_" | Remove-AppxPackage
 		}
