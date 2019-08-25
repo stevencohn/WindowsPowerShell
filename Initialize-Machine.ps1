@@ -2,6 +2,12 @@
 .SYNOPSIS
 Sets up a new machine with a custom configuration and PowerShell profile.
 
+.PARAMETER Command
+Invoke a single command from this script; default is to run all
+
+.PARAMETER ListCommands
+Show a list of all available commands
+
 .PARAMETER Password
 The password of the new local admin account to create.
 
@@ -26,9 +32,12 @@ If skipping the secondary admin then the script only runs once in a single stage
 [CmdletBinding(SupportsShouldProcess=$true)]
 
 param (
+	[parameter(Position=0)] $command,
+
 	[string] $Username,
 	[securestring] $Password,
-	[switch] $RemoveOneDrive
+	[switch] $RemoveOneDrive,
+	[switch] $ListCommands
 )
 
 Begin
@@ -70,21 +79,27 @@ Begin
 
 	# Stage 1... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	function SetTimeZone ()
+	function SetTimeZone
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		Write-Verbose 'setting time zone'
 		tzutil /s 'Eastern Standard Time'
 	}
 
-	function SecurePagefile ()
+	function SecurePagefile
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		# set to 1 to cause pagefile to be deleted upon shutdown
 		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management'
 		Set-ItemProperty $0 -Name 'ClearPageFileAtShutdown' -value 1 -Type DWord
 	}
 
-	function SetExplorerProperties ()
+	function SetExplorerProperties
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		Write-Verbose 'setting explorer properties'
 
 		# desktop view small icons (is this section needed or just TaskbarSmallIcons below?)
@@ -151,8 +166,10 @@ Begin
 		Set-ItemProperty $0 -Name 'NoDriveTypeAutoRun' -Type DWord -Value 255
 	}
 
-	function EnablePhotoViewer ()
+	function EnablePhotoViewer
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		Write-Verbose 'associating the good old Photo Viewer'
 
 		# global preferences for all users
@@ -186,6 +203,8 @@ Begin
 
 	function EnableRemoteDesktop
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		Write-Verbose 'enabling Remote Desktop w/o Network Level Authentication...'
 		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
 		Set-ItemProperty $0 -Name 'fDenyTSConnections' -Type DWord -Value 0
@@ -193,8 +212,10 @@ Begin
 		Enable-NetFirewallRule -Name 'RemoteDesktop*'
 	}
 
-	function SetExtras ()
+	function SetExtras
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		# DisableAppSuggestions
 		Write-Verbose 'disabling application suggestions'
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
@@ -274,8 +295,10 @@ Begin
 		Set-ItemProperty $0 -Name 'AllowCortana' -Type DWord -Value 0
 	}
 
-	function DisableHomeGroups ()
+	function DisableHomeGroups
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		# DisableHomeGroups
 		Write-Verbose 'stopping and disabling Home Groups services'
 		if (Get-Service HomeGroupListener -ErrorAction:SilentlyContinue)
@@ -287,8 +310,10 @@ Begin
 		}
 	}
 
-	function RemoveCrapware ()
+	function RemoveCrapware
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		Write-Verbose 'removing crapware (some exceptions may appear)'
 		$global:ProgressPreference = 'SilentlyContinue'
 
@@ -357,8 +382,10 @@ Begin
 		#>
 	}
 
-	function RemoveOneDrive ()
+	function RemoveOneDrive
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		Write-Verbose 'disabling OneDrive...'
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive'
 		If (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
@@ -405,8 +432,10 @@ Begin
 		}
 	}
 
-	function InstallTools ()
+	function InstallTools
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		Write-Verbose 'installing helper tools'
 
 		# install chocolatey
@@ -438,8 +467,10 @@ Begin
 		}
 	}
 
-	function GetPowerShellProfile ()
+	function GetPowerShellProfile
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		Write-Verbose 'fetching WindowsPowerShell environment'
 
 		Push-Location $env:USERPROFILE\Documents
@@ -447,8 +478,10 @@ Begin
 		Pop-Location
 	}
 
-	function GetYellowCursors ()
+	function GetYellowCursors
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		Write-Verbose 'enabling yellow mouse cursors'
 
 		Push-Location $env:USERPROFILE\Documents
@@ -460,8 +493,10 @@ Begin
 		Pop-Location
 	}
 
-	function SetConsoleProperties ()
+	function SetConsoleProperties
 	{
+		[CmdletBinding(HelpURI='inimac')] param()
+
 		Write-Verbose 'setting console properties'
 
 		# customize console colors for CMD, PS, and ConEmu
@@ -490,9 +525,38 @@ Begin
 		Set-ItemProperty HKCU:\Console -Name 'HistoryBufferSize' -Value 0x64 -Force
 		Set-ItemProperty HKCU:\Console -Name 'ScreenBufferSize' -Value 0x2329008c -Force
 	}
+
+	function GetCommandList
+	{
+		Get-ChildItem function:\ | Where HelpUri -eq 'inimac' | select -expand Name | sort
+	}
 }
 Process
 {
+	if ($ListCommands)
+	{
+		GetCommandList
+		return
+	}
+
+	if ($command)
+	{
+		$fn = Get-ChildItem function:\ | where Name -eq $command
+		if ($fn)
+		{
+			if ($fn.HelpUri -eq 'inimac')
+			{
+				Write-Host "... invoking command $($fn.Name)"
+				Invoke-Expression $fn.Name
+				return
+			}
+		}
+
+		Write-Host "$command is not a recognized command" -ForegroundColor Yellow
+		Write-Host 'Use -List argument to see all commands' -ForegroundColor DarkYellow
+		return
+	}
+
 	if (Test-Path $stagefile)
 	{
 		$stage = (Get-Content $stagefile) -as [int]
