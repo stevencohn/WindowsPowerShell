@@ -19,35 +19,13 @@ param ([string] $name)
 if (!(Test-Elevated (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
 
+Set-ItemOwner $name
+
 if ((Get-Item $name) -is [System.IO.DirectoryInfo])
 {
-	try
-	{
-		# /F<name>==path-to-object /R==recurse /A==grant-admins /D:Y=default-prompt-answer
-		takeown /F $name /R /A /D Y
-		# /T==recurse /Q==supress-messages
-		icacls $name /grant administrators:f /t /q
-		Remove-Item $name -Force -Confirm:$false -Recurse
-	}
-	catch
-	{
-		Write-Host 'Error taking ownership, trying robocopy method...'
-		$empty = "${env:TEMP}\emptydir"
-		New-Item $empty -Force -Confirm:$false
-		robocopy $empty $name /purge
-		Remove-Item $empty -Force -Confirm:$false
-
-		if (Test-Path $name)
-		{
-			Remove-Item $name -Force -Confirm:$false
-		}
-	}
+	Remove-Item $name -Force -Confirm:$false -Recurse
 }
 else
 {
-	# /F<name>==path-to-object /A==grant-admins
-	takeown /F $name /A
-	# /Q==supress-messages
-	icacls $name /grant administrators:f /q
 	Remove-Item $name -Force -Confirm:$false
 }

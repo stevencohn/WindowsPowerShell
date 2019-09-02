@@ -177,6 +177,9 @@ communicating with a device such as a mouse. The alternative would be to reboot 
 #### `Set-Colors` -Theme t | [-Name n -Color c [-Bgr] [-Background] [-Foreground]] [-Cmd] [-ConEmu] [-PS]
 Set the color theme for command line consoles or set a specific named color.
 
+#### `Set-ItemOwner` -Path p [-Group g]
+Set the ownership of an item - folder or file - to the specified user group.
+
 #### `Set-OutDefaultOverride`
 (Internal) Helper function for Get-ChildItemColorized.
 

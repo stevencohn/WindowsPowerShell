@@ -293,6 +293,15 @@ Begin
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
 		if (!(Test-Path $0)) { New-Item -Path $0 -Force | Out-Null }
 		Set-ItemProperty $0 -Name 'AllowCortana' -Type DWord -Value 0
+
+		# Block Cortana SearchUI (uses excessive CPU)
+		$0 = 'C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy'
+		if (Test-Path "$0\SearchUI.exe")
+		{
+			Stop-Process -Name 'SearchUI';
+			Set-ItemOwner "$0\SearchUI.exe"
+			Rename-Item "$0\SearchUI.exe" "$0\SearchUI.exe_BLOCK"
+		}
 	}
 
 	function DisableHomeGroups
