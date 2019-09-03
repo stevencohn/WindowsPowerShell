@@ -12,5 +12,12 @@ param (
 	[string] $Command
 	)
 
-runas /trustlist:0x20000 $Command
-
+if ($env:ConEmuPID)
+{
+	# trying to run this in a new tab but it opens a new PowerShell console! :-(
+	runas /trustlist:0x20000 $Command
+}
+else
+{
+	runas /trustlist:0x20000 $Command
+}

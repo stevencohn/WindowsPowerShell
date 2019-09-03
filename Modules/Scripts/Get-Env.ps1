@@ -31,7 +31,7 @@ $pairs = Get-ChildItem env: | sort name | % `
 	{
 		Write-Host ($format -f $ename, $evalue) -ForegroundColor Green
 	}
-	if ($value -and ($_.Value -match $value))
+	elseif ($value -and ($_.Value -match $value))
 	{
 		Write-Host ($format -f $ename, $evalue) -ForegroundColor DarkGreen
 	}
