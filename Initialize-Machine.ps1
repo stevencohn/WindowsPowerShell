@@ -96,6 +96,16 @@ Begin
 		Set-ItemProperty $0 -Name 'ClearPageFileAtShutdown' -value 1 -Type DWord
 	}
 
+	function ScheduleTempCleanup
+	{
+		# purge the current user's TEMP folder every morning at 5am
+		$trigger = New-ScheduledTaskTrigger -Daily -At 5am;
+		$action = New-ScheduledTaskAction -Execute "powershell.exe" `
+			-Argument "-Command `"Remove-Item '$($env:temp)\*' -Recurse -Force -ErrorAction:SilentlyContinue`""
+
+		Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Purge user temp" -RunLevel Highest;
+	}
+
 	function SetExplorerProperties
 	{
 		[CmdletBinding(HelpURI='inimac')] param()
@@ -587,6 +597,7 @@ Process
 		EnableRemoteDesktop
 		RemoveCrapware
 		SecurePagefile
+		ScheduleTempCleanup
 
 		if ($RemoveOneDrive) {
 			RemoveOneDrive
