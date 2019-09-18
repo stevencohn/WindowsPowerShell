@@ -38,6 +38,9 @@ These scripts are located in the Modules\Scripts folder.
 #### `Clear-Events` [-Quiet]
 Clear all events from the Windows Event Log.
 
+#### `Clear-Temp` [-Quiet]
+Clear the contents of TEMP, Windows\TEMP, and LocalAppData\TEMP.
+
 #### `ConvertFrom-Hex` -Hex v
 Convert a Hex string into an integer value. If the string contains six
 or eight characters then it is also interpreted as an ARGB value and each
