@@ -101,9 +101,9 @@ Begin
 		# purge the current user's TEMP folder every morning at 5am
 		$trigger = New-ScheduledTaskTrigger -Daily -At 5am;
 		$action = New-ScheduledTaskAction -Execute "powershell.exe" `
-			-Argument "-Command `"Remove-Item '$($env:temp)\*' -Recurse -Force -ErrorAction:SilentlyContinue`""
+			-Argument '-Command "Start-Transcript %USERPROFILE%\purge.log; Clear-Temp"'
 
-		Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Purge user temp" -RunLevel Highest;
+		Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Purge TEMP" -RunLevel Highest;
 	}
 
 	function SetExplorerProperties
