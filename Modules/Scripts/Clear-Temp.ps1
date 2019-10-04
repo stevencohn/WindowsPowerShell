@@ -8,76 +8,48 @@ Suppress any output; default is to report amount of disk space recovered.
 
 param([switch] $Quiet)
 
-
-$used = (Get-PSDrive C).Used
-$filCount = 0
-$dirCount = 0
-
-$0 = 'C:\Temp'
-if (Test-Path $0)
+Begin
 {
-	$fils = [System.IO.Directory]::GetFiles($0, '*').Count
-	$dirs = [System.IO.Directory]::GetDirectories($0, '*').Count
+	function ClearFolder
+	{
+		param($path)
 
-	Remove-Item -Path $0 -Force -Recurse -ErrorAction:SilentlyContinue
+		if (!(Test-Path $path)) { return }
 
-	$fc = $fils - [System.IO.Directory]::GetFiles($0, '*').Count
-	$dc = $dirs - [System.IO.Directory]::GetDirectories($0, '*').Count
+		$fils = [System.IO.Directory]::GetFiles($path, '*').Count
+		$dirs = [System.IO.Directory]::GetDirectories($path, '*').Count
 
-	$filCount += $fc
-	$dirCount += $dc
+		Remove-Item -Path "$path\*" -Force -Recurse -ErrorAction:SilentlyContinue
+
+		$fc = $fils - [System.IO.Directory]::GetFiles($path, '*').Count
+		$dc = $dirs - [System.IO.Directory]::GetDirectories($path, '*').Count
+
+		$script:filCount += $fc
+		$script:dirCount += $dc
+
+		if (!$Quiet)
+		{
+			Write-Host "... removed $fc files, $dc directories from $path" -ForegroundColor DarkGray
+		}
+	}
+}
+Process
+{
+	$used = (Get-PSDrive C).Used
+	$script:filCount = 0
+	$script:dirCount = 0
+
+	ClearFolder 'C:\Temp'
+	ClearFolder 'C:\Tmp'
+	ClearFolder 'C:\Windows\Temp'
+	ClearFolder (Join-Path $env:LocalAppData 'Temp')
 
 	if (!$Quiet)
 	{
-		Write-Host "... removed $fc files, $dc directories from $0" -ForegroundColor DarkGray
+		$disk = Get-PSDrive C | Select-Object Used,Free
+		$pct = ($disk.Used / ($disk.Used + $disk.Free)) * 100
+		$recovered = $used - $disk.Used
+		Write-Host "... removed $filCount files, $dirCount directories"
+		Write-Host ("... recovered {0:0.00} MB on drive C, {1:0.00}% used" -f ($recovered / 1024000), $pct)
 	}
-}
-
-$0 = 'C:\Windows\Temp'
-if (Test-Path $0)
-{
-	$fils = [System.IO.Directory]::GetFiles($0, '*').Count
-	$dirs = [System.IO.Directory]::GetDirectories($0, '*').Count
-
-	Remove-Item -Path $0 -Force -Recurse -ErrorAction:SilentlyContinue
-
-	$fc = $fils - [System.IO.Directory]::GetFiles($0, '*').Count
-	$dc = $dirs - [System.IO.Directory]::GetDirectories($0, '*').Count
-
-	$filCount += $fc
-	$dirCount += $dc
-
-	if (!$Quiet)
-	{
-		Write-Host "... removed $fc files, $dc directories from $0" -ForegroundColor DarkGray
-	}
-}
-
-$0 = Join-Path $env:LocalAppData 'Temp'
-if (Test-Path $0)
-{
-	$fils = [System.IO.Directory]::GetFiles($0, '*').Count
-	$dirs = [System.IO.Directory]::GetDirectories($0, '*').Count
-
-	Remove-Item -Path "$0\*" -Force -Recurse -ErrorAction:SilentlyContinue
-
-	$fc = $fils - [System.IO.Directory]::GetFiles($0, '*').Count
-	$dc = $dirs - [System.IO.Directory]::GetDirectories($0, '*').Count
-
-	$filCount += $fc
-	$dirCount += $dc
-
-	if (!$Quiet)
-	{
-		Write-Host "... removed $fc files, $dc directories from $0" -ForegroundColor DarkGray
-	}
-}
-
-if (!$Quiet)
-{
-	$disk = Get-PSDrive C | Select-Object Used,Free
-	$pct = ($disk.Used / ($disk.Used + $disk.Free)) * 100
-	$recovered = $used - $disk.Used
-	Write-Host "... removed $filCount files, $dirCount directories"
-	Write-Host ("... recovered {0:0.00} MB on drive C, {1:0.00}% used" -f ($recovered / 1024000), $pct)
 }
