@@ -37,6 +37,7 @@ param (
 	[string] $Username,
 	[securestring] $Password,
 	[switch] $RemoveOneDrive,
+	[switch] $RemoveCortana,
 	[switch] $ListCommands
 )
 
@@ -305,12 +306,15 @@ Begin
 		Set-ItemProperty $0 -Name 'AllowCortana' -Type DWord -Value 0
 
 		# Block Cortana SearchUI (uses excessive CPU)
-		$0 = 'C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy'
-		if (Test-Path "$0\SearchUI.exe")
+		if ($RemoveCortana)
 		{
-			Stop-Process -Name 'SearchUI';
-			Set-ItemOwner "$0\SearchUI.exe"
-			Rename-Item "$0\SearchUI.exe" "$0\SearchUI.exe_BLOCK"
+			$0 = 'C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy'
+			if (Test-Path "$0\SearchUI.exe")
+			{
+				Stop-Process -Name 'SearchUI';
+				Set-ItemOwner "$0\SearchUI.exe"
+				Rename-Item "$0\SearchUI.exe" "$0\SearchUI.exe_BLOCK"
+			}
 		}
 	}
 
