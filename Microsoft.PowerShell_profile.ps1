@@ -59,11 +59,13 @@ if ($cmd -notmatch 'cmd\.exe')
 {
 	if (Test-Path 'D:\Code') { Set-Location 'D:\Code'; }
 	elseif (Test-Path 'D:\Development') { Set-Location 'D:\Development'; }
-	elseif (Test-Path 'D:\Dev') { Set-Location 'D:\Dev'; }
 	elseif (Test-Path 'C:\Development') { Set-Location 'C:\Development'; }
-	elseif (Test-Path 'C:\Dev') { Set-Location 'C:\Dev'; }
-	elseif (Test-Path 'D:\Everest') { Set-Location 'D:\Everest'; }
-	elseif (Test-Path 'C:\Everest') { Set-Location 'C:\Everest'; }
 	elseif (Test-Path 'C:\River') { Set-Location 'C:\River'; }
 	else { Set-Location '\'; }
+}
+
+if (Test-Path $pwd\PowerShell_profile.ps1)
+{
+	# enable custom profile setup for primary development area, e.g. command aliasing
+	. $pwd\PowerShell_profile.ps1
 }
