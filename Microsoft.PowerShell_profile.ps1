@@ -1,8 +1,10 @@
 ﻿
+$env:PSElevated = Test-Elevated
+
 # override the prompt function
 function prompt {
 	$saveCode = $LASTEXITCODE
-	if (Test-Elevated) {
+	if ($env:PSElevated -eq $true) {
 		Write-Host "PS " -NoNewline -ForegroundColor Red
 		Write-Host $pwd -NoNewline -ForegroundColor Blue
 	}
