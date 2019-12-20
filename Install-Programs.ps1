@@ -113,6 +113,40 @@ Begin
         npm install -g local-web-server
     }
 
+
+    function InstallThings
+    {
+		[CmdletBinding(HelpURI='manualcmd')] param()
+        ChocoInstall '7zip'
+        ChocoInstall 'awscli'
+        ChocoInstall 'docker-desktop' # must add unsecure repos manually
+        ChocoInstall 'git'
+        ChocoInstall 'googlechrome'
+        ChocoInstall 'greenshot'
+        ChocoInstall 'linqpad'  # requires license (activation.txt)
+        ChocoInstall 'mRemoteNG'
+        ChocoInstall 'notepadplusplus'
+        ChocoInstall 'npppluginmanager'
+        ChocoInstall 'nuget.commandline'
+        ChocoInstall 'paint.net'
+        ChocoInstall 'reflect-free' # Macrium
+        ChocoInstall 'robo3t'    
+        ChocoInstall 'treesizefree'
+        ChocoInstall 'vlc'
+    }
+
+
+    function InstallSourceTree
+    {
+		[CmdletBinding(HelpURI='manualcmd')] param()
+        ChocoInstall 'sourcetree'
+        Write-Host '... Source: firs time run, log into choose "BitBucket" option and logon Atlassian online'
+        Write-Host '... Enabled Advanced/"Configure automatic line endings"'
+        Write-Host '... Do not create an SSH key'
+        Write-Host
+    }
+    
+    
     function InstallVisualStudio
     {
 		# [CmdletBinding(HelpURI='manualcmd')] param()
@@ -167,37 +201,8 @@ Process
         return
 	}
 
-    # Manual installs:
-    # - BareTail (there is a choco package but not pro version)
-    # - BeyondCompare (there is a choco package but not for 4.0)
-    # - ConEmu
-    # - DateInTray
-    # - OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)
-    # - S3Browser (https://s3browser.com/)
-    # - WiLMa
-
-    ChocoInstall '7zip'
-    ChocoInstall 'awscli'
-    ChocoInstall 'docker-desktop' # must add unsecure repos manually
-    ChocoInstall 'git'
-    ChocoInstall 'googlechrome'
-    ChocoInstall 'greenshot'
-    ChocoInstall 'linqpad'  # requires license (activation.txt)
-    ChocoInstall 'mRemoteNG'
-    ChocoInstall 'notepadplusplus'
-    ChocoInstall 'npppluginmanager'
-    ChocoInstall 'nuget.commandline'
-    ChocoInstall 'paint.net'
-    ChocoInstall 'reflect-free' # Macrium
-    ChocoInstall 'robo3t'
-
-    # First time run, log into choose "BitBucket" option and logon Atlassian online
-    # Enabled Advanced/'Configure automatic line endings'
-    # Do not create an SSH key
-    ChocoInstall 'sourcetree'
-
-    ChocoInstall 'treesizefree'
-    ChocoInstall 'vlc'
+    InstallThings
+    InstallSourceTree
 
     RegisterWiLMa
 
