@@ -62,8 +62,8 @@ Begin
     {
 		[CmdletBinding(HelpURI='manualcmd')] param()
 
-        Write-Host '... Causes a reboot'
-        Write-Host '... After reboot, must run ".\Install-Programs.ps1 DisableCFG"'
+        Write-Host '... Reboot will be required after installing Hyper-V'
+        Write-Host '... After rebooting, run ".\Install-Programs.ps1 DisableCFG"'
         Write-Host
         Read-Host '... Press Enter to continue to set up Hyper-V'
 
@@ -125,6 +125,7 @@ Begin
         ChocoInstall 'greenshot'
         ChocoInstall 'linqpad'  # requires license (activation.txt)
         ChocoInstall 'mRemoteNG'
+        ChocoInstall 'musicbee'
         ChocoInstall 'notepadplusplus'
         ChocoInstall 'npppluginmanager'
         ChocoInstall 'nuget.commandline'
@@ -140,10 +141,12 @@ Begin
     {
 		[CmdletBinding(HelpURI='manualcmd')] param()
         ChocoInstall 'sourcetree'
-        Write-Host '... Source: firs time run, log into choose "BitBucket" option and logon Atlassian online'
-        Write-Host '... Enabled Advanced/"Configure automatic line endings"'
-        Write-Host '... Do not create an SSH key'
-        Write-Host
+
+        'SourceTree: first time run...', `
+        '- Log into choose "BitBucket" option and logon Atlassian online', `
+        '- Enabled Advanced/"Configure automatic line endings"', `
+        '- Do not create an SSH key' `
+        | Write-Host
     }
     
     
@@ -176,15 +179,16 @@ Begin
 		[CmdletBinding(HelpURI='manualcmd')] param()
         ChocoInstall 'vscode'
 
-        Write-Host '... Add these extensions manually:'
-        Write-Host '... C#'
-        Write-Host '... Color Picker'
-        Write-Host '... Cucumber (Gherkin) Full Support'
-        Write-Host '... Debugger for Chrome'
-        Write-Host '... PowerShell'
-        Write-Host '... TSLint'
-        Write-Host '... vscode-icons'
-        Write-Host '... XML Format'
+        'Add these VSCode extensions manually:', `
+        '- C#', `
+        '- Color Picker', `
+        '- Cucumber (Gherkin) Full Support', `
+        '- Debugger for Chrome', `
+        '- PowerShell', `
+        '- TSLint', `
+        '- vscode-icons', `
+        '- XML Format' `
+        | Write-Host
     }
 }
 Process
@@ -214,4 +218,14 @@ Process
     InstallVSCode
 
     #InstallVisualStudio
+
+    'Manual installations:', `
+    '- BareTail (there is a choco package but not pro version)', `
+    '- BeyondCompare (there is a choco package but not for 4.0)', `
+    '- ConEmu', `
+    '- DateInTray', `
+    '- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)', `
+    '- S3Browser (https://s3browser.com/)', `
+    '- WiLMa' `
+    | Write-Host
 }
