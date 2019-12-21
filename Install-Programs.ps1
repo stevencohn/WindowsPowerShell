@@ -176,7 +176,7 @@ Begin
         '- Log into choose "BitBucket" option and logon Atlassian online', `
         '- Enabled Advanced/"Configure automatic line endings"', `
         '- Do not create an SSH key' `
-        | Write-Host -ForegroundColor Cyan
+        | Write-Host -ForegroundColor Black -BackgroundColor Yellow
     }
     
     
