@@ -119,10 +119,11 @@ Begin
 			# prep a logon continuation task
 			$exarg = ''
 			if ($Extras) { $exarg = '-Extras' }
+			$source = $MyInvocation.MyCommand.Source
 			$trigger = New-ScheduledTaskTrigger -AtLogOn;
-			$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-command '$($MyInvocation.MyCommand.Source) $exarg'"
+			$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-command '$source $exarg'"
 			$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest;
-			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal;
+			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal | Out-Null
 
 			# this will force a reboot
 			Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
