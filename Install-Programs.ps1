@@ -104,6 +104,13 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
+		$exarg = ''
+		if ($Extras) { $exarg = '-Extras' }
+		$cmd = $MyInvocation.MyCommand.Path
+		$cmd = "$cmd $exarg"
+		Write-Host "Command=[$cmd]"
+		read-host 'stop'
+
 		# ensure Hyper-V
 		if (!(HyperVInstalled))
 		{
