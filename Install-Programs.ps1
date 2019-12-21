@@ -34,8 +34,8 @@ param (
 	[Parameter(ParameterSetName = 'go', Mandatory = $true)] [string] $AccessKey,
 	[Parameter(ParameterSetName = 'go', Mandatory = $true)] [string] $SecretKey,
 	[Parameter(ParameterSetName = 'list')] [switch] $ListCommands,
-	[Parameter] [switch] $Extras,
-	[Parameter] [switch] $Enterprise,
+	[switch] $Extras,
+	[switch] $Enterprise,
 	[Parameter(ParameterSetName = 'continue')] [switch] $Continue
 )
 
@@ -101,12 +101,12 @@ Begin
 		'[default]', `
 			'region = us-east-1', `
 			'output = json' `
-			| Out-File $home\.aws\config -Force -Confirm:$false
+			| Out-File $home\.aws\config -Encoding ascii -Force -Confirm:$false
 
 		'[default]', `
 			"aws_access_key_id = $access", `
 			"aws_secret_access_key = $secret" `
-			| Out-File $home\.aws\credentials -Force -Confirm:$false
+			| Out-File $home\.aws\credentials -Encoding ascii -Force -Confirm:$false
 	}
 
 
@@ -443,17 +443,6 @@ Begin
 }
 Process
 {
-	"Command=$command", `
-		"AccessKey=$AccessKey", `
-		"SecretKey=$SecretKey", `
-		"List=$ListCommands", `
-		"Extras=$Extras", `
-		"Enterprise=$Enterprise", `
-		"Continue=$Continue" `
-		| Write-Host
-
-	return
-
 	if ($ListCommands)
 	{
 		GetCommandList
