@@ -35,7 +35,7 @@ Begin
 		$fn = Get-ChildItem function:\ | where Name -eq $command
 		if ($fn -and ($fn.HelpUri -eq 'manualcmd'))
         {
-            Write-Host "... invoking command $($fn.Name)" -ForegroundColor Cyan
+            Highlight "... invoking command $($fn.Name)"
             Invoke-Expression $fn.Name
         }
         else
@@ -52,7 +52,7 @@ Begin
         if ((choco list -l $name | Select-string "$name ").count -eq 0)
         {
             Write-Host
-            Write-Host "---- Installing $name ---------------------------" -ForegroundColor Cyan
+            Highlight "---- Installing $name ---------------------------"
             choco install -y $name
         }
     }
@@ -64,9 +64,9 @@ Begin
 
         if ((Get-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online).State -ne 'Enabled')
         {
-            Write-Host '... Hyper-V should be installed first' -ForegroundColor Cyan
-            Write-Host '... Invoke the "InstallHyperV" command first and then run "InstallDockerDesktop"' -ForegroundColor Cyan
-            Write-Host '... followed by "DisableCFG"' -ForegroundColor Cyan
+            Highlight '... Hyper-V should be installed first'
+            Highlight '... Invoke the "InstallHyperV" command first and then run "InstallDockerDesktop"'
+            Highlight '... followed by "DisableCFG"'
         }
 
         ChocoInstall 'docker-desktop' # must add unsecure repos manually
@@ -77,8 +77,8 @@ Begin
     {
 		[CmdletBinding(HelpURI='manualcmd')] param()
 
-        Write-Host '... Reboot will be required after installing Hyper-V' -ForegroundColor Cyan
-        Write-Host '... After rebooting, run ".\Install-Programs.ps1 DisableCFG"' -ForegroundColor Cyan
+        Highlight '... Reboot will be required after installing Hyper-V'
+        Highlight '... After rebooting, run ".\Install-Programs.ps1 DisableCFG"'
         Write-Host
         Read-Host '... Press Enter to continue to set up Hyper-V'
 
@@ -109,7 +109,7 @@ Begin
     {
         ChocoInstall 'reflect-free' # just the installer to C:\tools\
 
-        Write-Host '... Macrium download starting; it must be completed manually'
+        Highlight '... Macrium download starting; it must be completed manually'
         Write-Host
 
         # This runs the downloader and leaves the dialog visible!
@@ -218,7 +218,14 @@ Begin
         '- TSLint', `
         '- vscode-icons', `
         '- XML Format' `
-        | Write-Host -ForegroundColor Cyan
+        | Write-Host -ForegroundColor Black -BackgroundColor Yellow
+    }
+
+
+    function Highlight
+    {
+        param($text)
+        Write-Host $text -ForegroundColor Blac -BackgroundColor Yellow
     }
 }
 Process
@@ -259,5 +266,5 @@ Process
     '- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)', `
     '- S3Browser (https://s3browser.com/)', `
     '- WiLMa' `
-    | Write-Host -ForegroundColor Cyan
+    | Write-Host -ForegroundColor Black -BackgroundColor Yellow
 }
