@@ -35,7 +35,7 @@ Begin
 		$fn = Get-ChildItem function:\ | where Name -eq $command
 		if ($fn -and ($fn.HelpUri -eq 'manualcmd'))
         {
-            Write-Host "... invoking command $($fn.Name)"
+            Write-Host "... invoking command $($fn.Name)" -ForegroundColor Cyan
             Invoke-Expression $fn.Name
         }
         else
@@ -52,9 +52,24 @@ Begin
         if ((choco list -l $name | Select-string "$name ").count -eq 0)
         {
             Write-Host
-            Write-Host "---- Installing $name ---------------------------" -ForegroundColor Yellow
+            Write-Host "---- Installing $name ---------------------------" -ForegroundColor Cyan
             choco install -y $name
         }
+    }
+
+
+    function InstallDockerDesktop
+    {
+		[CmdletBinding(HelpURI='manualcmd')] param()
+
+        if ((Get-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online).State -ne 'Enabled')
+        {
+            Write-Host '... Hyper-V should be installed first' -ForegroundColor Cyan
+            Write-Host '... Invoke the "InstallHyperV" command first and then run "InstallDockerDesktop"' -ForegroundColor Cyan
+            Write-Host '... followed by "DisableCFG"' -ForegroundColor Cyan
+        }
+
+        ChocoInstall 'docker-desktop' # must add unsecure repos manually
     }
 
 
@@ -62,8 +77,8 @@ Begin
     {
 		[CmdletBinding(HelpURI='manualcmd')] param()
 
-        Write-Host '... Reboot will be required after installing Hyper-V'
-        Write-Host '... After rebooting, run ".\Install-Programs.ps1 DisableCFG"'
+        Write-Host '... Reboot will be required after installing Hyper-V' -ForegroundColor Cyan
+        Write-Host '... After rebooting, run ".\Install-Programs.ps1 DisableCFG"' -ForegroundColor Cyan
         Write-Host
         Read-Host '... Press Enter to continue to set up Hyper-V'
 
@@ -74,14 +89,31 @@ Begin
         }
     }
 
+
     function DisableCFG
     {
 		[CmdletBinding(HelpURI='manualcmd')] param()
+
+        # customize Hyper-V host
+        Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
+
         # disable Code Flow Guard (CFG) for vmcompute service
         Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe' -Disable CFG
         Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe' -Disable StrictCFG
         # restart service
         net start vmcompute
+    }
+
+
+    function InstallMacrium
+    {
+        ChocoInstall 'reflect-free' # just the installer to C:\tools\
+
+        Write-Host '... Macrium download starting; it must be completed manually'
+        Write-Host
+
+        # This runs the downloader and leaves the dialog visible!
+        & C:\tols\ReflectDL.exe
     }
 
 
@@ -119,7 +151,6 @@ Begin
 		[CmdletBinding(HelpURI='manualcmd')] param()
         ChocoInstall '7zip'
         ChocoInstall 'awscli'
-        ChocoInstall 'docker-desktop' # must add unsecure repos manually
         ChocoInstall 'git'
         ChocoInstall 'googlechrome'
         ChocoInstall 'greenshot'
@@ -130,7 +161,6 @@ Begin
         ChocoInstall 'npppluginmanager'
         ChocoInstall 'nuget.commandline'
         ChocoInstall 'paint.net'
-        ChocoInstall 'reflect-free' # Macrium
         ChocoInstall 'robo3t'    
         ChocoInstall 'treesizefree'
         ChocoInstall 'vlc'
@@ -146,7 +176,7 @@ Begin
         '- Log into choose "BitBucket" option and logon Atlassian online', `
         '- Enabled Advanced/"Configure automatic line endings"', `
         '- Do not create an SSH key' `
-        | Write-Host
+        | Write-Host -ForegroundColor Cyan
     }
     
     
@@ -188,7 +218,7 @@ Begin
         '- TSLint', `
         '- vscode-icons', `
         '- XML Format' `
-        | Write-Host
+        | Write-Host -ForegroundColor Cyan
     }
 }
 Process
@@ -219,6 +249,8 @@ Process
 
     #InstallVisualStudio
 
+    InstallDockerDesktop
+
     'Manual installations:', `
     '- BareTail (there is a choco package but not pro version)', `
     '- BeyondCompare (there is a choco package but not for 4.0)', `
@@ -227,5 +259,5 @@ Process
     '- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)', `
     '- S3Browser (https://s3browser.com/)', `
     '- WiLMa' `
-    | Write-Host
+    | Write-Host -ForegroundColor Cyan
 }
