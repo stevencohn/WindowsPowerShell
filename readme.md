@@ -245,11 +245,14 @@ Finally, since this updates the PowerShell console colors, you can close and reo
 ## Install-Programs.ps1
 Automates the installation of applications, development tools, and other utilities.
 
-`.\Install-Programs.ps1 [command] [-List] [-Extras]`
+`.\Install-Programs.ps1 [command] -AccessKey a -SecretKey s [-List] [-Extras] [-Enterprise]`
  
    * _command_ - optional argument to run a single command, default is to run all commands
+   * -AccessKey - AWS access key used for downloading bits from S3
+   * -SecretKey - AWS secret key used for downloading bits from S3
    * -ListCommands - this argument displays all available commands
    * -Extras - this argument causes extra applications to be installed
+   * -Enterprise - install VS Enterprise; default is Professional
 
 Default applications:
 
@@ -270,6 +273,7 @@ Default applications:
    * Nuget command line
    * Robot3T
    * SourceTree
+   * Visual Studio 2019 (_professional or enterpise_)
    * VSCode
 
 Other applications included when -Extras is specified
