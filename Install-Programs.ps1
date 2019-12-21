@@ -14,6 +14,8 @@ Show a list of all available commands
 .DESCRIPTION
 Install extra programs and features. Should be run after Initialize-Machine.ps1
 and all updates are installed.
+
+Tested on Windows 10 update 1909
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -29,6 +31,7 @@ Begin
 {
 	$stage = 0
 	$stagefile = (Join-Path $env:LOCALAPPDATA 'install-programs.stage')
+	$ContinuationName = 'Install-Programs-Continuation'
 	$tools = 'C:\tools'
 
 
@@ -105,11 +108,21 @@ Begin
 		if (!(HyperVInstalled))
 		{
 			HighTitle 'Hyper-V'
-			Highlight '', '... Reboot will be required after installing Hyper-V'
+			Highlight '', '... Reboot will be required after installing Hyper-V', `
+				'... This script will continue automagically after the reboot'
+
 			Read-Host '... Press Enter to continue or Ctrl-C to abort'
-	
+
 			Set-Content $stagefile '1' -Force
 			$script:stage = 1
+
+			# prep a logon continuation task
+			$exarg = ''
+			if ($Extras) { $exarg = '-Extras' }
+			$trigger = New-ScheduledTaskTrigger -AtLogOn;
+			$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-command '$($MyInvocation.MyCommand.Source) $exarg'"
+			$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest;
+			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal;
 
 			# this will force a reboot
 			Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
@@ -166,7 +179,7 @@ Begin
 			$target = "$tools\BareTail"
 			if (!(Test-Path $target))
 			{
-				New-Item $target -ItemType Directory -Force -Confirm:$false
+				New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 			}
 
 			Download 'https://baremetalsoft.com/baretail/download.php?p=m' $target\baretail.exe
@@ -197,7 +210,9 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		Chocolatize 'reflect-free' # just the installer to C:\tools\
-		Highlight '... Macrium download installer started; it must be completed manually', ''
+		Highlight '... Macrium installer started but it must be completed manually (wait for this script to finish)', `
+			'... Choose Home version, no registration is necessary', `
+			''
 
 		# This runs the downloader and leaves the dialog visible!
 		& $tools\ReflectDL.exe
@@ -237,10 +252,9 @@ Begin
 		Chocolatize 'notepadplusplus'
 		Chocolatize 'npppluginmanager'
 		Chocolatize 'nuget.commandline'
-		Chocolatize 'paint.net'
 		Chocolatize 'robo3t'
-		Chocolatize 'treesizefree'
-		Chocolatize 'vlc'
+
+		InstallBareTail
 	}
 
 
@@ -336,14 +350,15 @@ Begin
 
 			if (!(Test-Path $target))
 			{
-				New-Item $target -ItemType Directory -Force -Confirm:$false
+				New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 			}
 
 			$0 = 'https://softpedia-secure-download.com/dl/ba833328e1e20d7848a5498418cb5796/5dfe1db7/100016805/software/os_enhance/DITSetup.exe'
 			$zip = "$target\DateInTray.zip"
 			Download $0 $zip
 
-			Expand-Archive $zip -DestinationPath $target
+			# extract just the main program; must use 7z instead of Expand-Archive
+			7z e $zip DateInTray.exe
 			Remove-Item $zip -Force -Confirm:$false
 		}
 	}
@@ -360,7 +375,7 @@ Begin
 
 			if (!(Test-Path $target))
 			{
-				New-Item $target -ItemType Directory -Force -Confirm:$false
+				New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 			}
 
 			$0 = 'http://www.stefandidak.com/wilma/winlayoutmanager.zip'
@@ -402,6 +417,11 @@ Process
 		InstallHyperV
 	}
 
+	if (get-scheduledtask -taskname $ContinuationName -ErrorAction:silentlycontinue)
+	{
+		Unregister-ScheduledTask -TaskName $ContinuationName -Confirm:$false
+	}
+
 	DisableCFG
 
 	InstallThings
@@ -421,10 +441,12 @@ Process
 
 	if ($Extras)
 	{
-		InstallBareTail
+		Chocolatize 'musicbee'
+		Chocolatize 'paint.net'
+		Chocolatize 'treesizefree'
+		Chocolatize 'vlc'
 		InstallDateInTray
 		InstallWiLMa
-		Chocolatize 'musicbee'
 	}
 
 	Highlight '', `

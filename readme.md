@@ -217,13 +217,14 @@ Quick command line to pull latest source of this WindowsPowerShell repo from Git
 and update the content in $home\Documents\WindowsPowerShell.
 
 <a name="initmach"></a>
+
 ## Initialize-Machine
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
 setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
 Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use of PowerShell.
 
-   This script can optionally create a new local administrator so it runs in two phases:
+This script can optionally create a new local administrator so it runs in two phases:
 
    1. Log on as an administrator
    1. Download [Initialize-Machine.ps1](https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1) to C:\Initialize-Machine.ps1
@@ -239,7 +240,49 @@ Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use
    1. PS> `cd C:\`
    1. PS> `.\Initialize-Machine.ps1 -Verbose`
 
-   Finally, since this updates the PowerShell console colors, you can close and reopen the console to appreciate these fantastic new colors.
+Finally, since this updates the PowerShell console colors, you can close and reopen the console to appreciate these fantastic new colors.
+
+## Install-Programs.ps1
+Automates the installation of applications, development tools, and other utilities.
+
+`.\Install-Programs.ps1 [command] [-List] [-Extras]`
+ 
+   * _command_ - optional argument to run a single command, default is to run all commands
+   * -ListCommands - this argument displays all available commands
+   * -Extras - this argument causes extra applications to be installed
+
+Default applications:
+
+   * Hyper-V - requires reboot but the script will continue automatically upon logon
+   * 7Zip
+   * Angular (_specific version_)
+   * AWSCli
+   * BareTail Free (_installed to C:\tools_)
+   * Docker Desktop
+   * Git
+   * Google Chrome
+   * Greenshot
+   * LINQPad
+   * Macrium Reflect Free
+   * mRemoteNG
+   * Node.js (_specific version_)
+   * Notepad++
+   * Nuget command line
+   * Robot3T
+   * SourceTree
+   * VSCode
+
+Other applications included when -Extras is specified
+
+   * DateInTray (_installed to C:\tools_)
+   * MusicBee
+   * Paint.net
+   * TreeSize Free
+   * VLC
+   * WiLMa (_installed to C:\tools_)
+
+During the installation, instructions and tips are shown highlighted in yellow.
+Some are import, such as how to continue the manual installation of Macrium.
 
 ## Profiles
 
@@ -254,9 +297,9 @@ Chocolatey, and setting the intial working directory.
 
 The PowerShell command prompt is customized as follows:
 
-* It is rendered in blue
-* It indicates the current working directory prefaced with "PS" for example `PS D:\code>`
-* If the console is elevated then the "PS" prefix is shown in red to highlight the fact that what do you, you do at your own risk!
+   * It is rendered in blue
+   * It indicates the current working directory prefaced with "PS" for example `PS D:\code>`
+   * If the console is elevated then the "PS" prefix is shown in red to highlight the fact that what do you, you do at your own risk!
 
   ![alt text](Images/ps-prompt.png "Colorized PS Prompt Example")
 
