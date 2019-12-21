@@ -218,7 +218,7 @@ and update the content in $home\Documents\WindowsPowerShell.
 
 <a name="initmach"></a>
 
-## Initialize-Machine
+## Initialize-Machine.ps1
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
 setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
