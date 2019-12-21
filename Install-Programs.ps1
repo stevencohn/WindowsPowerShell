@@ -135,10 +135,23 @@ Begin
 		# customize Hyper-V host file locations
 		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
 
+		<#
+		Following is from online to troubleshoot startup errors:
+		1, Open "Window Security"
+		2, Open "App & Browser control"
+		3, Click "Exploit protection settings" at the bottom
+		4, Switch to "Program settings" tab
+		5, Locate "C:\WINDOWS\System32\vmcompute.exe" in the list and expand it
+		6, Click "Edit"
+		7, Scroll down to "Code flow guard (CFG)" and uncheck "Override system settings"
+		8, Start vmcompute from powershell "net start vmcompute"
+		#>
+
 		# disable Code Flow Guard (CFG) for vmcompute service
 		Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe' -Disable CFG
 		Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe' -Disable StrictCFG
 		# restart service
+		net stop vmcompute
 		net start vmcompute
 	}
 
@@ -165,7 +178,7 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
-		if (!HyperVInstalled)
+		if (!(HyperVInstalled))
 		{
 			Highlight '... Installing Hyper-V prerequisite before Docker Desktop'
 			InstallHyperV
@@ -194,6 +207,7 @@ Begin
 	function InstallNodeJs
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		HighTitle 'nodejs'
 		choco install -y nodejs --version 10.15.3
 		# update session PATH so we can continue
 		$npmpath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split ';' | ? { $_ -match 'nodejs' }
@@ -203,6 +217,7 @@ Begin
 	function InstallAngular
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		HighTitle 'angular'
 		npm install -g @angular/cli@7.3.8
 		npm install -g npm-check-updates
 		npm install -g local-web-server
@@ -291,7 +306,7 @@ Begin
 				$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
 
 				Highlight 'Adding VSCode extensions...'
-				code --install-extension alexkrechik.cucumberautocomlete
+				code --install-extension alexkrechik.cucumberautocomplete
 				code --install-extension anseki.vscode-color
 				code --install-extension eg2.tslint
 				code --install-extension ionutvmi.reg
@@ -390,6 +405,7 @@ Process
 	DisableCFG
 
 	InstallThings
+	InstallMacrium
 
 	# Development...
 
@@ -405,6 +421,8 @@ Process
 
 	if ($Extras)
 	{
+		InstallBareTail
+		InstallDateInTray
 		InstallWiLMa
 		Chocolatize 'musicbee'
 	}
