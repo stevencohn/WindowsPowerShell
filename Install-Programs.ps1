@@ -1,30 +1,42 @@
 <#
 .SYNOPSIS
-Installs extra programs and features.
+Automates the installation of applications, development tools, and other utilities.
 
 .PARAMETER Command
-Invoke a single command from this script; default is to run all
+Invoke a single command from this script; default is to run all.
+
+.PARAMETER AccessKey
+AWS access key used to download bits.
+
+.PARAMETER Enterprise
+Install Visual Studio Enterprise; default is to install Professional
 
 .PARAMETER Extras
-Installs more than most developers would need or want; this is my personalization
+Installs more than most developers would need or want; this is my personalization.
 
 .PARAMETER ListCommands
-Show a list of all available commands
+Show a list of all available commands.
+
+.PARAMETER SecretKey
+AWS secret key used to download bits.
 
 .DESCRIPTION
-Install extra programs and features. Should be run after Initialize-Machine.ps1
-and all updates are installed.
+Recommend running after Initialize-Machine.ps1 and all Windows updates.
 
 Tested on Windows 10 update 1909
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
-[CmdletBinding(SupportsShouldProcess = $true)]
+[CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'go')]
 
 param (
-	[parameter(Position = 0)] $command,
-	[switch] $Extras,
-	[switch] $ListCommands
+	[Parameter(ParameterSetName = 'go', Position = 0)] $command,
+	[Parameter(ParameterSetName = 'go', Mandatory = $true)] [string] $AccessKey,
+	[Parameter(ParameterSetName = 'go', Mandatory = $true)] [string] $SecretKey,
+	[Parameter(ParameterSetName = 'list')] [switch] $ListCommands,
+	[Parameter] [switch] $Extras,
+	[Parameter] [switch] $Enterprise,
+	[Parameter(ParameterSetName = 'continue')] [switch] $Continue
 )
 
 Begin
@@ -32,6 +44,7 @@ Begin
 	$stage = 0
 	$stagefile = (Join-Path $env:LOCALAPPDATA 'install-programs.stage')
 	$ContinuationName = 'Install-Programs-Continuation'
+	$bucket = 'cdsbits'
 	$tools = 'C:\tools'
 
 
@@ -76,6 +89,27 @@ Begin
 	}
 
 
+	function ConfigureAws
+	{
+		param($access, $secret)
+
+		if (!(Test-Path $home\.aws))
+		{
+			New-Item $home\.aws -ItemType Directory -Force -Confirm:$false | Out-Null
+		}
+
+		'[default]', `
+			'region = us-east-1', `
+			'output = json' `
+			| Out-File $home\.aws\config -Force -Confirm:$false
+
+		'[default]', `
+			"aws_access_key_id = $access", `
+			"aws_secret_access_key = $secret" `
+			| Out-File $home\.aws\credentials -Force -Confirm:$false
+	}
+
+
 	function Download
 	{
 		param($uri, $target)
@@ -117,8 +151,10 @@ Begin
 			$script:stage = 1
 
 			# prep a logon continuation task
-			$exarg = ''
-			if ($Extras) { $exarg = '-Extras' }
+			$exarg = '-Continue'
+			if ($Extras) { $exarg = "$exarg -Extras" }
+			if ($Enterprise) { $exarg = "$exarg -Enterprise" }
+
 			$trigger = New-ScheduledTaskTrigger -AtLogOn;
 			# note here that the -Command arg string must be wrapped with double-quotes
 			$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-Command ""$PSCommandPath $exarg"""
@@ -183,7 +219,8 @@ Begin
 				New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 			}
 
-			Download 'https://baremetalsoft.com/baretail/download.php?p=m' $target\baretail.exe
+			aws s3 cp s3://$bucket/baretail.exe $target\
+			#Download 'https://baremetalsoft.com/baretail/download.php?p=m' $target\baretail.exe
 		}
 	}
 
@@ -265,7 +302,8 @@ Begin
 		if (!(Test-Path 'C:\Program Files\S3 Browser'))
 		{
 			HighTitle 'S3 Browser'
-			Download 'https://netsdk.s3.amazonaws.com/s3browser/8.5.9/s3browser-8-5-9.exe' $env:TEMP\s3browser.exe
+			aws s3 cp s3://$bucket/s3browser-8-5-9.exe $env:TEMP\s3browser.exe
+			#Download 'https://netsdk.s3.amazonaws.com/s3browser/8.5.9/s3browser-8-5-9.exe' $env:TEMP\s3browser.exe
 			& $env:TEMP\s3browser.exe /sp /supressmsgboxes /norestart /closeapplications /silent
 		}
 	}
@@ -285,15 +323,23 @@ Begin
 	function InstallVisualStudio
 	{
 		[CmdletBinding(HelpURI='manualcmd')] param()
-		# get the installer
-		# $ProgressPreference = 'SilentlyContinue';
-		# [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
-		# Invoke-WebRequest -Uri https://<someurl>/vs_Enterprise.exe -OutFile $home\Downloads\vs2019.exe;
-		# Invoke-WebRequest -Uri https://<someurl>/.vsconfig -OutFile C:\.vsconfig;
-		# # run the installer
-		# & C:\vs2019.exe --config c:\.vsconfig;
-		# # delete the installer
-		# Remove-Item C:\vs2019.exe -Force -Confirm:$false
+
+		$kind = 'professional'
+		if ($Enterprise) { $kind = 'enterprise' }
+
+		HighTitle "Visual Studio 2019 ($kind)"
+		Highlight '... This will take a few minutes'
+
+		# download the installer
+		$bits = "vs_$kind`_2019_16.4.exe"
+		aws s3 cp s3://$bucket/$bits $env:TEMP\
+		aws s3 cp s3://$bucket/.vsconfig $env:TEMP\
+
+		# run the installer
+		& $env:TEMP\$bits --config $env:TEMP\.vsconfig
+
+		# delete the installer
+		Remove-Item $env:TEMP\$bits -Force -Confirm:$false
 
 		Highlight '... Remember to update nuget package sources', '', `
 			'... Add these extensions manually:', `
@@ -356,7 +402,8 @@ Begin
 
 			$0 = 'https://softpedia-secure-download.com/dl/ba833328e1e20d7848a5498418cb5796/5dfe1db7/100016805/software/os_enhance/DITSetup.exe'
 			$zip = "$target\DateInTray.zip"
-			Download $0 $zip
+			aws s3 cp s3://$bucket/DITSetup.exe $zip
+			#Download $0 $zip
 
 			# extract just the main program; must use 7z instead of Expand-Archive
 			7z e $zip DateInTray.exe
@@ -381,7 +428,8 @@ Begin
 
 			$0 = 'http://www.stefandidak.com/wilma/winlayoutmanager.zip'
 			$zip = "$target\winlayoutmanager.zip"
-			Download $0 $zip
+			aws s3 cp s3://$bucket/winlayoutmanager.zip $target\
+			#Download $0 $zip
 			Expand-Archive $zip -DestinationPath $target
 			Remove-Item $zip -Force -Confirm:$false
 
@@ -395,6 +443,17 @@ Begin
 }
 Process
 {
+	"Command=$command", `
+		"AccessKey=$AccessKey", `
+		"SecretKey=$SecretKey", `
+		"List=$ListCommands", `
+		"Extras=$Extras", `
+		"Enterprise=$Enterprise", `
+		"Continue=$Continue" `
+		| Write-Host
+
+	return
+
 	if ($ListCommands)
 	{
 		GetCommandList
@@ -405,6 +464,11 @@ Process
 	{
 		InvokeCommand $command
 		return
+	}
+
+	if ($AccessKey -and $SecretKey)
+	{
+		ConfigureAws $AccessKey $SecretKey
 	}
 
 	if (Test-Path $stagefile)
@@ -418,7 +482,7 @@ Process
 		InstallHyperV
 	}
 
-	if (get-scheduledtask -taskname $ContinuationName -ErrorAction:silentlycontinue)
+	if (Get-ScheduledTask -TaskName $ContinuationName -ErrorAction:silentlycontinue)
 	{
 		Unregister-ScheduledTask -TaskName $ContinuationName -Confirm:$false
 	}
@@ -433,7 +497,7 @@ Process
 	InstallNodeJs
 	InstallAngular
 	InstallVSCode
-	#InstallVisualStudio
+	InstallVisualStudio
 	InstallSourceTree
 
 	InstallDockerDesktop
