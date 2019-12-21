@@ -300,6 +300,19 @@ Begin
 	}
 
 
+	function InstallNetFx
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+
+		# .NET Framework 3.5 is required by many apps
+		if ((Get-WindowsOptionalFeature -Online -FeatureName 'NetFx3' | ? { $_.State -eq 'Enabled'}).Count -eq 0)
+		{
+			HighTitle '.NET Framework 3.5'
+			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx3'
+		}
+	}
+
+
 	function InstallThings
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
@@ -364,10 +377,7 @@ Begin
 			aws s3 cp s3://$bucket/.vsconfig $env:TEMP\
 
 			# run the installer
-			& $env:TEMP\$bits --config $env:TEMP\.vsconfig
-
-			# delete the installer
-			Remove-Item $env:TEMP\$bits -Force -Confirm:$false
+			& $env:TEMP\$bits --passive --config $env:TEMP\.vsconfig
 
 			Highlight '... Remember to update nuget package sources', '', `
 				'... Add these extensions manually:', `
@@ -432,13 +442,15 @@ Begin
 			}
 
 			$0 = 'https://softpedia-secure-download.com/dl/ba833328e1e20d7848a5498418cb5796/5dfe1db7/100016805/software/os_enhance/DITSetup.exe'
-			$zip = "$target\DateInTray.zip"
+			$zip = "$target\DITSetup.zip"
 			aws s3 cp s3://$bucket/DITSetup.exe $zip
 			#Download $0 $zip
 
 			# extract just the main program; must use 7z instead of Expand-Archive
-			7z e $zip DateInTray.exe
+			7z e $zip $target\DateInTray.exe
 			Remove-Item $zip -Force -Confirm:$false
+
+			& $target\DateInTray.exe
 		}
 	}
 
@@ -471,6 +483,8 @@ Begin
 			$action = New-ScheduledTaskAction -Execute "$target\WindowsLayoutManager.exe";
 			$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest;
 			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "WiLMa" -Principal $principal;
+
+			& $target\WindowsLayoutManager.exe
 		}
 	}
 }
@@ -501,6 +515,7 @@ Process
 
 	if ($stage -eq 0)
 	{
+		InstallNetFx
 		InstallHyperV
 	}
 
@@ -552,4 +567,6 @@ Process
 	{
 		Remove-Item $stagefile -Force -Confirm:$false
 	}
+
+	Read-Host "... Press Enter to finish"
 }
