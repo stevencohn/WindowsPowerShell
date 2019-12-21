@@ -22,8 +22,12 @@ AWS secret key used to download bits.
 
 .DESCRIPTION
 Recommend running after Initialize-Machine.ps1 and all Windows updates.
+Tested on Windows 10 update 1909.
 
-Tested on Windows 10 update 1909
+.EXAMPLE
+.\Install-Programs.ps1 -List
+.\Install-Programs.ps1 InstallMacrium
+.\Install-Programs.ps1 -AccessKey <key> -SecretKey <key> -Extras -Enterprise
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -206,12 +210,31 @@ Begin
 	}
 
 
+	function InstallAWSCLI
+	{
+		Chocolatize 'awscli'
+
+		if ((Get-Command aws -ErrorAction:SilentlyContinue) -eq $null)
+		{
+			# path will be added to Machine space but it isn't there yet
+			# so temporarily fix path so we can install add-ons
+			$0 = 'C:\Program Files\Amazon\AWSCLI\bin'
+			if (Test-Path $0)
+			{
+				$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
+			}
+		}
+	}
+
+
 	function InstallBareTail
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
 		if (!(Test-Path "$tools\BareTail"))
 		{
+			InstallAWSCLI
+
 			HighTitle 'BareTail'
 			$target = "$tools\BareTail"
 			if (!(Test-Path $target))
@@ -281,7 +304,6 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		Chocolatize '7zip'
-		Chocolatize 'awscli'
 		Chocolatize 'git'
 		Chocolatize 'googlechrome'
 		Chocolatize 'greenshot'
@@ -301,6 +323,8 @@ Begin
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		if (!(Test-Path 'C:\Program Files\S3 Browser'))
 		{
+			InstallAWSCLI
+
 			HighTitle 'S3 Browser'
 			aws s3 cp s3://$bucket/s3browser-8-5-9.exe $env:TEMP\s3browser.exe
 			#Download 'https://netsdk.s3.amazonaws.com/s3browser/8.5.9/s3browser-8-5-9.exe' $env:TEMP\s3browser.exe
@@ -324,30 +348,35 @@ Begin
 	{
 		[CmdletBinding(HelpURI='manualcmd')] param()
 
-		$kind = 'professional'
-		if ($Enterprise) { $kind = 'enterprise' }
+		if (!(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio 14.0'))
+		{
+			InstallAWSCLI
 
-		HighTitle "Visual Studio 2019 ($kind)"
-		Highlight '... This will take a few minutes'
+			$kind = 'professional'
+			if ($Enterprise) { $kind = 'enterprise' }
 
-		# download the installer
-		$bits = "vs_$kind`_2019_16.4.exe"
-		aws s3 cp s3://$bucket/$bits $env:TEMP\
-		aws s3 cp s3://$bucket/.vsconfig $env:TEMP\
+			HighTitle "Visual Studio 2019 ($kind)"
+			Highlight '... This will take a few minutes'
 
-		# run the installer
-		& $env:TEMP\$bits --config $env:TEMP\.vsconfig
+			# download the installer
+			$bits = "vs_$kind`_2019_16.4.exe"
+			aws s3 cp s3://$bucket/$bits $env:TEMP\
+			aws s3 cp s3://$bucket/.vsconfig $env:TEMP\
 
-		# delete the installer
-		Remove-Item $env:TEMP\$bits -Force -Confirm:$false
+			# run the installer
+			& $env:TEMP\$bits --config $env:TEMP\.vsconfig
 
-		Highlight '... Remember to update nuget package sources', '', `
-			'... Add these extensions manually:', `
-			'... Markdown Editor', `
-			'... Microsoft Visual Studio Installer Projects', `
-			'... VSColorOutput', `
-			'... SpecFlow for Visual Studio 2019', `
-			'... Editor Guidelines'
+			# delete the installer
+			Remove-Item $env:TEMP\$bits -Force -Confirm:$false
+
+			Highlight '... Remember to update nuget package sources', '', `
+				'... Add these extensions manually:', `
+				'... Markdown Editor', `
+				'... Microsoft Visual Studio Installer Projects', `
+				'... VSColorOutput', `
+				'... SpecFlow for Visual Studio 2019', `
+				'... Editor Guidelines'
+		}
 	}
 
 
@@ -392,6 +421,8 @@ Begin
 
 		if (!(Test-Path $tools\DateInTray))
 		{
+			InstallAWSCLI
+
 			HighTitle 'DateInTray'
 			$target = "$tools\DateInTray"
 
@@ -418,6 +449,8 @@ Begin
 
 		if (!(Test-Path "$tools\WiLMa"))
 		{
+			InstallAWSCLI
+
 			HighTitle 'WiLMa'
 			$target = "$tools\WiLMa"
 
@@ -477,6 +510,9 @@ Process
 	}
 
 	DisableCFG
+
+	# run first so we have the aws CLI for downloads
+	InstallAWSCLI
 
 	InstallThings
 	InstallMacrium
