@@ -120,7 +120,7 @@ Begin
 			$exarg = ''
 			if ($Extras) { $exarg = '-Extras' }
 			$trigger = New-ScheduledTaskTrigger -AtLogOn;
-			$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-command '$PSCommandPath $exarg'"
+			$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-command ""$PSCommandPath $exarg"""
 			$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest;
 			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal | Out-Null
 
