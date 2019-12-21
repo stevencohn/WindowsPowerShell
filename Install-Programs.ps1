@@ -126,10 +126,8 @@ Begin
 			# prep a logon continuation task
 			$exarg = ''
 			if ($Extras) { $exarg = '-Extras' }
-			$cmd = $MyInvocation.MyCommand.Path
-			$cmd = "$cmd $exarg"
 			$trigger = New-ScheduledTaskTrigger -AtLogOn;
-			$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-command '$cmd'"
+			$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-command '$PSCommandPath $exarg'"
 			$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest;
 			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal | Out-Null
 
