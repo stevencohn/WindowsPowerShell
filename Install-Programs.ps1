@@ -26,7 +26,6 @@ Tested on Windows 10 update 1909.
 
 .EXAMPLE
 .\Install-Programs.ps1 -List
-.\Install-Programs.ps1 InstallMacrium
 .\Install-Programs.ps1 -AccessKey <key> -SecretKey <key> -Extras -Enterprise
 #>
 
