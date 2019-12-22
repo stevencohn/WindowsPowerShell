@@ -173,7 +173,7 @@ Begin
 			Enable-WindowsOptionalFeature -Online -FeatureName containers -All -NoRestart
 			Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
 
-			Restart-Computer -Force -Delay 0
+			Restart-Computer -Force
 		}
 		else
 		{
