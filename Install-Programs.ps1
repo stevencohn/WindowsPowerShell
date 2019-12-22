@@ -545,15 +545,15 @@ Process
 		return
 	}
 
+	if ($AccessKey -and $SecretKey)
+	{
+		ConfigureAws $AccessKey $SecretKey
+	}
+
 	if ($command)
 	{
 		InvokeCommand $command
 		return
-	}
-
-	if ($AccessKey -and $SecretKey)
-	{
-		ConfigureAws $AccessKey $SecretKey
 	}
 
 	if (Test-Path $stagefile)
