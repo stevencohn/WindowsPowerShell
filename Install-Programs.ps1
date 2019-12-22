@@ -123,8 +123,8 @@ Begin
 
 	function Highlight
 	{
-		param($text = '')
-		$text | Write-Host -ForegroundColor Black -BackgroundColor Yellow
+		param($text = '', $color = 'Yellow')
+		$text | Write-Host -ForegroundColor Black -BackgroundColor $color
 	}
 
 
@@ -441,13 +441,13 @@ Begin
 				New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 			}
 
-			$0 = 'https://softpedia-secure-download.com/dl/ba833328e1e20d7848a5498418cb5796/5dfe1db7/100016805/software/os_enhance/DITSetup.exe'
-			$zip = "$target\DITSetup.zip"
-			aws s3 cp s3://$bucket/DITSetup.exe $target\
+			# $0 = 'https://softpedia-secure-download.com/dl/ba833328e1e20d7848a5498418cb5796/5dfe1db7/100016805/software/os_enhance/DITSetup.exe'
+			# $zip = "$target\DITSetup.zip"
 			#Download $0 $zip
+			aws s3 cp s3://$bucket/DITSetup.exe $target\
 
 			# extract just the main program; must use 7z instead of Expand-Archive
-			7z e $target\DITSetup.exe DateInTray.exe -o"$target"
+			7z e $target\DITSetup.exe DateInTray.exe -o"$target" | Out-Null
 			Remove-Item $target\DITSetup.exe -Force -Confirm:$false
 
 			& $target\DateInTray.exe
@@ -471,20 +471,20 @@ Begin
 				New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 			}
 
-			$0 = 'http://www.stefandidak.com/wilma/winlayoutmanager.zip'
-			$zip = "$target\winlayoutmanager.zip"
-			aws s3 cp s3://$bucket/winlayoutmanager.zip $target\
+			# $0 = 'http://www.stefandidak.com/wilma/winlayoutmanager.zip'
+			# $zip = "$target\winlayoutmanager.zip"
 			#Download $0 $zip
+			aws s3 cp s3://$bucket/winlayoutmanager.zip $target\
 			Expand-Archive $zip -DestinationPath $target
 			Remove-Item $zip -Force -Confirm:$false
 
 			# Register WindowsLayoutManager sheduled task to run as admin
-			$trigger = New-ScheduledTaskTrigger -AtLogOn;
-			$action = New-ScheduledTaskAction -Execute "$target\WindowsLayoutManager.exe";
-			$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest;
-			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "WiLMa" -Principal $principal;
+			$trigger = New-ScheduledTaskTrigger -AtLogOn
+			$action = New-ScheduledTaskAction -Execute "$target\WinLayoutManager.exe"
+			$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest
+			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "WiLMa" -Principal $principal
 
-			& $target\WindowsLayoutManager.exe
+			& $target\WinLayoutManager.exe
 		}
 	}
 }
