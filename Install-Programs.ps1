@@ -337,6 +337,11 @@ Begin
 		if (UnChocolatized 'greenshot')
 		{
 			Get-AppxPackage *Microsoft.ScreenSketch* -AllUsers | Remove-AppxPackage -AllUsers
+
+			# disable the Win-Shift-S hotkey for ScreenSnipper
+			$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+			New-ItemProperty -Path $0 -Name 'DisabledHotkeys' -Value 'S' -ErrorAction:SilentlyContinue
+
 			Highlight 'A warning dialog will appear about hotkeys - ignore it' 'Cyan'
 			Chocolatize 'greenshot'
 		}
@@ -547,6 +552,7 @@ Process
 
 	if ($AccessKey -and $SecretKey)
 	{
+		# harmless to do this even before AWS is installed
 		ConfigureAws $AccessKey $SecretKey
 	}
 
