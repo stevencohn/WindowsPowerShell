@@ -296,12 +296,13 @@ Begin
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		Chocolatize 'reflect-free' # just the installer to C:\tools\
 
-		Highlight '... Macrium installer started but it must be completed manually (wait for this script to finish)', `
+		# Highlight '... Macrium installer started but it must be completed manually (wait for this script to finish)', `
+		Highlight '... Macrium Installer icon should be on your desktop. Run it after VS is installed', `
 			'... Choose Home version, no registration is necessary', `
-			'' 'Cyan'
+			'' 'Cyan' 
 
 		# This runs the downloader and leaves the dialog visible!
-		& $tools\ReflectDL.exe
+		#& $tools\ReflectDL.exe
 	}
 
 
