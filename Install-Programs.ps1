@@ -223,11 +223,12 @@ Begin
 		8, Start vmcompute from powershell "net start vmcompute"
 		#>
 
-		if ((Get-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe').CFG.Enable -eq 'ON')
+		$0 = 'C:\WINDOWS\System32\vmcompute.exe'
+		if ((Get-ProcessMitigation -Name $0).CFG.Enable -eq 'ON')
 		{
 			# disable Code Flow Guard (CFG) for vmcompute service
-			Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe' -Disable CFG
-			Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe' -Disable StrictCFG
+			Set-ProcessMitigation -Name $0 -Disable CFG
+			Set-ProcessMitigation -Name $0 -Disable StrictCFG
 			# restart service
 			net stop vmcompute
 			net start vmcompute
