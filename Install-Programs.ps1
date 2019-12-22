@@ -443,12 +443,12 @@ Begin
 
 			$0 = 'https://softpedia-secure-download.com/dl/ba833328e1e20d7848a5498418cb5796/5dfe1db7/100016805/software/os_enhance/DITSetup.exe'
 			$zip = "$target\DITSetup.zip"
-			aws s3 cp s3://$bucket/DITSetup.exe $zip
+			aws s3 cp s3://$bucket/DITSetup.exe $target\
 			#Download $0 $zip
 
 			# extract just the main program; must use 7z instead of Expand-Archive
-			7z e $zip $target\DateInTray.exe
-			Remove-Item $zip -Force -Confirm:$false
+			7z e $target\DITSetup.exe DateInTray.exe -o"$target"
+			Remove-Item $target\DITSetup.exe -Force -Confirm:$false
 
 			& $target\DateInTray.exe
 		}
