@@ -334,6 +334,17 @@ Begin
 	}
 
 
+	function InstallGreenshot
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		if (UnChocolatized 'greenshot')
+		{
+			Get-AppxPackage *Microsoft.ScreenSketch* | Remove-AppxPackage
+			Chocolatize 'greenshot'
+		}
+	}
+
+
 	function InstallThings
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
