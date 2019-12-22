@@ -279,7 +279,6 @@ Default applications:
 Other applications included when -Extras is specified
 
    * DateInTray (_installed to C:\tools_)
-   * MusicBee
    * Paint.net
    * TreeSize Free
    * VLC

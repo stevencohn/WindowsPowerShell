@@ -164,6 +164,7 @@ Begin
 			$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest;
 			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal | Out-Null
 
+			Enable-WindowsOptionalFeature -Online -FeatureName containers -All -NoRestart
 			# this will force a reboot
 			Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
 		}
@@ -215,12 +216,15 @@ Begin
 		8, Start vmcompute from powershell "net start vmcompute"
 		#>
 
-		# disable Code Flow Guard (CFG) for vmcompute service
-		Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe' -Disable CFG
-		Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe' -Disable StrictCFG
-		# restart service
-		net stop vmcompute
-		net start vmcompute
+		if ((Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe').CFG.Enable -eq 'ON')
+		{
+			# disable Code Flow Guard (CFG) for vmcompute service
+			Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe' -Disable CFG
+			Set-ProcessMitigation -Name 'C:\WINDOWS\System32\vmcompute.exe' -Disable StrictCFG
+			# restart service
+			net stop vmcompute
+			net start vmcompute
+		}
 	}
 
 
@@ -458,6 +462,13 @@ Begin
 			7z e $target\DITSetup.exe DateInTray.exe -o"$target" | Out-Null
 			Remove-Item $target\DITSetup.exe -Force -Confirm:$false
 
+			# add to Startup
+			$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run'
+			$hex = [byte[]](0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+			New-ItemProperty -Path $0 -Name 'DateInTray' -PropertyType Binary -Value $hex -ErrorAction:SilentlyContinue
+			$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+			New-ItemProperty -Path $0 -Name 'DateInTray' -Value "$target\DateInTray.exe" -ErrorAction:SilentlyContinue
+
 			& $target\DateInTray.exe
 		}
 	}
@@ -492,7 +503,7 @@ Begin
 			$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest
 			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "WiLMa" -Principal $principal
 
-			& $target\WinLayoutManager.exe
+			Start-Process $target\WinLayoutManager.exe -Verb runas
 		}
 	}
 }
@@ -553,7 +564,7 @@ Process
 
 	if ($Extras)
 	{
-		Chocolatize 'musicbee'
+		#Chocolatize 'musicbee'
 		Chocolatize 'paint.net'
 		Chocolatize 'treesizefree'
 		Chocolatize 'vlc'
