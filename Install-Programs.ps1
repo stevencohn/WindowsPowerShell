@@ -134,6 +134,14 @@ Begin
 		Highlight '', "---- Installing $title ---------------------------"
 	}
 
+	function HighRead
+	{
+		param($prompt)
+		Write-Host $prompt -ForegroundColor Black -BackgroundColor Cyan -NoNewline
+		write-host ' ' -NoNewline
+		Read-Host
+	}
+
 
 	# Stage 0 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -146,9 +154,9 @@ Begin
 		{
 			HighTitle 'Hyper-V'
 			Highlight '', '... Reboot will be required after installing Hyper-V', `
-				'... This script will continue automagically after the reboot'
+				'... This script will continue automagically after the reboot' 'Cyan'
 
-			Read-Host '... Press Enter to continue or Ctrl-C to abort'
+			HighRead '... Press Enter to continue or Ctrl-C to abort'
 
 			Set-Content $stagefile '1' -Force
 			$script:stage = 1
@@ -282,7 +290,7 @@ Begin
 
 		Highlight '', 'Docker Desktop installed', `
 			'- restart console window to get updated PATH', `
-			'- unsecure repos must be added manually'
+			'- unsecure repos must be added manually' 'Cyan'
 	}
 
 
@@ -290,9 +298,10 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		Chocolatize 'reflect-free' # just the installer to C:\tools\
+
 		Highlight '... Macrium installer started but it must be completed manually (wait for this script to finish)', `
 			'... Choose Home version, no registration is necessary', `
-			''
+			'' 'Cyan'
 
 		# This runs the downloader and leaves the dialog visible!
 		& $tools\ReflectDL.exe
@@ -365,7 +374,7 @@ Begin
 		Highlight 'SourceTree: first time run...', `
 			'- Log into choose "BitBucket" option and logon Atlassian online', `
 			'- Enabled Advanced/"Configure automatic line endings"', `
-			'- Do not create an SSH key'
+			'- Do not create an SSH key' 'Cyan'
 	}
 
 
@@ -397,7 +406,7 @@ Begin
 				'... Microsoft Visual Studio Installer Projects', `
 				'... VSColorOutput', `
 				'... SpecFlow for Visual Studio 2019', `
-				'... Editor Guidelines'
+				'... Editor Guidelines' 'Cyan'
 		}
 	}
 
@@ -582,12 +591,12 @@ Process
 		'- DateInTray', `
 		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)', `
 		'', `
-		'Initialization compelte'
+		'Initialization compelte' 'Cyan'
 
 	if (Test-Path $stagefile)
 	{
 		Remove-Item $stagefile -Force -Confirm:$false
 	}
 
-	Read-Host "... Press Enter to finish"
+	HighRead '... Press Enter to finish'
 }
