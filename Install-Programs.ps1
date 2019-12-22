@@ -171,8 +171,9 @@ Begin
 			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal | Out-Null
 
 			Enable-WindowsOptionalFeature -Online -FeatureName containers -All -NoRestart
-			# this will force a reboot
-			Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+			Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
+
+			Restart-Computer -Force -Delay 0
 		}
 		else
 		{
