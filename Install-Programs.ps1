@@ -474,7 +474,7 @@ Begin
 			}
 
 			# $0 = 'http://www.stefandidak.com/wilma/winlayoutmanager.zip'
-			# $zip = "$target\winlayoutmanager.zip"
+			$zip = "$target\winlayoutmanager.zip"
 			#Download $0 $zip
 			aws s3 cp s3://$bucket/winlayoutmanager.zip $target\
 			Expand-Archive $zip -DestinationPath $target
