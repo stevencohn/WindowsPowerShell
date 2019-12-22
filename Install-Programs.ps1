@@ -336,11 +336,10 @@ Begin
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		if (UnChocolatized 'greenshot')
 		{
-			Get-AppxPackage *Microsoft.ScreenSketch* -AllUsers | Remove-AppxPackage -AllUsers
-
-			# disable the Win-Shift-S hotkey for ScreenSnipper
-			$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-			New-ItemProperty -Path $0 -Name 'DisabledHotkeys' -Value 'S' -ErrorAction:SilentlyContinue
+			# Get-AppxPackage *Microsoft.ScreenSketch* -AllUsers | Remove-AppxPackage -AllUsers
+			## disable the Win-Shift-S hotkey for ScreenSnipper
+			# $0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+			# New-ItemProperty -Path $0 -Name 'DisabledHotkeys' -Value 'S' -ErrorAction:SilentlyContinue
 
 			Highlight 'A warning dialog will appear about hotkeys - ignore it' 'Cyan'
 			Chocolatize 'greenshot'
