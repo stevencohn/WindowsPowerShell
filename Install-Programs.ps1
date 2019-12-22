@@ -298,20 +298,26 @@ Begin
 	function InstallNodeJs
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		HighTitle 'nodejs'
-		choco install -y nodejs --version 10.15.3
-		# update session PATH so we can continue
-		$npmpath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split ';' | ? { $_ -match 'nodejs' }
-		$env:PATH = (($env:PATH -split ';') -join ';') + ";$npmpath"
+		if ((Get-Command node -ErrorAction:SilentlyContinue) -eq $null)
+		{
+			HighTitle 'nodejs'
+			choco install -y nodejs --version 10.15.3
+			# update session PATH so we can continue
+			$npmpath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split ';' | ? { $_ -match 'nodejs' }
+			$env:PATH = (($env:PATH -split ';') -join ';') + ";$npmpath"
+		}
 	}
 
 	function InstallAngular
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		HighTitle 'angular'
-		npm install -g @angular/cli@7.3.8
-		npm install -g npm-check-updates
-		npm install -g local-web-server
+		if ((Get-Command ng -ErrorAction:SilentlyContinue) -eq $null)
+		{
+			HighTitle 'angular'
+			npm install -g @angular/cli@7.3.8
+			npm install -g npm-check-updates
+			npm install -g local-web-server
+		}
 	}
 
 
@@ -477,7 +483,7 @@ Begin
 			$zip = "$target\winlayoutmanager.zip"
 			#Download $0 $zip
 			aws s3 cp s3://$bucket/winlayoutmanager.zip $target\
-			Expand-Archive $zip -DestinationPath $target
+			Expand-Archive $zip -DestinationPath $target | Out-Null
 			Remove-Item $zip -Force -Confirm:$false
 
 			# Register WindowsLayoutManager sheduled task to run as admin
@@ -539,7 +545,6 @@ Process
 	InstallNodeJs
 	InstallAngular
 	InstallVSCode
-	InstallVisualStudio
 	InstallSourceTree
 
 	InstallDockerDesktop
@@ -555,6 +560,9 @@ Process
 		InstallDateInTray
 		InstallWiLMa
 	}
+
+	# may reboot multiple times, so do it last
+	InstallVisualStudio
 
 	Highlight '', `
 		'Other recommendation that must be installed manually:', `
