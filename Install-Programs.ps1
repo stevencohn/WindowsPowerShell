@@ -243,6 +243,7 @@ Begin
 			}
 
 			aws s3 cp s3://$bucket/baretail.exe $target\
+			aws s3 cp s3://$bucket/BareTail-Dark.udm $target\
 			#Download 'https://baremetalsoft.com/baretail/download.php?p=m' $target\baretail.exe
 		}
 	}
