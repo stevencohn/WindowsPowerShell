@@ -156,8 +156,6 @@ Begin
 			Highlight '', '... Reboot will be required after installing Hyper-V', `
 				'... This script will continue automagically after the reboot' 'Cyan'
 
-			HighRead '... Press Enter to continue or Ctrl-C to abort'
-
 			Set-Content $stagefile '1' -Force
 			$script:stage = 1
 
