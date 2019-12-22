@@ -179,6 +179,21 @@ Begin
 	}
 
 
+	function InstallNetFx
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+
+		# .NET Framework 3.5 is required by many apps
+		if ((Get-WindowsOptionalFeature -Online -FeatureName 'NetFx3' | ? { $_.State -eq 'Enabled'}).Count -eq 0)
+		{
+			HighTitle '.NET Framework 3.5'
+
+			# don't restart but will after Hyper-V finishes stage 0
+			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx3' -NoRestart
+		}
+	}
+
+
 	# Stage 1 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function DisableCFG
@@ -297,19 +312,6 @@ Begin
 		npm install -g @angular/cli@7.3.8
 		npm install -g npm-check-updates
 		npm install -g local-web-server
-	}
-
-
-	function InstallNetFx
-	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
-
-		# .NET Framework 3.5 is required by many apps
-		if ((Get-WindowsOptionalFeature -Online -FeatureName 'NetFx3' | ? { $_.State -eq 'Enabled'}).Count -eq 0)
-		{
-			HighTitle '.NET Framework 3.5'
-			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx3'
-		}
 	}
 
 
