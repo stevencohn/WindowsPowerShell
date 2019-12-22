@@ -257,16 +257,13 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
-		if (!(Test-Path "$tools\BareTail"))
+		$target = "$tools\BareTail"
+		if (!(Test-Path $target))
 		{
 			InstallAWSCLI
 
 			HighTitle 'BareTail'
-			$target = "$tools\BareTail"
-			if (!(Test-Path $target))
-			{
-				New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
-			}
+			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
 			aws s3 cp s3://$bucket/baretail.exe $target\
 			aws s3 cp s3://$bucket/BareTail-Dark.udm $target\
@@ -339,8 +336,28 @@ Begin
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		if (UnChocolatized 'greenshot')
 		{
-			Get-AppxPackage *Microsoft.ScreenSketch* | Remove-AppxPackage
+			Get-AppxPackage *Microsoft.ScreenSketch* -AllUsers | Remove-AppxPackage -AllUsers
+			Highlight 'A warning dialog will appear about hotkeys - ignore it' 'Cyan'
 			Chocolatize 'greenshot'
+		}
+	}
+
+
+	function InstallSysInternals
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+
+		$target = "$tools\SysInternals"
+		if (!(Test-Path $target))
+		{
+			InstallAWSCLI
+
+			HighTitle 'SysInternals procexp and procmon'
+			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
+
+			aws s3 cp s3://$bucket/SysInternals.zip $target\
+			Expand-Archive $target\SysInternals.zip -DestinationPath $target | Out-Null
+			Remove-Item $target\SysInternals.zip -Force -Confirm:$false
 		}
 	}
 
@@ -360,6 +377,7 @@ Begin
 		Chocolatize 'robo3t'
 
 		InstallBareTail
+		InstallSysInternals
 	}
 
 
@@ -461,17 +479,13 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
-		if (!(Test-Path $tools\DateInTray))
+		$target = "$tools\DateInTray"
+		if (!(Test-Path $target))
 		{
 			InstallAWSCLI
 
 			HighTitle 'DateInTray'
-			$target = "$tools\DateInTray"
-
-			if (!(Test-Path $target))
-			{
-				New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
-			}
+			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
 			# $0 = 'https://softpedia-secure-download.com/dl/ba833328e1e20d7848a5498418cb5796/5dfe1db7/100016805/software/os_enhance/DITSetup.exe'
 			# $zip = "$target\DITSetup.zip"
@@ -498,17 +512,13 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
-		if (!(Test-Path "$tools\WiLMa"))
+		$target = "$tools\WiLMa"
+		if (!(Test-Path $target))
 		{
 			InstallAWSCLI
 
 			HighTitle 'WiLMa'
-			$target = "$tools\WiLMa"
-
-			if (!(Test-Path $target))
-			{
-				New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
-			}
+			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
 			# $0 = 'http://www.stefandidak.com/wilma/winlayoutmanager.zip'
 			$zip = "$target\winlayoutmanager.zip"

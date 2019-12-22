@@ -273,6 +273,7 @@ Default applications:
    * Nuget command line
    * Robot3T
    * SourceTree
+   * SysInternals procexp and procmon (_installed to C:\tools_)
    * Visual Studio 2019 (_professional or enterpise_)
    * VSCode
 
