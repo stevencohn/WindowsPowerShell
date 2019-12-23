@@ -241,16 +241,17 @@ Begin
 
 	function InstallAWSCLI
 	{
-		Chocolatize 'awscli'
-
-		if ((Get-Command aws -ErrorAction:SilentlyContinue) -eq $null)
+		if (Chocolatize 'awscli')
 		{
-			# path will be added to Machine space but it isn't there yet
-			# so temporarily fix path so we can install add-ons
-			$0 = 'C:\Program Files\Amazon\AWSCLI\bin'
-			if (Test-Path $0)
+			if ((Get-Command aws -ErrorAction:SilentlyContinue) -eq $null)
 			{
-				$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
+				# path will be added to Machine space but it isn't there yet
+				# so temporarily fix path so we can install add-ons
+				$0 = 'C:\Program Files\Amazon\AWSCLI\bin'
+				if (Test-Path $0)
+				{
+					$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
+				}
 			}
 		}
 	}
@@ -301,7 +302,7 @@ Begin
 
 		if (!(Test-Path "$env:ProgramFiles\Macrium\Reflect"))
 		{
-			Chocolatize 'reflect-free' # just the installer to C:\tools\
+			Chocolatize 'reflect-free' | Out-Null # just the installer to C:\tools\
 
 			# Highlight '... Macrium installer started but it must be completed manually (wait for this script to finish)', `
 			Highlight '... Macrium Installer icon should be on your desktop. Run it after VS is installed', `
@@ -351,7 +352,7 @@ Begin
 			# New-ItemProperty -Path $0 -Name 'DisabledHotkeys' -Value 'S' -ErrorAction:SilentlyContinue
 
 			Highlight 'A warning dialog will appear about hotkeys - ignore it' 'Cyan'
-			Chocolatize 'greenshot'
+			Chocolatize 'greenshot' | Out-Null
 		}
 	}
 
@@ -378,16 +379,16 @@ Begin
 	function InstallThings
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		Chocolatize '7zip'
-		Chocolatize 'git'
-		Chocolatize 'googlechrome'
-		Chocolatize 'greenshot'
-		Chocolatize 'linqpad'  # free version; can add license (activation.txt)
-		Chocolatize 'mRemoteNG'
-		Chocolatize 'notepadplusplus'
-		Chocolatize 'npppluginmanager'
-		Chocolatize 'nuget.commandline'
-		Chocolatize 'robo3t'
+		Chocolatize '7zip' | Out-Null
+		Chocolatize 'git' | Out-Null
+		Chocolatize 'googlechrome' | Out-Null
+		Chocolatize 'greenshot' | Out-Null
+		Chocolatize 'linqpad' | Out-Null # free version; can add license (activation.txt)
+		Chocolatize 'mRemoteNG' | Out-Null
+		Chocolatize 'notepadplusplus' | Out-Null
+		Chocolatize 'npppluginmanager' | Out-Null
+		Chocolatize 'nuget.commandline' | Out-Null
+		Chocolatize 'robo3t' | Out-Null
 
 		InstallBareTail
 		InstallSysInternals
@@ -459,10 +460,8 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
-		if (UnChocolatized 'vscode')
+		if (Chocolatize 'vscode')
 		{
-			Chocolatize 'vscode'
-
 			# path will be added to Machine space but it isn't there yet
 			# so temporarily fix path so we can install add-ons
 			$0 = 'C:\Program Files\Microsoft VS Code\bin'
@@ -610,10 +609,10 @@ Process
 
 	if ($Extras)
 	{
-		#Chocolatize 'musicbee'
-		Chocolatize 'paint.net'
-		Chocolatize 'treesizefree'
-		Chocolatize 'vlc'
+		#Chocolatize 'dopamine' | Out-Null # music player
+		Chocolatize 'paint.net' | Out-Null
+		Chocolatize 'treesizefree' | Out-Null
+		Chocolatize 'vlc' | Out-Null
 		InstallDateInTray
 		InstallWiLMa
 	}
