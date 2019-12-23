@@ -270,7 +270,7 @@ Begin
 			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
 			aws s3 cp s3://$bucket/baretail.exe $target\
-			aws s3 cp s3://$bucket/BareTail-Dark.udm $target\
+			aws s3 cp s3://$bucket/baretail-dark.udm $target\
 			#Download 'https://baremetalsoft.com/baretail/download.php?p=m' $target\baretail.exe
 		}
 	}
@@ -431,16 +431,16 @@ Begin
 		{
 			InstallAWSCLI
 
-			$kind = 'professional'
-			if ($Enterprise) { $kind = 'enterprise' }
+			$sku = 'professional'
+			if ($Enterprise) { $sku = 'enterprise' }
 
-			HighTitle "Visual Studio 2019 ($kind)"
+			HighTitle "Visual Studio 2019 ($sku)"
 			Highlight '... This will take a few minutes'
 
 			# download the installer
-			$bits = "vs_$kind`_2019_16.4.exe"
+			$bits = "vs_$sku`_2019_16.4.exe"
 			aws s3 cp s3://$bucket/$bits $env:TEMP\
-			aws s3 cp s3://$bucket/.vsconfig $env:TEMP\
+			aws s3 cp s3://$bucket/vs_$sku.vsconfig $env:TEMP\.vsconfig
 
 			# run the installer
 			& $env:TEMP\$bits --passive --config $env:TEMP\.vsconfig
