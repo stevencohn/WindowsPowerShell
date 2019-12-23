@@ -305,10 +305,11 @@ Begin
 		{
 			Chocolatize 'reflect-free' | Out-Null # just the installer to C:\tools\
 
-			# Highlight '... Macrium installer started but it must be completed manually (wait for this script to finish)', `
-			Highlight '... Double-click the Macrium Installer icon on the desktop after VS is installed', `
-				'... Choose Free version, no registration is necessary', `
-				'' 'Cyan'
+			$reminder = '... Double-click the Macrium Installer icon on the desktop after VS is installed', `
+				'... Choose Free version, no registration is necessary'
+
+			$reminders += ,$reminder
+			Highlight $reminder 'Cyan'
 
 			# This runs the downloader and leaves the dialog visible!
 			#& $tools\ReflectDL.exe
