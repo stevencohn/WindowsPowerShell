@@ -305,8 +305,9 @@ Begin
 		{
 			Chocolatize 'reflect-free' | Out-Null # just the installer to C:\tools\
 
-			$reminder = '... Double-click the Macrium Installer icon on the desktop after VS is installed', `
-				'... Choose Free version, no registration is necessary'
+			$reminder = 'Macrium Reflect', `
+				' 1. Double-click the Macrium Installer icon on the desktop after VS is installed', `
+				' 2. Choose Free version, no registration is necessary'
 
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
@@ -417,10 +418,10 @@ Begin
 
 		if (Chocolatize 'sourcetree')
 		{
-			$reminder = 'SourceTree: first time run...', `
-				'- Log into choose "BitBucket" option and logon Atlassian online', `
-				'- Enabled Advanced/"Configure automatic line endings"', `
-				'- Do not create an SSH key'
+			$reminder = 'SourceTree configuration', `
+				' 1. Log into choose "BitBucket" option and logon Atlassian online', `
+				' 2. Enabled Advanced/"Configure automatic line endings"', `
+				' 3. Do not create an SSH key'
 
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
@@ -649,19 +650,21 @@ Process
 	}
 
 	$reminder = 'Consider these manually installed apps:', `
-		'- AVG Antivirus', `
-		'- BeyondCompare (there is a choco package but not for 4.0)', `
-		'- ConEmu', `
-		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)'
+		' - AVG Antivirus', `
+		' - BeyondCompare (there is a choco package but not for 4.0)', `
+		' - ConEmu', `
+		' - OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)'
 
 	$script:reminders += ,$reminder
 
 	$line = New-Object String('*',80)
+	Write-Host
 	Write-Host $line -ForegroundColor Cyan
-	Write-Host ' **** Reminders ...' -ForegroundColor Cyan
+	Write-Host ' Reminders ...' -ForegroundColor Cyan
 	Write-Host $line -ForegroundColor Cyan
+	Write-Host
 
-	$script:reminders | % { $_ | % { Highlight $_ 'Cyan' }; Write-Host }
+	$script:reminders | % { $_ | % { Write-Host $_ 'Cyan' }; Write-Host }
 
 	Write-Host '... Initialization compelte   ' -ForegroundColor Green
 	Read-Host '... Press Enter to finish'
