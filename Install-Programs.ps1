@@ -135,14 +135,6 @@ Begin
 		Highlight '', "---- Installing $title ---------------------------"
 	}
 
-	function HighRead
-	{
-		param($prompt)
-		Write-Host $prompt -ForegroundColor Black -BackgroundColor Cyan -NoNewline
-		write-host ' ' -NoNewline
-		Read-Host
-	}
-
 
 	# Stage 0 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
