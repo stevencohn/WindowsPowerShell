@@ -621,17 +621,17 @@ Process
 	InstallVisualStudio
 
 	Highlight '', `
-		'Other recommendation that must be installed manually:', `
-		'- BeyondCompare (there is a choco package but not for 4.0)', `
-		'- ConEmu', `
-		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)', `
+		'Other recommendations that must be installed manually:                    ', `
+		'- BeyondCompare (there is a choco package but not for 4.0)                ', `
+		'- ConEmu                                                                  ', `
+		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases) ', `
 		'', `
-		'Initialization compelte' 'Cyan'
+		'Initialization compelte   ' 'Cyan'
 
 	if (Test-Path $stagefile)
 	{
 		Remove-Item $stagefile -Force -Confirm:$false
 	}
 
-	HighRead '... Press Enter to finish'
+	HighRead '... Press Enter to finish '
 }
