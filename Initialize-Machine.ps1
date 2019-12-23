@@ -499,6 +499,8 @@ Begin
 
 	function DisableZipFolders
 	{
+		Write-Verbose 'disabling default Windows Zip folder Explorer integration'
+
 		# take ownership of all Compressed Folders keys (e.g. replacing with 7-Zip)
 		Set-RegistryOwner 'HKCR' 'CLSID\{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}';
 		Set-RegistryOwner 'HKCR' 'CLSID\{0CD7A5C0-9F37-11CE-AE65-08002B2E1262}';
