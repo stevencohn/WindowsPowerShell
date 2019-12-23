@@ -282,9 +282,13 @@ Begin
 		if (UnChocolatized 'docker-desktop')
 		{
 			Chocolatize 'docker-desktop'
-			Highlight '', 'Docker Desktop installed', `
-				'- restart console window to get updated PATH', `
-				'- unsecure repos must be added manually' 'Cyan'
+
+			$reminder = 'Docker Desktop', `
+				' 0. Restart console window to get updated PATH', `
+				' 1. Unsecure repos must be added manually'
+
+			$reminders += ,$reminder
+			Highlight $reminder 'Cyan'
 		}
 	}
 
