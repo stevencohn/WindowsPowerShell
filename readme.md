@@ -295,18 +295,18 @@ the manual installation of Macrium.
 
 Macrium Reflect
 
-   # Double-click the Macrium Installer icon on the desktop after VS is installed
-   # Choose Free version, no registration is necessary
+   1. Double-click the Macrium Installer icon on the desktop after VS is installed
+   1. Choose Free version, no registration is necessary
 
 SourceTree configuration
 
-   # Log into choose "BitBucket" option and logon Atlassian online
-   # Enabled Advanced/"Configure automatic line endings"
-   # Do not create an SSH key
+   1. Log into choose "BitBucket" option and logon Atlassian online
+   1. Enabled Advanced/"Configure automatic line endings"
+   1. Do not create an SSH key
 
 Visual Studio
 
-   # When installation is complete, rerun this script using the InstallVSExtensions command
+   1. When installation is complete, rerun this script using the InstallVSExtensions command
 
 Consider these manually installed apps:
 - AVG Antivirus
