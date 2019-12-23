@@ -244,8 +244,8 @@ Finally, since this updates the PowerShell console colors, you can close and reo
 
 ## Install-Programs.ps1
 Automates the installation of applications, development tools, and other utilities.
-
 All applications, including Visual Studio, install unattended in about 20 minutes.
+It's also reentrant, skipping items already installed and installing items missing.
 
 `.\Install-Programs.ps1 [command] -AccessKey a -SecretKey s [-List] [-Extras] [-Enterprise]`
  
