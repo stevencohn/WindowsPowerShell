@@ -471,7 +471,8 @@ Begin
 		InstallVsix $installer 'TechTalk.SpecFlow.VisualStudioIntegration'
 		InstallVsix $installer 'VSColorOutput'
 
-		Write-Host '... Please wait a couple of minutes for the VSIXInstaller processes to complete' -ForegroundColor Yellow
+		Write-Host
+		Write-Host '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS' -ForegroundColor Yellow
 	}
 
 	function InstallVsix
