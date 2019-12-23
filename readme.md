@@ -291,6 +291,27 @@ During the installation, hints and tips are shown highlighted in yellow and
 instructions are highlighted in cyan. Some are import, such as how to continue
 the manual installation of Macrium.
 
+### Reminders shown after a full install
+
+Macrium Reflect
+0. Double-click the Macrium Installer icon on the desktop after VS is installed
+1. Choose Free version, no registration is necessary
+
+SourceTree configuration
+0. Log into choose "BitBucket" option and logon Atlassian online
+1. Enabled Advanced/"Configure automatic line endings"
+2. Do not create an SSH key
+
+Visual Studio
+0. When installation is complete, rerun this script using the InstallVSExtensions command
+
+Consider these manually installed apps:
+- AVG Antivirus
+- BeyondCompare (there is a choco package but not for 4.0)
+- ConEmu
+- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)
+
+
 ## Profiles
 
 #### Microsoft.PowerShell_profile.ps1
