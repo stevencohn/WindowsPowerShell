@@ -470,6 +470,8 @@ Begin
 		InstallVsix $installer 'Markdown_Editor_v1.12.236'
 		InstallVsix $installer 'TechTalk.SpecFlow.VisualStudioIntegration'
 		InstallVsix $installer 'VSColorOutput'
+
+		Write-Host '... Please wait a couple of minutes for the VSIXInstaller processes to complete' -ForegroundColor Yellow
 	}
 
 	function InstallVsix
