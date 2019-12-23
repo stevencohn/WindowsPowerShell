@@ -88,7 +88,10 @@ Begin
 		{
 			HighTitle $name
 			choco install -y $name
+			return $true
 		}
+
+		return $false
 	}
 
 
@@ -283,26 +286,31 @@ Begin
 			return
 		}
 
-		Chocolatize 'docker-desktop'
-
-		Highlight '', 'Docker Desktop installed', `
-			'- restart console window to get updated PATH', `
-			'- unsecure repos must be added manually' 'Cyan'
+		if (Chocolatize 'docker-desktop')
+		{
+			Highlight '', 'Docker Desktop installed', `
+				'- restart console window to get updated PATH', `
+				'- unsecure repos must be added manually' 'Cyan'
+		}
 	}
 
 
 	function InstallMacrium
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		Chocolatize 'reflect-free' # just the installer to C:\tools\
 
-		# Highlight '... Macrium installer started but it must be completed manually (wait for this script to finish)', `
-		Highlight '... Macrium Installer icon should be on your desktop. Run it after VS is installed', `
-			'... Choose Home version, no registration is necessary', `
-			'' 'Cyan' 
+		if (!(Test-Path "$env:ProgramFiles\Macrium\Reflect"))
+		{
+			Chocolatize 'reflect-free' # just the installer to C:\tools\
 
-		# This runs the downloader and leaves the dialog visible!
-		#& $tools\ReflectDL.exe
+			# Highlight '... Macrium installer started but it must be completed manually (wait for this script to finish)', `
+			Highlight '... Macrium Installer icon should be on your desktop. Run it after VS is installed', `
+				'... Choose Home version, no registration is necessary', `
+				'' 'Cyan' 
+
+			# This runs the downloader and leaves the dialog visible!
+			#& $tools\ReflectDL.exe
+		}
 	}
 
 
@@ -403,12 +411,14 @@ Begin
 	function InstallSourceTree
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		Chocolatize 'sourcetree'
 
-		Highlight 'SourceTree: first time run...', `
-			'- Log into choose "BitBucket" option and logon Atlassian online', `
-			'- Enabled Advanced/"Configure automatic line endings"', `
-			'- Do not create an SSH key' 'Cyan'
+		if (Chocolatize 'sourcetree')
+		{
+			Highlight 'SourceTree: first time run...', `
+				'- Log into choose "BitBucket" option and logon Atlassian online', `
+				'- Enabled Advanced/"Configure automatic line endings"', `
+				'- Do not create an SSH key' 'Cyan'
+		}
 	}
 
 
@@ -416,7 +426,7 @@ Begin
 	{
 		[CmdletBinding(HelpURI='manualcmd')] param()
 
-		if (!(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio 14.0'))
+		if (!(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio'))
 		{
 			InstallAWSCLI
 
@@ -615,7 +625,6 @@ Process
 		'Other recommendation that must be installed manually:', `
 		'- BeyondCompare (there is a choco package but not for 4.0)', `
 		'- ConEmu', `
-		'- DateInTray', `
 		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)', `
 		'', `
 		'Initialization compelte' 'Cyan'
