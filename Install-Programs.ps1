@@ -462,7 +462,7 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		HighTitle 'Visual Studio Extensions'
-		$root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installtionPath
+		$root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
 		$installer = "$root\Common7\IDE\vsixinstaller.exe"
 
 		InstallVsix $installer 'EditorGuidelines'
