@@ -89,10 +89,7 @@ Begin
 		{
 			HighTitle $name
 			choco install -y $name
-			return $true
 		}
-
-		return $false
 	}
 
 
@@ -242,8 +239,10 @@ Begin
 
 	function InstallAWSCLI
 	{
-		if (Chocolatize 'awscli')
+		if (UnChocolatized 'awscli')
 		{
+			Chocolatize 'awscli'
+
 			if ((Get-Command aws -ErrorAction:SilentlyContinue) -eq $null)
 			{
 				# path will be added to Machine space but it isn't there yet
@@ -288,8 +287,9 @@ Begin
 			return
 		}
 
-		if (Chocolatize 'docker-desktop')
+		if (UnChocolatized 'docker-desktop')
 		{
+			Chocolatize 'docker-desktop'
 			Highlight '', 'Docker Desktop installed', `
 				'- restart console window to get updated PATH', `
 				'- unsecure repos must be added manually' 'Cyan'
@@ -303,11 +303,11 @@ Begin
 
 		if (!(Test-Path "$env:ProgramFiles\Macrium\Reflect"))
 		{
-			$ok = Chocolatize 'reflect-free'  # just the installer to C:\tools\
+			Chocolatize 'reflect-free'  # just the installer to C:\tools\
 
 			$reminder = 'Macrium Reflect', `
-				' 1. Double-click the Macrium Installer icon on the desktop after VS is installed', `
-				' 2. Choose Free version, no registration is necessary'
+				' 0. Double-click the Macrium Installer icon on the desktop after VS is installed', `
+				' 1. Choose Free version, no registration is necessary'
 
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
@@ -355,7 +355,7 @@ Begin
 			# New-ItemProperty -Path $0 -Name 'DisabledHotkeys' -Value 'S' -ErrorAction:SilentlyContinue
 
 			Highlight 'A warning dialog will appear about hotkeys - ignore it' 'Cyan'
-			$ok = Chocolatize 'greenshot'
+			Chocolatize 'greenshot'
 		}
 	}
 
@@ -382,16 +382,16 @@ Begin
 	function InstallThings
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		$ok = Chocolatize '7zip'
-		$ok = Chocolatize 'git'
-		$ok = Chocolatize 'googlechrome'
-		$ok = Chocolatize 'greenshot'
-		$ok = Chocolatize 'linqpad' # free version; can add license (activation.txt)
-		$ok = Chocolatize 'mRemoteNG'
-		$ok = Chocolatize 'notepadplusplus'
-		$ok = Chocolatize 'npppluginmanager'
-		$ok = Chocolatize 'nuget.commandline'
-		$ok = Chocolatize 'robo3t'
+		Chocolatize '7zip'
+		Chocolatize 'git'
+		Chocolatize 'googlechrome'
+		Chocolatize 'greenshot'
+		Chocolatize 'linqpad' # free version; can add license (activation.txt)
+		Chocolatize 'mRemoteNG'
+		Chocolatize 'notepadplusplus'
+		Chocolatize 'npppluginmanager'
+		Chocolatize 'nuget.commandline'
+		Chocolatize 'robo3t'
 
 		InstallBareTail
 		InstallSysInternals
@@ -416,12 +416,14 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
-		if (Chocolatize 'sourcetree')
+		if (UnChocolatized 'sourcetree')
 		{
+			Chocolatize 'sourcetree'
+
 			$reminder = 'SourceTree configuration', `
-				' 1. Log into choose "BitBucket" option and logon Atlassian online', `
-				' 2. Enabled Advanced/"Configure automatic line endings"', `
-				' 3. Do not create an SSH key'
+				' 0. Log into choose "BitBucket" option and logon Atlassian online', `
+				' 1. Enabled Advanced/"Configure automatic line endings"', `
+				' 2. Do not create an SSH key'
 
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
@@ -451,7 +453,9 @@ Begin
 			# run the installer
 			& $env:TEMP\$bits --passive --config $env:TEMP\.vsconfig
 
-			$reminder = '... When installation is complete, rerun this script using the InstallVSExtensions command'
+			$reminder = 'Visual Studio', `
+				' 0. When installation is complete, rerun this script using the InstallVSExtensions command'
+
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
 		}
@@ -484,8 +488,10 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
-		if (Chocolatize 'vscode')
+		if (UnChocolatized 'vscode')
 		{
+			Chocolatize 'vscode'
+
 			# path will be added to Machine space but it isn't there yet
 			# so temporarily fix path so we can install add-ons
 			$0 = 'C:\Program Files\Microsoft VS Code\bin'
