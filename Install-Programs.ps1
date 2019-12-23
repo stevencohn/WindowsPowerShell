@@ -49,7 +49,7 @@ Begin
 	$ContinuationName = 'Install-Programs-Continuation'
 	$bucket = 'cdsbits'
 	$tools = 'C:\tools'
-	$reminders = @(@())
+	$script:reminders = @(@())
 
 
 	function GetCommandList
@@ -308,7 +308,7 @@ Begin
 			$reminder = '... Double-click the Macrium Installer icon on the desktop after VS is installed', `
 				'... Choose Free version, no registration is necessary'
 
-			$reminders += ,$reminder
+			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
 
 			# This runs the downloader and leaves the dialog visible!
@@ -422,7 +422,7 @@ Begin
 				'- Enabled Advanced/"Configure automatic line endings"', `
 				'- Do not create an SSH key'
 
-			$reminders += ,$reminder
+			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
 		}
 	}
@@ -451,7 +451,7 @@ Begin
 			& $env:TEMP\$bits --passive --config $env:TEMP\.vsconfig
 
 			$reminder = '... When installation is complete, rerun this script using the InstallVSExtensions command'
-			$reminders += ,$reminder
+			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
 		}
 	}
@@ -654,14 +654,14 @@ Process
 		'- ConEmu', `
 		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)'
 
-	$reminders += ,$reminder
+	$script:reminders += ,$reminder
 
 	$line = New-Object String('*',80)
 	Write-Host $line -ForegroundColor Cyan
 	Write-Host ' **** Reminders ...' -ForegroundColor Cyan
 	Write-Host $line -ForegroundColor Cyan
 
-	$reminders | % { $_ | % { Highlight $_ 'Cyan' }; Write-Host }
+	$script:reminders | % { $_ | % { Highlight $_ 'Cyan' }; Write-Host }
 
 	Write-Host '... Initialization compelte   ' -ForegroundColor Green
 	Read-Host '... Press Enter to finish'
