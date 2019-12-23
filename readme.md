@@ -296,7 +296,7 @@ the manual installation of Macrium.
 Macrium Reflect
 
    1. Double-click the Macrium Installer icon on the desktop after VS is installed
-   1. Choose Free version, no registration is necessary
+   1. Choose Free on first screen, then Home version, and no registration is necessary
 
 SourceTree configuration
 
