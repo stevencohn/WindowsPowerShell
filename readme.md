@@ -308,6 +308,8 @@ Visual Studio
 
    1. When installation is complete, rerun this script using the InstallVSExtensions command
 
+`.\Install-Programs.ps1 InstallVSExtensions -AccessKey a -SecretKey s`
+
 Consider these manually installed apps:
 - AVG Antivirus
 - BeyondCompare (there is a choco package but not for 4.0)
