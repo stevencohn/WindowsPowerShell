@@ -245,6 +245,8 @@ Finally, since this updates the PowerShell console colors, you can close and reo
 ## Install-Programs.ps1
 Automates the installation of applications, development tools, and other utilities.
 
+All applications, including Visual Studio, install unattended in about 20 minutes.
+
 `.\Install-Programs.ps1 [command] -AccessKey a -SecretKey s [-List] [-Extras] [-Enterprise]`
  
    * _command_ - optional argument to run a single command, default is to run all commands
@@ -266,7 +268,7 @@ Default applications:
    * Google Chrome
    * Greenshot
    * LINQPad
-   * Macrium Reflect Free
+   * Macrium Reflect Free (_installer_)
    * mRemoteNG
    * Node.js (_specific version_)
    * Notepad++
@@ -285,8 +287,9 @@ Other applications included when -Extras is specified
    * VLC
    * WiLMa (_installed to C:\tools_)
 
-During the installation, instructions and tips are shown highlighted in yellow.
-Some are import, such as how to continue the manual installation of Macrium.
+During the installation, hints and tips are shown highlighted in yellow and
+instructions are highlighted in cyan. Some are import, such as how to continue
+the manual installation of Macrium.
 
 ## Profiles
 
