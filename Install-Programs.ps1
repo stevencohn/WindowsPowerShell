@@ -647,16 +647,16 @@ Process
 		Remove-Item $stagefile -Force -Confirm:$false
 	}
 
-	$reminders += ,@('', `
-		'Consider these manually installed apps:', `
+	$reminder = 'Consider these manually installed apps:', `
 		'- AVG Antivirus', `
 		'- BeyondCompare (there is a choco package but not for 4.0)', `
 		'- ConEmu', `
-		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)')
+		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)'
 
-	$reminders | % { Highlight $_, '' 'Cyan' }
+	$reminders += ,$reminder
+
+	$reminders | % { $_ | % { Highlight $_ 'Cyan' }; Write-Host }
 
 	Write-Host '... Initialization compelte   ' -ForegroundColor Green
-	Write-Host '... Press Enter to finish: ' -NoNewline -ForegroundColor Green
-	Read-Host
+	Read-Host '... Press Enter to finish'
 }
