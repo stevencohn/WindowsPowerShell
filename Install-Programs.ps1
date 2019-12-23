@@ -475,6 +475,7 @@ Begin
 	function InstallVsix
 	{
 		param($installer, $name)
+		Write-Host "... installing $name extension in the background" -ForegroundColor Yellow
 		aws s3 cp s3://$bucket/$name.vsix $env:TEMP\
 		& $installer /quiet /norepair $env:TEMP\$name.vsix
 	}
