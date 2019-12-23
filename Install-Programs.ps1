@@ -655,6 +655,11 @@ Process
 
 	$reminders += ,$reminder
 
+	$line = New-Object String('*',80)
+	Write-Host $line -ForegroundColor Cyan
+	Write-Host ' **** Reminders ...' -ForegroundColor Cyan
+	Write-Host $line -ForegroundColor Cyan
+
 	$reminders | % { $_ | % { Highlight $_ 'Cyan' }; Write-Host }
 
 	Write-Host '... Initialization compelte   ' -ForegroundColor Green
