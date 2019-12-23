@@ -303,7 +303,7 @@ Begin
 
 		if (!(Test-Path "$env:ProgramFiles\Macrium\Reflect"))
 		{
-			Chocolatize 'reflect-free' | Out-Null # just the installer to C:\tools\
+			$ok = Chocolatize 'reflect-free'  # just the installer to C:\tools\
 
 			$reminder = 'Macrium Reflect', `
 				' 1. Double-click the Macrium Installer icon on the desktop after VS is installed', `
@@ -355,7 +355,7 @@ Begin
 			# New-ItemProperty -Path $0 -Name 'DisabledHotkeys' -Value 'S' -ErrorAction:SilentlyContinue
 
 			Highlight 'A warning dialog will appear about hotkeys - ignore it' 'Cyan'
-			Chocolatize 'greenshot' | Out-Null
+			$ok = Chocolatize 'greenshot'
 		}
 	}
 
@@ -382,16 +382,16 @@ Begin
 	function InstallThings
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		Chocolatize '7zip' | Out-Null
-		Chocolatize 'git' | Out-Null
-		Chocolatize 'googlechrome' | Out-Null
-		Chocolatize 'greenshot' | Out-Null
-		Chocolatize 'linqpad' | Out-Null # free version; can add license (activation.txt)
-		Chocolatize 'mRemoteNG' | Out-Null
-		Chocolatize 'notepadplusplus' | Out-Null
-		Chocolatize 'npppluginmanager' | Out-Null
-		Chocolatize 'nuget.commandline' | Out-Null
-		Chocolatize 'robo3t' | Out-Null
+		$ok = Chocolatize '7zip'
+		$ok = Chocolatize 'git'
+		$ok = Chocolatize 'googlechrome'
+		$ok = Chocolatize 'greenshot'
+		$ok = Chocolatize 'linqpad' # free version; can add license (activation.txt)
+		$ok = Chocolatize 'mRemoteNG'
+		$ok = Chocolatize 'notepadplusplus'
+		$ok = Chocolatize 'npppluginmanager'
+		$ok = Chocolatize 'nuget.commandline'
+		$ok = Chocolatize 'robo3t'
 
 		InstallBareTail
 		InstallSysInternals
@@ -633,10 +633,10 @@ Process
 
 	if ($Extras)
 	{
-		#Chocolatize 'dopamine' | Out-Null # music player
-		Chocolatize 'paint.net' | Out-Null
-		Chocolatize 'treesizefree' | Out-Null
-		Chocolatize 'vlc' | Out-Null
+		#Chocolatize 'dopamine' # music player
+		Chocolatize 'paint.net'
+		Chocolatize 'treesizefree'
+		Chocolatize 'vlc'
 		InstallDateInTray
 		InstallWiLMa
 	}
