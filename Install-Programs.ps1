@@ -664,7 +664,7 @@ Process
 	Write-Host $line -ForegroundColor Cyan
 	Write-Host
 
-	$script:reminders | % { $_ | % { Write-Host $_ 'Cyan' }; Write-Host }
+	$script:reminders | % { $_ | % { Write-Host $_ -ForegroundColor Cyan }; Write-Host }
 
 	Write-Host '... Initialization compelte   ' -ForegroundColor Green
 	Read-Host '... Press Enter to finish'
