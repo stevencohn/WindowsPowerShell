@@ -242,7 +242,7 @@ Begin
 				$xml.Save($file)
 			}
 		}
-		else
+		elseif ($ConEmu) # only show warning if requested ConEmu
 		{
 			Write-Host "*** ConEmu config file not found: $file" -ForegroundColor Yellow
 		}

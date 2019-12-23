@@ -49,6 +49,7 @@ Begin
 	$ContinuationName = 'Install-Programs-Continuation'
 	$bucket = 'cdsbits'
 	$tools = 'C:\tools'
+	$reminders = @(@())
 
 
 	function GetCommandList
@@ -305,9 +306,9 @@ Begin
 			Chocolatize 'reflect-free' | Out-Null # just the installer to C:\tools\
 
 			# Highlight '... Macrium installer started but it must be completed manually (wait for this script to finish)', `
-			Highlight '... Macrium Installer icon should be on your desktop. Run it after VS is installed', `
-				'... Choose Home version, no registration is necessary', `
-				'' 'Cyan' 
+			Highlight '... Double-click the Macrium Installer icon on the desktop after VS is installed', `
+				'... Choose Free version, no registration is necessary', `
+				'' 'Cyan'
 
 			# This runs the downloader and leaves the dialog visible!
 			#& $tools\ReflectDL.exe
@@ -415,10 +416,13 @@ Begin
 
 		if (Chocolatize 'sourcetree')
 		{
-			Highlight 'SourceTree: first time run...', `
+			$reminder = 'SourceTree: first time run...', `
 				'- Log into choose "BitBucket" option and logon Atlassian online', `
 				'- Enabled Advanced/"Configure automatic line endings"', `
-				'- Do not create an SSH key' 'Cyan'
+				'- Do not create an SSH key'
+
+			$reminders += ,$reminder
+			Highlight $reminder 'Cyan'
 		}
 	}
 
@@ -445,14 +449,32 @@ Begin
 			# run the installer
 			& $env:TEMP\$bits --passive --config $env:TEMP\.vsconfig
 
-			Highlight '... Remember to update nuget package sources', '', `
-				'... Add these extensions manually:', `
-				'... Markdown Editor', `
-				'... Microsoft Visual Studio Installer Projects', `
-				'... VSColorOutput', `
-				'... SpecFlow for Visual Studio 2019', `
-				'... Editor Guidelines' 'Cyan'
+			$reminder = '... When installation is complete, rerun this script using the InstallVSExtensions command'
+			$reminders += ,$reminder
+			Highlight $reminder 'Cyan'
 		}
+	}
+
+
+	function InstallVSExtensions
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		HighTitle 'Visual Studio Extensions'
+		$root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installtionPath
+		$installer = "$root\Common7\IDE\vsixinstaller.exe"
+
+		InstallVsix $installer 'EditorGuidelines'
+		InstallVsix $installer 'InstallerProjects'
+		InstallVsix $installer 'Markdown_Editor_v1.12.236'
+		InstallVsix $installer 'TechTalk.SpecFlow.VisualStudioIntegration'
+		InstallVsix $installer 'VSColorOutput'
+	}
+
+	function InstallVsix
+	{
+		param($installer, $name)
+		aws s3 cp s3://$bucket/$name.vsix $env:TEMP\
+		& $installer /quiet /norepair $env:TEMP\$name.vsix
 	}
 
 
@@ -620,19 +642,21 @@ Process
 	# may reboot multiple times, so do it last
 	InstallVisualStudio
 
-	Highlight '', `
-		'Other recommendations that must be installed manually:                    ', `
-		'- BeyondCompare (there is a choco package but not for 4.0)                ', `
-		'- ConEmu                                                                  ', `
-		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases) ', `
-		'',
-		'Initialization compelte   ',
-		'' 'Cyan'
-
 	if (Test-Path $stagefile)
 	{
 		Remove-Item $stagefile -Force -Confirm:$false
 	}
 
-	HighRead '... Press Enter to finish '
+	$reminders += ,'', `
+		'Consider these manually installed apps:', `
+		'- AVG Antivirus', `
+		'- BeyondCompare (there is a choco package but not for 4.0)', `
+		'- ConEmu', `
+		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)'
+
+	$reminders | % { Highlight $_, '' 'Cyan' }
+
+	Write-Host '... Initialization compelte   ' -ForegroundColor Green
+	Write-Host '... Press Enter to finish: ' -NoNewline -ForegroundColor Green
+	Read-Host
 }

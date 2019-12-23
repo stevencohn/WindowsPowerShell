@@ -82,7 +82,7 @@ Begin
 
 	function SetTimeZone
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		Write-Verbose 'setting time zone'
 		tzutil /s 'Eastern Standard Time'
@@ -90,7 +90,7 @@ Begin
 
 	function SecurePagefile
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		# set to 1 to cause pagefile to be deleted upon shutdown
 		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management'
@@ -109,7 +109,7 @@ Begin
 
 	function SetExplorerProperties
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		Write-Verbose 'setting explorer properties'
 
@@ -184,7 +184,7 @@ Begin
 
 	function EnablePhotoViewer
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		Write-Verbose 'associating the good old Photo Viewer'
 
@@ -219,7 +219,7 @@ Begin
 
 	function EnableRemoteDesktop
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		Write-Verbose 'enabling Remote Desktop w/o Network Level Authentication...'
 		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
@@ -230,7 +230,7 @@ Begin
 
 	function SetExtras
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		# DisableAppSuggestions
 		Write-Verbose 'disabling application suggestions'
@@ -325,7 +325,7 @@ Begin
 
 	function DisableHomeGroups
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		# DisableHomeGroups
 		Write-Verbose 'stopping and disabling Home Groups services'
@@ -340,7 +340,7 @@ Begin
 
 	function RemoveCrapware
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		Write-Verbose 'removing crapware (some exceptions may appear)'
 		$global:ProgressPreference = 'SilentlyContinue'
@@ -412,7 +412,7 @@ Begin
 
 	function RemoveOneDrive
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		Write-Verbose 'disabling OneDrive...'
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive'
@@ -462,7 +462,7 @@ Begin
 
 	function InstallTools
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		Write-Verbose 'installing helper tools'
 
@@ -497,7 +497,7 @@ Begin
 
 	function GetPowerShellProfile
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		Write-Verbose 'fetching WindowsPowerShell environment'
 
@@ -508,7 +508,7 @@ Begin
 
 	function GetYellowCursors
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		Write-Verbose 'enabling yellow mouse cursors'
 
@@ -523,7 +523,7 @@ Begin
 
 	function SetConsoleProperties
 	{
-		[CmdletBinding(HelpURI='inimac')] param()
+		[CmdletBinding(HelpURI='manualcmd')] param()
 
 		Write-Verbose 'setting console properties'
 
@@ -558,7 +558,7 @@ Begin
 
 	function GetCommandList
 	{
-		Get-ChildItem function:\ | Where HelpUri -eq 'inimac' | select -expand Name | sort
+		Get-ChildItem function:\ | Where HelpUri -eq 'manualcmd' | select -expand Name | sort
 	}
 }
 Process
@@ -574,7 +574,7 @@ Process
 		$fn = Get-ChildItem function:\ | where Name -eq $command
 		if ($fn)
 		{
-			if ($fn.HelpUri -eq 'inimac')
+			if ($fn.HelpUri -eq 'manualcmd')
 			{
 				Write-Host "... invoking command $($fn.Name)"
 				Invoke-Expression $fn.Name
