@@ -321,6 +321,10 @@ Begin
 				Rename-Item "$0\SearchUI.exe" "$0\SearchUI.exe_BLOCK"
 			}
 		}
+
+		# enable Hibernate option
+		Write-Verbose 'enabling hibernate option'
+		powercfg /h on
 	}
 
 	function DisableHomeGroups
