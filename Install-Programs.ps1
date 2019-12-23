@@ -625,8 +625,9 @@ Process
 		'- BeyondCompare (there is a choco package but not for 4.0)                ', `
 		'- ConEmu                                                                  ', `
 		'- OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases) ', `
-		'', `
-		'Initialization compelte   ' 'Cyan'
+		'',
+		'Initialization compelte   ',
+		'' 'Cyan'
 
 	if (Test-Path $stagefile)
 	{
