@@ -6,6 +6,9 @@ Clear the contents of TEMP, Windows\TEMP, and LocalAppData\TEMP.
 Suppress any output; default is to report amount of disk space recovered.
 #>
 
+# CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
+[CmdletBinding(SupportsShouldProcess=$true)]
+
 param([switch] $Quiet)
 
 Begin
@@ -19,6 +22,7 @@ Begin
 		$fils = [System.IO.Directory]::GetFiles($path, '*').Count
 		$dirs = [System.IO.Directory]::GetDirectories($path, '*').Count
 
+		Write-Verbose "... clearing $path"
 		Remove-Item -Path "$path\*" -Force -Recurse -ErrorAction:SilentlyContinue
 
 		$fc = $fils - [System.IO.Directory]::GetFiles($path, '*').Count
