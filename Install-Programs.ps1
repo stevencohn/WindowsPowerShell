@@ -356,25 +356,6 @@ Begin
 	}
 
 
-	function InstallSysInternals
-	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
-
-		$target = "$tools\SysInternals"
-		if (!(Test-Path $target))
-		{
-			InstallAWSCLI
-
-			HighTitle 'SysInternals procexp and procmon'
-			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
-
-			aws s3 cp s3://$bucket/SysInternals.zip $target\
-			Expand-Archive $target\SysInternals.zip -DestinationPath $target | Out-Null
-			Remove-Item $target\SysInternals.zip -Force -Confirm:$false
-		}
-	}
-
-
 	function InstallThings
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
@@ -387,6 +368,8 @@ Begin
 		Chocolatize 'notepadplusplus'
 		Chocolatize 'npppluginmanager'
 		Chocolatize 'nuget.commandline'
+		Chocolatize 'procexp'
+		Chocolatize 'procmon'
 		Chocolatize 'robo3t'
 
 		InstallBareTail

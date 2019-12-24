@@ -643,9 +643,19 @@ Process
 		GetYellowCursors
 		SetConsoleProperties
 
+		Remove-Item $stagefile -Force -Confirm:$false
+
+		$line = New-Object String('*',80)
+		Write-Host
+		Write-Host $line -ForegroundColor Cyan
+		Write-Host ' Reminders ...' -ForegroundColor Cyan
+		Write-Host $line -ForegroundColor Cyan
+		Write-Host
+		Write-Host @'
+- Customize Startup items by looking in "shell:startup" and "shell:common startup"
+'@ -ForegroundColor Cyan
+
 		Write-Host
 		Write-Host 'Initialization compelte' -ForegroundColor Yellow
-
-		Remove-Item $stagefile -Force -Confirm:$false
 	}
 }
