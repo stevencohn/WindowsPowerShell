@@ -153,7 +153,17 @@ Begin
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
 		Set-ItemProperty $0 -Name 'ShowRecent' -Type DWord -Value 0
 		Set-ItemProperty $0 -Name 'ShowFrequent' -Type DWord -Value 0
-	
+
+		<# ... this prevents drag/drop between left-right explorer panes! ... #>
+		# # hide quick access (set back to 0xa0100000 to enable)
+		# $0 = 'CLSID\{679f85cb-0220-4080-b29b-5540cc05aab6}\ShellFolder'
+		# Set-RegistryOwner 'HKCR' $0
+		# if (!(Test-Path 'HKCR:'))
+		# {
+		# 	New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+		# }
+		# Set-ItemProperty "HKCR:\$0" -Name 'Attributes' -Type DWord -Value 0xa0600000
+		
 		# restart explorer.exe
 		Stop-Process -Name explorer
 
@@ -653,6 +663,8 @@ Process
 		Write-Host
 		Write-Host @'
 - Customize Startup items by looking in "shell:startup" and "shell:common startup"
+- Add an Explorer library folder "AppData" pointing to Local and Roaming
+- Clear entries from Explorer "Quick access" folder (can't automate)
 '@ -ForegroundColor Cyan
 
 		Write-Host
