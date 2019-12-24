@@ -23,7 +23,7 @@ copy the script to $env:PROGRAMDATA and run from there in an administrative shel
 
 If creating a secondary administrator, this script will create the account and then
 force a logout. After logging in as that secondary admin, continue running the script
-and it will pick up where it left off. 
+and it will pick up where it left off.
 
 If skipping the secondary admin then the script only runs once in a single stage.
 #>
@@ -127,7 +127,7 @@ Begin
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People'
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
 		Set-ItemProperty $0 -Name 'PeopleBand' -Type DWord -Value 0
-	
+
 		$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 		# taskbar small buttons
 		Set-ItemProperty $0 -Name 'TaskbarSmallIcons' -Value 1 -Type DWord
@@ -149,21 +149,29 @@ Begin
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
 		Set-ItemProperty $0 -Name 'MinimizedStateTabletModeOff' -Type DWord -Value 0
 
+		# move Libraries folder above This PC (0x42 above, 0x54 below)
+		EnsureHKCRDrive
+		$0 = 'HKCR:\CLSID\{031E4825-7B94-4dc3-B131-E946B44C8DD5}'
+		Set-ItemProperty $0 -Name 'SortOrderIndex' -Type DWord -Value 0x42
+
 		# hide recent shortcuts
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
 		Set-ItemProperty $0 -Name 'ShowRecent' -Type DWord -Value 0
 		Set-ItemProperty $0 -Name 'ShowFrequent' -Type DWord -Value 0
 
-		<# ... this prevents drag/drop between left-right explorer panes! ... #>
-		# # hide quick access (set back to 0xa0100000 to enable)
-		# $0 = 'CLSID\{679f85cb-0220-4080-b29b-5540cc05aab6}\ShellFolder'
-		# Set-RegistryOwner 'HKCR' $0
-		# if (!(Test-Path 'HKCR:'))
-		# {
-		# 	New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
-		# }
-		# Set-ItemProperty "HKCR:\$0" -Name 'Attributes' -Type DWord -Value 0xa0600000
-		
+		# unpin all items from Quick access
+		$shapp = New-Object -ComObject shell.application
+		$shapp.Namespace("shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}").Items() | % { $_.InvokeVerb("unpinfromhome") }
+		# hide Quick access (delete HubMode value to reenable)
+		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
+		New-ItemProperty $0 -Name 'HubMode' -Type DWord -Value 1 | Out-Null
+
+		# hide 3D Objects folder
+		$k = '{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}'
+		$0 = 'Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace'
+		Rename-Item "HKLM:\SOFTWARE\$0\$k" -NewName ":$k"
+		Rename-Item "HKLM:\SOFTWARE\WOW6432Node\$0\$k" -NewName ":$k"
+
 		# restart explorer.exe
 		Stop-Process -Name explorer
 
@@ -201,7 +209,7 @@ Begin
 		# global preferences for all users
 		$pvcmd = '%SystemRoot%\System32\rundll32.exe "%ProgramFiles%\Windows Photo Viewer\PhotoViewer.dll", ImageView_Fullscreen %1'
 
-		if (!(Test-Path 'HKCR:')) { New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null }
+		EnsureHKCRDrive
 		@('Paint.Picture', 'giffile', 'jpegfile', 'icofile', 'pngfile') | % `
 		{
 			$0 = "HKCR:\$_\shell\open"
@@ -414,7 +422,7 @@ Begin
 		$global:ProgressPreference = 'Continue'
 
 		# unpin Microsoft Store game links
-		<# 
+		<#
 		# Unfortunately, new accounts come with Start Menu tiles that are links to Store games
 		# and those aren't included in the list of items below, so the investigation continues...
 		#
@@ -459,9 +467,8 @@ Begin
 				Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
 				Remove-Item -Path "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
 				Remove-Item -Path "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse -ErrorAction SilentlyContinue
-				if (!(Test-Path "HKCR:")) {
-					New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
-				}
+
+				EnsureHKCRDrive
 				Remove-Item -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
 				Remove-Item -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
 			}
@@ -587,6 +594,14 @@ Begin
 		# history=100, rows=9999
 		Set-ItemProperty HKCU:\Console -Name 'HistoryBufferSize' -Value 0x64 -Force
 		Set-ItemProperty HKCU:\Console -Name 'ScreenBufferSize' -Value 0x2329008c -Force
+	}
+
+	function EnsureHKCRDrive
+	{
+		if (!(Test-Path 'HKCR:'))
+		{
+			New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+		}
 	}
 
 	function GetCommandList
