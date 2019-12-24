@@ -665,6 +665,7 @@ Process
 - Customize Startup items by looking in "shell:startup" and "shell:common startup"
 - Add an Explorer library folder "AppData" pointing to Local and Roaming
 - Clear entries from Explorer "Quick access" folder (can't automate)
+- Import dark theme ps1xml into PowerShell ISE
 '@ -ForegroundColor Cyan
 
 		Write-Host

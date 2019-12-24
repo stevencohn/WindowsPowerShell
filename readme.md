@@ -25,7 +25,8 @@ To download just the [Initialize-Machine.ps1](#initmach) script:
 Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1' -OutFile C:\Initialize-Machine.ps1
 ```
 
-Loosen up the execution policy:
+Loosen up the execution policy. Consider signing the scripts and setting the
+execution policy to AllSigned.
 
 ```powershell
 Set-ExecutionPolicy RemoteSigned -Force -Confirm:$false;
