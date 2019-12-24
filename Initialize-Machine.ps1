@@ -104,7 +104,11 @@ Begin
 		$action = New-ScheduledTaskAction -Execute "powershell.exe" `
 			-Argument '-Command "Start-Transcript %USERPROFILE%\purge.log; Clear-Temp"'
 
-		Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Purge TEMP" -RunLevel Highest;
+		$task = Get-ScheduledTask -TaskName 'Purge TEMP' -ErrorAction:SilentlyContinue
+		if ($task -eq $null)
+		{
+			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Purge TEMP" -RunLevel Highest
+		}
 	}
 
 	function SetExplorerProperties
@@ -164,13 +168,16 @@ Begin
 		$shapp.Namespace("shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}").Items() | % { $_.InvokeVerb("unpinfromhome") }
 		# hide Quick access (delete HubMode value to reenable)
 		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
-		New-ItemProperty $0 -Name 'HubMode' -Type DWord -Value 1 | Out-Null
+		Set-ItemProperty $0 -Name 'HubMode' -Type DWord -Value 1 -Force | Out-Null
 
 		# hide 3D Objects folder
 		$k = '{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}'
 		$0 = 'Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace'
-		Rename-Item "HKLM:\SOFTWARE\$0\$k" -NewName ":$k"
-		Rename-Item "HKLM:\SOFTWARE\WOW6432Node\$0\$k" -NewName ":$k"
+		if (Test-Path "HKLM:\SOFTWARE\$0\$k")
+		{
+			Rename-Item "HKLM:\SOFTWARE\$0\$k" -NewName ":$k"
+			Rename-Item "HKLM:\SOFTWARE\WOW6432Node\$0\$k" -NewName ":$k"
+		}
 
 		# restart explorer.exe
 		Stop-Process -Name explorer
@@ -600,7 +607,7 @@ Begin
 	{
 		if (!(Test-Path 'HKCR:'))
 		{
-			New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+			New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT -Scope gloal | Out-Null
 		}
 	}
 
