@@ -50,6 +50,9 @@ component part is displayed.
 #### `ConvertTo-Hex` -R r [-G g] [-B b]
 Convert integer values to a Hex string. If one integer is specified then it is converted. If three integers are specified then they are assumed to be RGB values and combined into a single Hex string.
 
+#### `ConvertTo-mp3` -InputPath p [-Bitrate r] [-FullQuality] [-Info] [-Yes]
+Primarily used to convert .m4a audio files to .mp3
+
 #### `Copy-Console` [-OutFile f] [-All] [-Rtf] [-Trim]
 Copy the contents of the Powershell console window preserving color. Can be sent to an out file or pasted into Word or OneNote.
 
