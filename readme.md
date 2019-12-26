@@ -280,8 +280,8 @@ Default applications:
    * Robot3T
    * SourceTree
    * SysInternals procexp and procmon
-   * Visual Studio 2019 (_professional or enterpise_)
-   * VSCode
+   * Visual Studio 2019 _and extensions_ (_professional or enterpise_)
+   * VSCode _and extensions_
 
 Other applications included when -Extras is specified
 
