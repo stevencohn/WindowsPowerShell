@@ -514,8 +514,6 @@ Begin
 		if ((Get-Command 7z -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			choco install -y 7zip
-
-			DisableZipFolders
 		}
 
 		# install Chrome
@@ -672,6 +670,10 @@ Process
 		InstallTools
 
 		GetPowerShellProfile
+
+		# requires powershell profile scripts
+		DisableZipFolders
+
 		GetYellowCursors
 		SetConsoleProperties
 
