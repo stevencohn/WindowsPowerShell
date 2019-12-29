@@ -607,7 +607,7 @@ Begin
 	{
 		if (!(Test-Path 'HKCR:'))
 		{
-			New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT -Scope gloal | Out-Null
+			New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT -Scope global | Out-Null
 		}
 	}
 
