@@ -33,6 +33,9 @@ Set-ExecutionPolicy RemoteSigned -Force -Confirm:$false;
 Set-Executionpolicy -Scope CurrentUser -ExecutionPolicy UnRestricted -Force -Confirm:$false
 ```
 
+See also the [Install-Programs.ps1](#instprog) script below.
+
+
 ## Commands
 These scripts are located in the Modules\Scripts folder.
 
@@ -248,6 +251,8 @@ This script can optionally create a new local administrator so it runs in two ph
    1. PS> `.\Initialize-Machine.ps1 -Verbose`
 
 Finally, since this updates the PowerShell console colors, you can close and reopen the console to appreciate these fantastic new colors.
+
+<a name="instprog"></a>
 
 ## Install-Programs.ps1
 Automates the installation of applications, development tools, and other utilities.
