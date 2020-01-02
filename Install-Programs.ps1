@@ -373,7 +373,6 @@ Begin
 		Chocolatize 'robo3t'
 
 		InstallBareTail
-		InstallSysInternals
 	}
 
 
