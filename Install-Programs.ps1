@@ -578,6 +578,12 @@ Process
 		ConfigureAws $AccessKey $SecretKey
 	}
 
+	# install chocolatey
+	if ((Get-Command choco -ErrorAction:SilentlyContinue) -eq $null)
+	{
+		Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+	}
+
 	if ($command)
 	{
 		InvokeCommand $command
