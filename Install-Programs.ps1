@@ -52,6 +52,22 @@ Begin
 	$script:reminders = @(@())
 
 
+	function TestElevated
+	{
+		$ok = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()`
+			).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+		
+		if (!$ok)
+		{
+			Write-Host
+			Write-Host '... This script must be run from an elevated console' -ForegroundColor Yellow
+			Write-Host '... Open an administrative PowerShell window and run again' -ForegroundColor Yellow
+		}
+		
+		return $ok
+	}
+
+
 	function GetCommandList
 	{
 		Get-ChildItem function:\ | Where HelpUri -eq 'manualcmd' | select -expand Name | sort
@@ -568,6 +584,11 @@ Process
 	if ($ListCommands)
 	{
 		GetCommandList
+		$ok = TestElevated
+		return
+	}
+	elseif (!(TestElevated))
+	{
 		return
 	}
 
