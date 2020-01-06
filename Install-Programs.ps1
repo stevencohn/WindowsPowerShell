@@ -208,6 +208,13 @@ Begin
 			# don't restart but will after Hyper-V finishes stage 0
 			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx3' -NoRestart
 		}
+
+		if ((dotnet --list-sdks | ? { $_ -match '^2.2.' }).Count -eq 0)
+		{
+			# currently required for our apps, may change
+			HighTitle '.NET Core 2.2'
+			choco install -y dotnetcore-sdk --version=2.2.0
+		}
 	}
 
 
