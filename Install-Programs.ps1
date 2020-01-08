@@ -388,7 +388,7 @@ Begin
 			Chocolatize 'npppluginmanager'
 
 			# replace notepad.exe
-			Highlight 'Replacing notepad with notepad++'
+			HighTitle 'Replacing notepad with notepad++'
 			$0 = 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\notepad.exe'
 			$exe = (Get-Command 'notepad++').Source
 			$cmd = """$exe"" -notepadStyleCmdline -z"
