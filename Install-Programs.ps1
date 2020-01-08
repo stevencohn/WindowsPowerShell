@@ -379,6 +379,25 @@ Begin
 	}
 
 
+	function InstallNotepadPP
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		if (UnChocolatized 'notepadplusplus')
+		{
+			Chocolatize 'notepadplusplus'
+			Chocolatize 'npppluginmanager'
+
+			# replace notepad.exe
+			Highlight 'Replacing notepad with notepad++'
+			$0 = 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\notepad.exe'
+			$exe = (Get-Command 'notepad++').Source
+			$cmd = """$exe"" -notepadStyleCmdline -z"
+			if (!(Test-Path $0)) { New-Item -Path $0 -Force | Out-Null }
+			New-ItemProperty -Path $0 -Name 'Debugger' -Value $cmd -Force | Out-Null
+		}
+	}
+
+
 	function InstallThings
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
@@ -388,14 +407,13 @@ Begin
 		Chocolatize 'greenshot'
 		Chocolatize 'linqpad' # free version; can add license (activation.txt)
 		Chocolatize 'mRemoteNG'
-		Chocolatize 'notepadplusplus'
-		Chocolatize 'npppluginmanager'
 		Chocolatize 'nuget.commandline'
 		Chocolatize 'procexp'
 		Chocolatize 'procmon'
 		Chocolatize 'robo3t'
 
 		InstallBareTail
+		InstallNotepadPP
 	}
 
 
