@@ -56,14 +56,14 @@ Begin
 	{
 		$ok = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()`
 			).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-		
+
 		if (!$ok)
 		{
 			Write-Host
 			Write-Host '... This script must be run from an elevated console' -ForegroundColor Yellow
 			Write-Host '... Open an administrative PowerShell window and run again' -ForegroundColor Yellow
 		}
-		
+
 		return $ok
 	}
 
@@ -252,6 +252,19 @@ Begin
 	}
 
 
+	function InstallAngular
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		if ((Get-Command ng -ErrorAction:SilentlyContinue) -eq $null)
+		{
+			HighTitle 'angular'
+			npm install -g @angular/cli@7.3.8
+			npm install -g npm-check-updates
+			npm install -g local-web-server
+		}
+	}
+
+
 	function InstallAWSCLI
 	{
 		if (UnChocolatized 'awscli')
@@ -316,6 +329,22 @@ Begin
 	}
 
 
+	function InstallGreenshot
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		if (UnChocolatized 'greenshot')
+		{
+			# Get-AppxPackage *Microsoft.ScreenSketch* -AllUsers | Remove-AppxPackage -AllUsers
+			## disable the Win-Shift-S hotkey for ScreenSnipper
+			# $0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+			# New-ItemProperty -Path $0 -Name 'DisabledHotkeys' -Value 'S' -ErrorAction:SilentlyContinue
+
+			Highlight 'A warning dialog will appear about hotkeys - ignore it' 'Cyan'
+			Chocolatize 'greenshot'
+		}
+	}
+
+
 	function InstallMacrium
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
@@ -350,34 +379,6 @@ Begin
 		}
 	}
 
-	function InstallAngular
-	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		if ((Get-Command ng -ErrorAction:SilentlyContinue) -eq $null)
-		{
-			HighTitle 'angular'
-			npm install -g @angular/cli@7.3.8
-			npm install -g npm-check-updates
-			npm install -g local-web-server
-		}
-	}
-
-
-	function InstallGreenshot
-	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		if (UnChocolatized 'greenshot')
-		{
-			# Get-AppxPackage *Microsoft.ScreenSketch* -AllUsers | Remove-AppxPackage -AllUsers
-			## disable the Win-Shift-S hotkey for ScreenSnipper
-			# $0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-			# New-ItemProperty -Path $0 -Name 'DisabledHotkeys' -Value 'S' -ErrorAction:SilentlyContinue
-
-			Highlight 'A warning dialog will appear about hotkeys - ignore it' 'Cyan'
-			Chocolatize 'greenshot'
-		}
-	}
-
 
 	function InstallNotepadPP
 	{
@@ -395,25 +396,6 @@ Begin
 			if (!(Test-Path $0)) { New-Item -Path $0 -Force | Out-Null }
 			New-ItemProperty -Path $0 -Name 'Debugger' -Value $cmd -Force | Out-Null
 		}
-	}
-
-
-	function InstallThings
-	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		Chocolatize '7zip'
-		Chocolatize 'git'
-		Chocolatize 'googlechrome'
-		Chocolatize 'greenshot'
-		Chocolatize 'linqpad' # free version; can add license (activation.txt)
-		Chocolatize 'mRemoteNG'
-		Chocolatize 'nuget.commandline'
-		Chocolatize 'procexp'
-		Chocolatize 'procmon'
-		Chocolatize 'robo3t'
-
-		InstallBareTail
-		InstallNotepadPP
 	}
 
 
@@ -447,6 +429,25 @@ Begin
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
 		}
+	}
+
+
+	function InstallThings
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		Chocolatize '7zip'
+		Chocolatize 'git'
+		Chocolatize 'googlechrome'
+		Chocolatize 'greenshot'
+		Chocolatize 'linqpad' # free version; can add license (activation.txt)
+		Chocolatize 'mRemoteNG'
+		Chocolatize 'nuget.commandline'
+		Chocolatize 'procexp'
+		Chocolatize 'procmon'
+		Chocolatize 'robo3t'
+
+		InstallBareTail
+		InstallNotepadPP
 	}
 
 
@@ -497,6 +498,7 @@ Begin
 		Write-Host
 		Write-Host '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS' -ForegroundColor Yellow
 	}
+
 
 	function InstallVsix
 	{
