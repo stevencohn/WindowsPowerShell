@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Primarily used to convert .m4a audio files to .mp3
+Primarily used to convert .m4a and .mp4 audio files to .mp3
 
 .PARAMETER Bitrate
 Default bitrate is 128..

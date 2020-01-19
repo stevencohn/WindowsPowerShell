@@ -34,8 +34,8 @@ Tested on Windows 10 update 1909.
 
 param (
 	[Parameter(ParameterSetName = 'go', Position = 0)] $command,
-	[Parameter(ParameterSetName = 'go', Mandatory = $true)] [string] $AccessKey,
-	[Parameter(ParameterSetName = 'go', Mandatory = $true)] [string] $SecretKey,
+	[Parameter(ParameterSetName = 'go', Position = 1)] [string] $AccessKey,
+	[Parameter(ParameterSetName = 'go', Position = 2)] [string] $SecretKey,
 	[Parameter(ParameterSetName = 'list')] [switch] $ListCommands,
 	[switch] $Extras,
 	[switch] $Enterprise,
@@ -106,6 +106,21 @@ Begin
 			HighTitle $name
 			choco install -y $name
 		}
+	}
+
+
+	function TestAwsConfiguration
+	{
+		$ok = (Test-Path $home\.aws\config) -and (Test-Path $home\.aws\credentials)
+
+		if (!$ok)
+		{
+			Write-Host
+			Write-Host '... AWS credentials are required' -ForegroundColor Yellow
+			Write-Host '... Specify the -AccessKey and -SecretKey parameters' -ForegroundColor Yellow
+		}
+
+		return $ok
 	}
 
 
@@ -623,6 +638,10 @@ Process
 	{
 		# harmless to do this even before AWS is installed
 		ConfigureAws $AccessKey $SecretKey
+	}
+	elseif (!(TestAwsConfiguration))
+	{
+		return
 	}
 
 	# install chocolatey
