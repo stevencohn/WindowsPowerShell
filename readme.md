@@ -65,6 +65,9 @@ Copy the contents of the Powershell console window preserving color. Can be sent
 #### `Edit-Hosts`
 Open the hosts file in Notepad.
 
+#### `Edit-MusicPath` -Replace r [-Path p] [-Type t]
+Replace the path of all items in a playlist file to the current user's MyMusic path.
+
 #### `Edit-PSProfile`
 Run VSCode with ~Documents\WindowsPowerShell as root folder. Aliased to `ep`
 

@@ -170,6 +170,9 @@ Begin
 
 		$ppaths = @()
 		
+		# PowerShell scripts are in path
+		$psroot = Join-Path $env:USERPROFILE 'Documents\WindowsPowerShell\Modules\Scripts'
+
 		# preserve per-session (process) entries
 		$env:Path -split ';' | % `
 		{
@@ -183,7 +186,6 @@ Begin
 		$paths = $ppaths + $spaths + $upaths
 
 		# ensure PowerShell scripts are in path
-		$psroot = Join-Path $env:USERPROFILE 'Documents\WindowsPowerShell\Modules\Scripts'
 		if (!($paths -contains $psroot)) { $paths += $psroot }
 
 		if ($WhatIfPreference)
