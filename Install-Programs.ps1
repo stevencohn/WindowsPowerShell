@@ -224,7 +224,8 @@ Begin
 			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx3' -NoRestart
 		}
 
-		if ((dotnet --list-sdks | ? { $_ -match '^2.2.' }).Count -eq 0)
+		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
+			((dotnet --list-sdks | ? { $_ -match '^2.2.' }).Count -eq 0))
 		{
 			# currently required for our apps, may change
 			HighTitle '.NET Core 2.2'
