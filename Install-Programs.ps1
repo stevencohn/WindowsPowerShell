@@ -285,28 +285,24 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
-		if ((Get-Command aws -ErrorAction:SilentlyContinue) -eq $null)
+		if ((Get-Command aws -ErrorAction:SilentlyContinue) -ne $null)
 		{
+			return
+		}
+
+		$0 = 'C:\Program Files\Amazon\AWSCLIV2'
+		if (!(Test-Path $0))
+		{
+			# ensure V2.x of awscli is available on chocolatey.org
 			if ((choco list awscli -limit-output | select-string 'awscli\|2' | measure).count -gt 0)
 			{
-				if (UnChocolatized 'awscli')
-				{
-					Chocolatize 'awscli'
-		
-					if ((Get-Command aws -ErrorAction:SilentlyContinue) -eq $null)
-					{
-						# path will be added to Machine space but it isn't there yet
-						# so temporarily fix path so we can install add-ons
-						$0 = 'C:\Program Files\Amazon\AWSCLI\bin'
-						if (Test-Path $0)
-						{
-							$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
-						}
-					}
-				}
+				Chocolatize 'awscli'
 			}
 			else
 			{
+				HighTitle 'awscli (direct)'
+
+				# download package directly and install
 				[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
 				$msi = "$env:TEMP\awscliv2.msi"
 				$progressPreference = 'silentlyContinue'
@@ -317,6 +313,18 @@ Begin
 					& $msi /quiet
 				}
 			}
+		}
+
+		# path will be added to Machine space when installed so
+		# fix Process path so we can continue to install add-ons
+		if ((Get-Command aws -ErrorAction:SilentlyContinue) -eq $null)
+		{
+			$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
+		}
+
+		if ((Get-Command aws -ErrorAction:SilentlyContinue) -ne $null)
+		{
+			Highlight 'aws command verified' 'Cyan'
 		}
 	}
 
