@@ -231,7 +231,7 @@ and update the content in $home\Documents\WindowsPowerShell.
 
 <a name="initmach"></a>
 
-## Initialize-Machine.ps1
+# Initialize-Machine.ps1
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
 setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
@@ -257,7 +257,7 @@ Finally, since this updates the PowerShell console colors, you can close and reo
 
 <a name="instprog"></a>
 
-## Install-Programs.ps1
+# Install-Programs.ps1
 Automates the installation of applications, development tools, and other utilities.
 All applications, including Visual Studio, install unattended in about 25 minutes.
 It's also reentrant, skipping items already installed and installing items missing.
@@ -340,16 +340,16 @@ Consider these manually installed apps:
 - OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)
 
 
-## Profiles
+# Profiles
 
-#### Microsoft.PowerShell_profile.ps1
+### Microsoft.PowerShell_profile.ps1
 
 This the primary PowerShell profile definition script, run whenenver a new PowerShell command
 prompt is open or session is created. It defines aliases for some of the commands above. It also
 invokes special utilities unique to my environment such as integration with ConEmu, WiLMa, 
 Chocolatey, and setting the intial working directory.
 
-##### Console Prompt Customization
+#### Console Prompt Customization
 
 The PowerShell command prompt is customized as follows:
 
@@ -360,17 +360,17 @@ The PowerShell command prompt is customized as follows:
   ![alt text](Images/ps-prompt.png "Colorized PS Prompt Example")
 
 
-#### Microsoft.PowerShellISE_profile.ps1
+### Microsoft.PowerShellISE_profile.ps1
 
 This is the profile definition script fort the PowerShell ISE editor. It registers ISE add-ons
 found in the Modules\Addons folder.
 
-#### Microsoft.VSCode_profile.ps1
+### Microsoft.VSCode_profile.ps1
 
 This is the profile definition script for the VSCode integrated PowerShell terminal.
 It simply invokes the primary profile script above.
 
-## Dark Selenitic Scheme
+# Dark Selenitic Scheme
 
 The `Dark Selenitic.StorableColorTheme.ps1xml` file defines the Dark Selenitic color scheme for ISE. The theme is also
 defined by the Themes\PSTheme_Selenitic.ps1 script.
