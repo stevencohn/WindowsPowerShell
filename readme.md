@@ -262,14 +262,18 @@ Automates the installation of applications, development tools, and other utiliti
 All applications, including Visual Studio, install unattended in about 25 minutes.
 It's also reentrant, skipping items already installed and installing items missing.
 
-`.\Install-Programs.ps1 [command] -AccessKey a -SecretKey s [-List] [-Extras] [-Enterprise]`
+`.\Install-Programs.ps1 [command] -AccessKey a -SecretKey s [-ListCommands] [-Extras] [-Enterprise]`
  
    * _command_ - optional argument to run a single command, default is to run all commands
-   * -AccessKey - AWS access key used for downloading bits from S3
-   * -SecretKey - AWS secret key used for downloading bits from S3
+   * -AccessKey - AWS access key used for downloading bits from S3 (only needed first time)
+   * -SecretKey - AWS secret key used for downloading bits from S3 (only needed first time)
    * -ListCommands - this argument displays all available commands
    * -Extras - this argument causes extra applications to be installed
    * -Enterprise - install VS Enterprise; default is Professional
+
+Note that the AccessKey and SecretKey arguments are only need the first time; they are used
+to log into AWS and are then stored using the awscli. Those apps below tagged with "[from S3]"
+are downloaded from S3 while all others are installed using chocolatey.
 
 Default applications:
 
@@ -277,7 +281,7 @@ Default applications:
    * 7Zip
    * Angular (_specific version_)
    * AWSCli
-   * BareTail Free (_installed to C:\tools_)
+   * BareTail Free (_installed to C:\tools_) [from S3]
    * Docker Desktop
    * Git
    * Google Chrome
@@ -289,18 +293,19 @@ Default applications:
    * Notepad++
    * Nuget command line
    * Robot3T
+   * S3Browser [from S3]
    * SourceTree
    * SysInternals procexp and procmon
-   * Visual Studio 2019 _and extensions_ (_professional or enterpise_)
-   * VSCode _and extensions_
+   * Visual Studio 2019 _and extensions_ (_professional or enterpise_) [from S3]
+   * VSCode _and extensions_ [vsix extensions from S3]
 
 Other applications included when -Extras is specified
 
-   * DateInTray (_installed to C:\tools_)
+   * DateInTray (_installed to C:\tools_) [from S3]
    * Paint.net
    * TreeSize Free
    * VLC
-   * WiLMa (_installed to C:\tools_)
+   * WiLMa (_installed to C:\tools_) [from S3]
 
 During the installation, hints and tips are shown highlighted in yellow and
 instructions are highlighted in cyan. Some are import, such as how to continue
@@ -323,7 +328,7 @@ Visual Studio
 
    1. When installation is complete, rerun this script using the InstallVSExtensions command
 
-`.\Install-Programs.ps1 InstallVSExtensions -AccessKey a -SecretKey s`
+`.\Install-Programs.ps1 InstallVSExtensions`
 
 Consider these manually installed apps:
 - AVG Antivirus

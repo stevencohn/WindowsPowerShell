@@ -715,6 +715,7 @@ Process
 	InstallNodeJs
 	InstallAngular
 	InstallVSCode
+	InstallS3Browser
 	InstallSourceTree
 
 	InstallDockerDesktop
