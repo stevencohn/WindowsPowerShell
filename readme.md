@@ -275,9 +275,12 @@ Note that the AccessKey and SecretKey arguments are only need the first time; th
 to log into AWS and are then stored using the awscli. Those apps below tagged with "[from S3]"
 are downloaded from S3 while all others are installed using chocolatey.
 
+Hyper-V and the AWSCli are installed first. Hyper-V requires a reboot which is done
+automatically and the script picks up where it left off immediately after you log in again.
+
 Default applications:
 
-   * Hyper-V - requires reboot but the script will continue automatically upon logon
+   * Hyper-V (_auto-reboots after install and the script continues upon logon_)
    * 7Zip
    * Angular (_specific version_)
    * AWSCli
