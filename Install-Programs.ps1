@@ -499,7 +499,7 @@ Begin
 	{
 		[CmdletBinding(HelpURI='manualcmd')] param()
 
-		if (!(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio'))
+		if (!(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio\2019'))
 		{
 			InstallAWSCLI
 
