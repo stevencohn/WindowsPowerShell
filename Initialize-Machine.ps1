@@ -535,10 +535,10 @@ Begin
 		Set-RegistryOwner 'HKLM' 'SOFTWARE\WOW6432Node\Classes\CLSID\{0CD7A5C0-9F37-11CE-AE65-08002B2E1262}';
 
 		# remove all Compressed Folders keys; back-ticks required to escape curly braces
-		Remove-Item -Path Registry::HKEY_CLASSES_ROOT\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -Force -Recurse;
-		Remove-Item -Path Registry::HKEY_CLASSES_ROOT\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -Force -Recurse;
-		Remove-Item -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -Force -Recurse;
-		Remove-Item -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -Force -Recurse;
+		Remove-Item -Path Registry::HKEY_CLASSES_ROOT\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -Force -Recurse -ErrorAction SilentlyContinue;
+		Remove-Item -Path Registry::HKEY_CLASSES_ROOT\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -Force -Recurse -ErrorAction SilentlyContinue;
+		Remove-Item -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -Force -Recurse -ErrorAction SilentlyContinue;
+		Remove-Item -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -Force -Recurse -ErrorAction SilentlyContinue;
 	}
 
 	function GetPowerShellProfile
