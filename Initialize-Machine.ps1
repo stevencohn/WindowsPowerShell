@@ -156,6 +156,7 @@ Begin
 		# move Libraries folder above This PC (0x42 above, 0x54 below)
 		EnsureHKCRDrive
 		$0 = 'HKCR:\CLSID\{031E4825-7B94-4dc3-B131-E946B44C8DD5}'
+		Set-RegistryOwner 'HKCR' 'CLSID\{031E4825-7B94-4dc3-B131-E946B44C8DD5}'
 		Set-ItemProperty $0 -Name 'SortOrderIndex' -Type DWord -Value 0x42
 
 		# hide recent shortcuts
