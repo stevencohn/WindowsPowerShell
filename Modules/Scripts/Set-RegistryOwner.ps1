@@ -69,6 +69,13 @@ Begin
 
 	function TakeOwnershihp ($root, $key, $recurseLevel = 0)
 	{
+		$check = Invoke-Expression "[Microsoft.Win32.Registry]::$($root).OpenSubKey('$($key)')"
+		if ($check -eq $null)
+		{
+			Write-Verbose 'Key not found'
+			return
+		}
+
 		Write-Verbose('Taking ownership of {0}:\{1}' -f $root, $key)
 
 		# get ownerships of key - it works only for current key
@@ -109,7 +116,8 @@ Begin
 }
 Process
 {
-	Test-Elevated -Action 'Take-RegKeyOwnership' -Warn
+	$elevated = (Test-Elevated -Action 'Take-RegKeyOwnership' -Warn)
+	if ($elevated) { Write-Verbose 'Elevated' } else { Write-Verbose 'Not elevated' }
 
 	if (!$SID)
 	{
