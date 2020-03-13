@@ -106,6 +106,10 @@ Begin
 			HighTitle $name
 			choco install -y $name
 		}
+		else
+		{
+			Write-Verbose "$name already installed by chocolatey"
+		}
 	}
 
 
@@ -142,6 +146,8 @@ Begin
 			"aws_access_key_id = $access", `
 			"aws_secret_access_key = $secret" `
 			| Out-File $home\.aws\credentials -Encoding ascii -Force -Confirm:$false
+
+		Write-Verbose 'AWS configured; no need to specify access/secret keys from now on'
 	}
 
 
@@ -202,6 +208,7 @@ Begin
 		else
 		{
 			$script:stage = 1
+			Write-Verbose 'Hyper-V installed'
 		}
 	}
 
@@ -223,6 +230,10 @@ Begin
 			# don't restart but will after Hyper-V finishes stage 0
 			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx3' -NoRestart
 		}
+		else
+		{
+			Write-Verbose '.NET Framework 3.5 already installed'
+		}
 
 		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
 			((dotnet --list-sdks | ? { $_ -match '^2.2.' }).Count -eq 0))
@@ -230,6 +241,10 @@ Begin
 			# currently required for our apps, may change
 			HighTitle '.NET Core 2.2'
 			choco install -y dotnetcore-sdk --version=2.2.0
+		}
+		else
+		{
+			Write-Verbose '.NET Core 2.2 already installed'
 		}
 	}
 
@@ -277,6 +292,10 @@ Begin
 			npm install -g @angular/cli@7.3.8
 			npm install -g npm-check-updates
 			npm install -g local-web-server
+		}
+		else
+		{
+			Write-Verbose 'Angular already installed'
 		}
 	}
 
@@ -345,6 +364,10 @@ Begin
 			aws s3 cp s3://$bucket/baretail-dark.udm $target\
 			#Download 'https://baremetalsoft.com/baretail/download.php?p=m' $target\baretail.exe
 		}
+		else
+		{
+			Write-Verbose 'BareTail already installed'
+		}
 	}
 
 
@@ -370,6 +393,10 @@ Begin
 			$reminders += ,$reminder
 			Highlight $reminder 'Cyan'
 		}
+		else
+		{
+			Write-Verbose 'Docker Desktop already installed'
+		}
 	}
 
 
@@ -385,6 +412,10 @@ Begin
 
 			Highlight 'A warning dialog will appear about hotkeys - ignore it' 'Cyan'
 			Chocolatize 'greenshot'
+		}
+		else
+		{
+			Write-Verbose 'Greenshot already installed'
 		}
 	}
 
@@ -407,6 +438,10 @@ Begin
 			# This runs the downloader and leaves the dialog visible!
 			#& $tools\ReflectDL.exe
 		}
+		else
+		{
+			Write-Verbose 'Macrium installer already installed'
+		}
 	}
 
 
@@ -420,6 +455,10 @@ Begin
 			# update session PATH so we can continue
 			$npmpath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split ';' | ? { $_ -match 'nodejs' }
 			$env:PATH = (($env:PATH -split ';') -join ';') + ";$npmpath"
+		}
+		else
+		{
+			Write-Verbose 'Nodejs already installed'
 		}
 	}
 
@@ -440,6 +479,10 @@ Begin
 			if (!(Test-Path $0)) { New-Item -Path $0 -Force | Out-Null }
 			New-ItemProperty -Path $0 -Name 'Debugger' -Value $cmd -Force | Out-Null
 		}
+		else
+		{
+			Write-Verbose 'Notepad++ already installed'
+		}
 	}
 
 
@@ -454,6 +497,10 @@ Begin
 			aws s3 cp s3://$bucket/s3browser-8-5-9.exe $env:TEMP\s3browser.exe
 			#Download 'https://netsdk.s3.amazonaws.com/s3browser/8.5.9/s3browser-8-5-9.exe' $env:TEMP\s3browser.exe
 			& $env:TEMP\s3browser.exe /sp /supressmsgboxes /norestart /closeapplications /silent
+		}
+		else
+		{
+			Write-Verbose 'S3Browser already installed'
 		}
 	}
 
@@ -472,6 +519,10 @@ Begin
 
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
+		}
+		else
+		{
+			Write-Verbose 'SourceTree already installed'
 		}
 	}
 
@@ -499,7 +550,10 @@ Begin
 	{
 		[CmdletBinding(HelpURI='manualcmd')] param()
 
-		if (!(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio\2019'))
+		$0 = 'C:\Program Files (x86)\Microsoft Visual Studio\2019'
+		$pro = Test-Path (Join-Path $0 'Professional\Common7\IDE\devenv.exe')
+		$ent = Test-Path (Join-Path $0 'Enterprise\Common7\IDE\devenv.exe')
+		if (!($pro -or $ent))
 		{
 			InstallAWSCLI
 
@@ -522,6 +576,10 @@ Begin
 
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
+		}
+		else
+		{
+			Write-Verbose 'Visual Studio already installed'
 		}
 	}
 
@@ -583,6 +641,10 @@ Begin
 				code --install-extension vscode-icons-team.vscode-icons
 			}
 		}
+		else
+		{
+			Write-Verbose 'VSCode already installed'
+		}
 	}
 
 
@@ -618,6 +680,10 @@ Begin
 
 			& $target\DateInTray.exe
 		}
+		else
+		{
+			Write-Verbose 'DateInTray already installed'
+		}
 	}
 
 
@@ -647,6 +713,10 @@ Begin
 			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "WiLMa" -Principal $principal
 
 			Start-Process $target\WinLayoutManager.exe -Verb runas
+		}
+		else
+		{
+			Write-Verbose 'WiLMa already installed'
 		}
 	}
 }
