@@ -654,6 +654,12 @@ Process
 
 	if ($stage -eq 1)
 	{
+		# choco, git, 7zip, chrome
+		InstallTools
+
+		# $home\Documents\WindowsPowerShell
+		GetPowerShellProfile
+
 		SetTimeZone
 		SetExplorerProperties
 		SetExtras
@@ -667,10 +673,6 @@ Process
 		if ($RemoveOneDrive) {
 			RemoveOneDrive
 		}
-
-		InstallTools
-
-		GetPowerShellProfile
 
 		# requires powershell profile scripts
 		DisableZipFolders
