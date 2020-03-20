@@ -639,6 +639,9 @@ Begin
 				code --install-extension ms-vscode.powershell
 				code --install-extension msjsdiag.debugger-for-chrome
 				code --install-extension vscode-icons-team.vscode-icons
+				# swagger
+				code --install-extension Arjun.swagger-viewer
+				code --install-extension 42Crunch.vscode-openapi
 			}
 		}
 		else
