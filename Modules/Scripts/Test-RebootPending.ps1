@@ -77,6 +77,6 @@ Process
 		return $status
 	}
 
-	return $status.CBSServicing -or $status.MSIInstaller -or $status.WindowsUpdate `
-		-or $status.ClientSDK -or $status.FileRename -or $status.ComputerRename
+	return $status.CBSServicing -or $status.MSIFileRename -or $status.WindowsUpdate `
+		-or $status.ClientSDK -or $status.ComputerRename
 }
