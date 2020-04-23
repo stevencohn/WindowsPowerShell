@@ -9,6 +9,7 @@ for each repo before fetch and pull. This is to discard all local changes.
 #>
 
 param (
+    $Project,
 	$Reset = 'master'
 )
 
@@ -42,5 +43,13 @@ Begin
 }
 Process
 {
-    Get-ChildItem | ? { Test-Path (Join-Path $_.FullName '.git') } | Select -ExpandProperty Name | ? { $_ -ne 'CDS' } | % { Update $_ }
+    if ($Project)
+    {
+        Update $Project
+    }
+    else
+    {
+        Get-ChildItem | ? { Test-Path (Join-Path $_.FullName '.git') } | `
+            Select -ExpandProperty Name | ? { $_ -ne 'CDS' } | % { Update $_ }
+    }
 }
