@@ -222,7 +222,7 @@ Determine if the current session is elevated and displays a warning message if n
 #### `Test-RebootPending` [-Report]
 Check the pending reboot status of the local computer.
 
-#### `Update-Gits`
+#### `Update-Gits` [-Project p] [-Reset b]
 Scan all sub-folders looking for .git directories and fetch/pull each to get latest code.
 
 #### `Update-Profile`
