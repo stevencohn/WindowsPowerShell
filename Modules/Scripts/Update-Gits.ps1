@@ -3,18 +3,22 @@
 Scan all sub-folders looking for Git repos and fetch/pull each of them to
 get latest code.
 
+.PARAMETER Branch
+Speciies the branch name, default is develop
+
 .PARAMETER Project
 Specifies the project (subfolder) to update. If not specified then it will
 scan all subfolders and update every one that contains a .git folder. 
 
 .PARAMETER Reset
-Perform a hard reset to the tip of the specified branch (master by default) 
+Perform a hard reset to the tip of the specified Branch 
 for each repo before fetch and pull. This is to discard all local changes.
 #>
 
 param (
+    $Branch = 'develop',
     $Project,
-	$Reset
+	[switch] $Reset
 )
 
 Begin
@@ -34,13 +38,13 @@ Begin
 
         Push-Location $Project
 
-        if ($Reset -ne $null)
+        if ($Reset)
         {
-            git reset --hard origin/$Reset
+            git reset --hard origin/$Branch
         }
 
         git -c diff.mnemonicprefix=false -c core.quotepath=false fetch origin
-        git -c diff.mnemonicprefix=false -c core.quotepath=false pull --no-commit origin develop
+        git -c diff.mnemonicprefix=false -c core.quotepath=false pull --no-commit origin $Branch
 
         Pop-Location
     }
