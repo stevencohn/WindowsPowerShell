@@ -3,6 +3,10 @@
 Scan all sub-folders looking for Git repos and fetch/pull each of them to
 get latest code.
 
+.PARAMETER Project
+Specifies the project (subfolder) to update. If not specified then it will
+scan all subfolders and update every one that contains a .git folder. 
+
 .PARAMETER Reset
 Perform a hard reset to the tip of the specified branch (master by default) 
 for each repo before fetch and pull. This is to discard all local changes.
@@ -10,7 +14,7 @@ for each repo before fetch and pull. This is to discard all local changes.
 
 param (
     $Project,
-	$Reset = 'master'
+	$Reset
 )
 
 Begin
