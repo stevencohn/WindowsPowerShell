@@ -16,8 +16,8 @@ for each repo before fetch and pull. This is to discard all local changes.
 #>
 
 param (
-    $Branch = 'develop',
-    $Project,
+	[Parameter(Position=0)] [string] $Project,
+	[Parameter(Position=1)] [string] $Branch = 'develop',
 	[switch] $Reset
 )
 
