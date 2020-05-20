@@ -289,7 +289,7 @@ Begin
 		if ((Get-Command ng -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			HighTitle 'angular'
-			npm install -g @angular/cli@7.3.8
+			npm install -g @angular/cli@9.1.6
 			npm install -g npm-check-updates
 			npm install -g local-web-server
 		}
@@ -451,7 +451,7 @@ Begin
 		if ((Get-Command node -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			HighTitle 'nodejs'
-			choco install -y nodejs --version 10.15.3
+			choco install -y nodejs --version 12.16.3
 			# update session PATH so we can continue
 			$npmpath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split ';' | ? { $_ -match 'nodejs' }
 			$env:PATH = (($env:PATH -split ';') -join ';') + ";$npmpath"
