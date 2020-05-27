@@ -494,7 +494,7 @@ Begin
 			InstallAWSCLI
 
 			HighTitle 'S3 Browser'
-			aws s3 cp s3://$bucket/s3browser-8-5-9.exe $env:TEMP\s3browser.exe
+			aws s3 cp s3://$bucket/s3browser-8-9-5.exe $env:TEMP\s3browser.exe
 			#Download 'https://netsdk.s3.amazonaws.com/s3browser/8.5.9/s3browser-8-5-9.exe' $env:TEMP\s3browser.exe
 			& $env:TEMP\s3browser.exe /sp /supressmsgboxes /norestart /closeapplications /silent
 		}
@@ -564,7 +564,7 @@ Begin
 			Highlight '... This will take a few minutes'
 
 			# download the installer
-			$bits = "vs_$sku`_2019_16.4.exe"
+			$bits = "vs_$sku`_2019_16.6.exe"
 			aws s3 cp s3://$bucket/$bits $env:TEMP\
 			aws s3 cp s3://$bucket/vs_$sku.vsconfig $env:TEMP\.vsconfig
 
