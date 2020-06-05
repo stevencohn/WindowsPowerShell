@@ -594,6 +594,7 @@ Begin
 		InstallVsix $installer 'EditorGuidelines'
 		InstallVsix $installer 'InstallerProjects'
 		InstallVsix $installer 'Markdown_Editor_v1.12.236'
+		InstallVsix $installer 'SonarLint.VSIX-4.21.0.16909-2019'
 		InstallVsix $installer 'TechTalk.SpecFlow.VisualStudioIntegration'
 		InstallVsix $installer 'VSColorOutput'
 
@@ -638,6 +639,7 @@ Begin
 				code --install-extension ms-vscode.csharp
 				code --install-extension ms-vscode.powershell
 				code --install-extension msjsdiag.debugger-for-chrome
+				code --install-extension sonarlint
 				code --install-extension vscode-icons-team.vscode-icons
 				# swagger
 				code --install-extension Arjun.swagger-viewer

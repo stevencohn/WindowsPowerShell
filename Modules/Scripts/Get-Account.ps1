@@ -78,11 +78,17 @@ Begin
 			$searcher.FindAll() | % `
 			{
 				$properties = $_.GetDirectoryEntry().Properties
+				#$properties
 				Write-Host('Account Name : ' + $properties['sAMAccountName'].Value)
 				Write-Host('Display Name : ' + $properties['displayName'].Value)
 				Write-Host('Mail         : ' + $properties['mail'].Value)
 				Write-Host('Telephone    : ' + $properties['telephoneNumber'].Value)
-	
+
+				$lastset = [datetime]::FromFileTimeUtc((ConvertADSLargeInteger $properties['pwdLastSet'].Value))
+				Write-Host('Pwd last set : ' + $lastset)
+
+				#Write-Host('Member of    : ' + $properties['memberOf'].Value)
+
 				$manager = [string]($properties['manager'].Value)
 				if (!([String]::IsNullOrEmpty($manager))) {
 					if ($manager.StartsWith('CN=')) {
@@ -102,6 +108,20 @@ Begin
 		{
 			Write-Host ... Count not find user "$domain\$username" -ForegroundColor Yellow
 		}
+	}
+
+
+	function ConvertADSLargeInteger([object] $adsLargeInteger)
+	{
+		$highPart = $adsLargeInteger.GetType().InvokeMember("HighPart", [System.Reflection.BindingFlags]::GetProperty, $null, $adsLargeInteger, $null)
+		$lowPart  = $adsLargeInteger.GetType().InvokeMember("LowPart",  [System.Reflection.BindingFlags]::GetProperty, $null, $adsLargeInteger, $null)
+		$bytes = [System.BitConverter]::GetBytes($highPart)
+		$tmp   = [System.Byte[]]@(0,0,0,0,0,0,0,0)
+		[System.Array]::Copy($bytes, 0, $tmp, 4, 4)
+		$highPart = [System.BitConverter]::ToInt64($tmp, 0)
+		$bytes = [System.BitConverter]::GetBytes($lowPart)
+		$lowPart = [System.BitConverter]::ToUInt32($bytes, 0)
+		return $lowPart + $highPart
 	}
 }
 Process
