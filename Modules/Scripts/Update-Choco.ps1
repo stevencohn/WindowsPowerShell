@@ -6,7 +6,7 @@ specific version.
 
 # note that choco pin command doesn't seem to work as advertised!
 
-choco upgrade all --except="'linqpad,linqpad5,nodejs,nodejs.install'"
+choco upgrade all --except="'linqpad,linqpad5,nodejs'"
 
 <#
 param ()
