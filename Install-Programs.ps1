@@ -641,6 +641,8 @@ Begin
 				code --install-extension msjsdiag.debugger-for-chrome
 				code --install-extension sonarlint
 				code --install-extension vscode-icons-team.vscode-icons
+				# Vuln Cost - Security Scanner for VS Code
+				code --install-extension snyk-security.vscode-vuln-cost	
 				# swagger
 				code --install-extension Arjun.swagger-viewer
 				code --install-extension 42Crunch.vscode-openapi
