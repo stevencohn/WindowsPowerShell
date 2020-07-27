@@ -2,11 +2,19 @@
 .SYNOPSIS
 Update all chocolatey packages, skipping those that we want to keep locked at a
 specific version.
+
+.PARAMETER yes
+Adds the -yes parameter, accepting all updates without prompting
 #>
+
+param([switch] $yes)
 
 # note that choco pin command doesn't seem to work as advertised!
 
-choco upgrade all --except="'linqpad,linqpad5,nodejs'"
+$yesarg = ''
+if ($yes) { $yesarg = '-y' }
+
+choco upgrade $yesarg all --except="'linqpad,linqpad5,nodejs'"
 
 <#
 param ()
