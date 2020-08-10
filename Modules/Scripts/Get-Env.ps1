@@ -5,20 +5,24 @@ Print environment variables with optional highlighting.
 .PARAMETER name
 A string used to match and highlight entries based on their name.
 
+.PARAMETER only
+Only display matched entries.
+
 .PARAMETER value
 A string used to match and highlight entries based on their value.
 #>
 
 param (
 	[string] $name,
-	[string] $value)
+	[string] $value,
+	[switch] $only)
 
 $format = '{0,-30} {1}'
 
 Write-Host ($format -f 'Name', 'Value')
 Write-Host ($format -f '----', '-----')
 
-$pairs = Get-ChildItem env: | sort name | % `
+Get-ChildItem env: | sort name | % `
 {
 	$ename = $_.Name.ToString()
 	if ($ename.Length -gt 30) { $ename = $ename.Substring(0,27) + '...' }
@@ -31,11 +35,11 @@ $pairs = Get-ChildItem env: | sort name | % `
 	{
 		Write-Host ($format -f $ename, $evalue) -ForegroundColor Green
 	}
-	elseif ($value -and ($_.Value -match $value))
+	elseif ($value -and ($_.Value -match $value) -and !$only)
 	{
 		Write-Host ($format -f $ename, $evalue) -ForegroundColor DarkGreen
 	}
-	elseif ([String]::IsNullOrEmpty($name) -and [String]::IsNullOrEmpty($value))
+	elseif ([String]::IsNullOrEmpty($name) -and [String]::IsNullOrEmpty($value) -and !$only)
 	{
 		if ($_.Name -eq 'COMPUTERNAME' -or $_.Name -eq 'USERDOMAIN')
 		{
@@ -58,7 +62,7 @@ $pairs = Get-ChildItem env: | sort name | % `
 			Write-Host ($format -f $ename, $evalue)
 		}
 	}
-	else
+	elseif (!$only)
 	{
 		Write-Host ($format -f $ename, $evalue)
 	}
