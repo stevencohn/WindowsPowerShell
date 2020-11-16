@@ -591,12 +591,14 @@ Begin
 		$root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
 		$installer = "$root\Common7\IDE\vsixinstaller.exe"
 
-		InstallVsix $installer 'EditorGuidelines'
-		InstallVsix $installer 'InstallerProjects'
-		InstallVsix $installer 'Markdown_Editor_v1.12.236'
-		InstallVsix $installer 'SonarLint.VSIX-4.21.0.16909-2019'
-		InstallVsix $installer 'TechTalk.SpecFlow.VisualStudioIntegration'
-		InstallVsix $installer 'VSColorOutput'
+		# TODO: update these versions very now and then...
+		
+		InstallVsix $installer 'EditorGuidelines' 'PaulHarrington/vsextensions/EditorGuidelines/2.2.5/vspackage'
+		InstallVsix $installer 'InstallerProjects' 'VisualStudioClient/vsextensions/MicrosoftVisualStudio2017InstallerProjects/0.9.9/vspackage'
+		InstallVsix $installer 'MarkdownEditor' 'MadsKristensen/vsextensions/MarkdownEditor/1.12.253/vspackage'
+		InstallVsix $installer 'SonarLint' 'SonarSource/vsextensions/SonarLintforVisualStudio2019/4.27.0.22695/vspackage'
+		InstallVsix $installer 'SpecFlow' 'TechTalkSpecFlowTeam/vsextensions/SpecFlowForVisualStudio/2019.0.68.11251/vspackage'
+		InstallVsix $installer 'VSColorOutput' 'MikeWard-AnnArbor/vsextensions/VSColorOutput/2.71/vspackage'
 
 		Write-Host
 		Write-Host '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS' -ForegroundColor Yellow
@@ -605,10 +607,19 @@ Begin
 
 	function InstallVsix
 	{
-		param($installer, $name)
+		param($installer, $name, $uri)
 		Write-Host "... installing $name extension in the background" -ForegroundColor Yellow
-		aws s3 cp s3://$bucket/$name.vsix $env:TEMP\
-		& $installer /quiet /norepair $env:TEMP\$name.vsix
+
+		$url = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/$($uri)"
+		$vsix = "$($env:TEMP)\$($name).vsix"
+
+		# download package directly from VS Marketplace and install
+		[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+		$progressPreference = 'silentlyContinue'
+		Invoke-WebRequest $url -OutFile $vsix
+		$progressPreference = 'Continue'
+
+		& $installer /quiet /norepair $vsix
 	}
 
 
