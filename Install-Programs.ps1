@@ -531,6 +531,7 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		Chocolatize '7zip'
+		Chocolatize 'curl'
 		Chocolatize 'git'
 		Chocolatize 'googlechrome'
 		Chocolatize 'greenshot'

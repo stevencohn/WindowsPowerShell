@@ -29,6 +29,10 @@ New-Alias cc Show-ColorizedContent
 . $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
 Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
 
+# curl.exe is installed as a choco package to \system32
+# so need to remove Invoke-WebRequest alis
+Remove-Item alias:curl
+
 function Start-Wilma { & 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe' }
 New-Alias wilma Start-Wilma 
 
