@@ -63,7 +63,8 @@ if (Test-Path($ChocolateyProfile)) {
 $cmd = (gwmi win32_process -filter ("ProcessID={0}" -f (gwmi win32_process -filter "ProcessID=$PID").ParentProcessID)).CommandLine
 if ($cmd -notmatch 'cmd\.exe')
 {
-	if (Test-Path 'C:\Code') { Set-Location 'C:\Code'; }
+	if (Test-Path 'C:\Github') { Set-Location 'C:\Github'; }
+	elseif (Test-Path 'C:\Code') { Set-Location 'C:\Code'; }
 	elseif (Test-Path 'D:\Code') { Set-Location 'D:\Code'; }
 	elseif (Test-Path 'C:\River') { Set-Location 'C:\River'; }
 	else { Set-Location '\'; }
