@@ -285,6 +285,7 @@ Default applications:
    * Angular (_specific version_)
    * AWSCli
    * BareTail Free (_installed to C:\tools_) [from S3]
+   * Curl
    * Docker Desktop
    * Git
    * Google Chrome
