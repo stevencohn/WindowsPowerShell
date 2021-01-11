@@ -489,18 +489,14 @@ Begin
 	function InstallS3Browser
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		if (!(Test-Path 'C:\Program Files\S3 Browser'))
-		{
-			InstallAWSCLI
 
-			HighTitle 'S3 Browser'
-			aws s3 cp s3://$bucket/s3browser-8-9-5.exe $env:TEMP\s3browser.exe
-			#Download 'https://netsdk.s3.amazonaws.com/s3browser/8.5.9/s3browser-8-5-9.exe' $env:TEMP\s3browser.exe
-			& $env:TEMP\s3browser.exe /sp /supressmsgboxes /norestart /closeapplications /silent
+		if (UnChocolatized 's3browser')
+		{
+			Chocolatize 's3browser'
 		}
 		else
 		{
-			Write-Verbose 'S3Browser already installed'
+			Write-Verbose 's3browser already installed'
 		}
 	}
 
