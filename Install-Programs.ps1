@@ -561,7 +561,7 @@ Begin
 			Highlight '... This will take a few minutes'
 
 			# download the installer
-			$bits = "vs_$sku`_2019_16.6.exe"
+			$bits = "vs_$sku`_2019_16.8.exe"
 			aws s3 cp s3://$bucket/$bits $env:TEMP\
 			aws s3 cp s3://$bucket/vs_$sku.vsconfig $env:TEMP\.vsconfig
 
