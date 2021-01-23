@@ -297,11 +297,11 @@ Default applications:
    * Notepad++
    * Nuget command line
    * Robot3T
-   * S3Browser [from S3]
+   * S3Browser
    * SourceTree
    * SysInternals procexp and procmon
    * Visual Studio 2019 _and extensions_ (_professional or enterpise_) [from S3]
-   * VSCode _and extensions_ [vsix extensions from S3]
+   * VSCode _and extensions_
 
 Other applications included when -Extras is specified
 

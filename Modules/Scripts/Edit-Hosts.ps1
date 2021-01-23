@@ -15,4 +15,4 @@ if (!(Test-Elevated))
 	Write-Host '... not currently elevated; you may not be able to save changes' -ForegroundColor Yellow
 }
 
-notepad $file
+notepad "$file"

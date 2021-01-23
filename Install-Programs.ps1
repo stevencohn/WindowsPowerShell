@@ -489,18 +489,14 @@ Begin
 	function InstallS3Browser
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
-		if (!(Test-Path 'C:\Program Files\S3 Browser'))
-		{
-			InstallAWSCLI
 
-			HighTitle 'S3 Browser'
-			aws s3 cp s3://$bucket/s3browser-8-9-5.exe $env:TEMP\s3browser.exe
-			#Download 'https://netsdk.s3.amazonaws.com/s3browser/8.5.9/s3browser-8-5-9.exe' $env:TEMP\s3browser.exe
-			& $env:TEMP\s3browser.exe /sp /supressmsgboxes /norestart /closeapplications /silent
+		if (UnChocolatized 's3browser')
+		{
+			Chocolatize 's3browser'
 		}
 		else
 		{
-			Write-Verbose 'S3Browser already installed'
+			Write-Verbose 's3browser already installed'
 		}
 	}
 
@@ -565,7 +561,7 @@ Begin
 			Highlight '... This will take a few minutes'
 
 			# download the installer
-			$bits = "vs_$sku`_2019_16.6.exe"
+			$bits = "vs_$sku`_2019_16.8.exe"
 			aws s3 cp s3://$bucket/$bits $env:TEMP\
 			aws s3 cp s3://$bucket/vs_$sku.vsconfig $env:TEMP\.vsconfig
 
@@ -597,9 +593,9 @@ Begin
 		InstallVsix $installer 'EditorGuidelines' 'PaulHarrington/vsextensions/EditorGuidelines/2.2.5/vspackage'
 		InstallVsix $installer 'InstallerProjects' 'VisualStudioClient/vsextensions/MicrosoftVisualStudio2017InstallerProjects/0.9.9/vspackage'
 		InstallVsix $installer 'MarkdownEditor' 'MadsKristensen/vsextensions/MarkdownEditor/1.12.253/vspackage'
-		InstallVsix $installer 'SonarLint' 'SonarSource/vsextensions/SonarLintforVisualStudio2019/4.27.0.22695/vspackage'
-		InstallVsix $installer 'SpecFlow' 'TechTalkSpecFlowTeam/vsextensions/SpecFlowForVisualStudio/2019.0.68.11251/vspackage'
-		InstallVsix $installer 'VSColorOutput' 'MikeWard-AnnArbor/vsextensions/VSColorOutput/2.71/vspackage'
+		InstallVsix $installer 'SonarLint' 'SonarSource/vsextensions/SonarLintforVisualStudio2019/4.29.0.25125/vspackage'
+		InstallVsix $installer 'SpecFlow' 'TechTalkSpecFlowTeam/vsextensions/SpecFlowForVisualStudio/2019.0.71.42847/vspackage'
+		InstallVsix $installer 'VSColorOutput' 'MikeWard-AnnArbor/vsextensions/VSColorOutput/2.73/vspackage'
 
 		Write-Host
 		Write-Host '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS' -ForegroundColor Yellow
