@@ -236,15 +236,15 @@ Begin
 		}
 
 		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
-			((dotnet --list-sdks | ? { $_ -match '^2.2.' }).Count -eq 0))
+			((dotnet --list-sdks | ? { $_ -match '^5.0.' }).Count -eq 0))
 		{
 			# currently required for our apps, may change
-			HighTitle '.NET Core 2.2'
-			choco install -y dotnetcore-sdk --version=2.2.0
+			HighTitle '.NET 5.0'
+			choco install -y dotnet
 		}
 		else
 		{
-			Write-Verbose '.NET Core 2.2 already installed'
+			Write-Verbose '.NET 5.0 already installed'
 		}
 	}
 
@@ -470,6 +470,10 @@ Begin
 		{
 			Chocolatize 'notepadplusplus'
 			Chocolatize 'npppluginmanager'
+
+			$themes = "$env:ProgramFiles\notepad++\themes"
+			New-Item $themes -ItemType Directory -Force
+			Copy-Item "$home\Documents\WindowsPowerShell\Themes\Dark Selenitic npp.xml" "$themes\Dark Selenitic.xml"
 
 			# replace notepad.exe
 			HighTitle 'Replacing notepad with notepad++'
