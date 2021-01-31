@@ -8,6 +8,10 @@ The path of the playlist file to export.
 
 .PARAMETER Target
 The folder path to which music is copied, can be a drive letter or a full or relative path.
+
+.PARAMETER WhatIf
+Use this to show which file references are valid and which are not without actually copying
+anything.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
