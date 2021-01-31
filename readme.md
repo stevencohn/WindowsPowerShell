@@ -62,10 +62,14 @@ Primarily used to convert .m4a audio files to .mp3
 #### `Copy-Console` [-OutFile f] [-All] [-Rtf] [-Trim]
 Copy the contents of the Powershell console window preserving color. Can be sent to an out file or pasted into Word or OneNote.
 
+#### `Copy-Playlist` -Playlist p -Target t
+Copies all music files referenced by the given playlist to the specified location.
+For example, this can be used to copy music in an .m3u playlist file to a USB thumbdrive.
+
 #### `Edit-Hosts`
 Open the hosts file in Notepad.
 
-#### `Edit-MusicPath` -Replace r [-Path p] [-Type t]
+#### `Edit-Playlist` -Replace r [-Path p] [-Type t]
 Replace the path of all items in a playlist file to the current user's MyMusic path.
 
 #### `Edit-PSProfile`
