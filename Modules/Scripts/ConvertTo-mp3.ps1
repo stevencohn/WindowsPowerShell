@@ -27,7 +27,7 @@ Overwrite existing .mp3 files without prompting for confirmation.
 
 param(
 	[Parameter(Mandatory = $true, Position = 0)] [string] $InputPath,
-	[string] $OutputPath,
+	[Parameter(Position = 1)] [string] $OutputPath,
 	[int] $Bitrate = 128,
 	[switch] $FullQuality,
 	[switch] $Info,
@@ -41,7 +41,11 @@ Begin
 		if ((Get-Command ffmpeg -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			Write-Host '... installing ffmpeg'
-			choco install -y ffmpeg
+
+			if (!$WhatIfPreference)
+			{
+				choco install -y ffmpeg
+			}
 		}
 	}
 
@@ -66,14 +70,22 @@ Begin
 		if ($FullQuality)
 		{
 			Write-Host "... converting $name with full quality" -ForegroundColor Cyan
-			ffmpeg -i $name -q:a 0 -map a -vn -loglevel $loglevel $over $mp3
+
+			if (!$WhatIfPreference)
+			{
+				ffmpeg -i $name -q:a 0 -map a -vn -loglevel $loglevel $over $mp3
+			}
 		}
 		else
 		{
 			Write-Host "... converting $name" -ForegroundColor Cyan
-			ffmpeg -i $name -b:a $Bitrate`K -vn -loglevel $loglevel $over $mp3
-			# or...
-			#ffmpeg -i $name -acodec libmp3lame -aq 2 -loglevel $loglevel $over $mp3
+
+			if (!$WhatIfPreference)
+			{
+				ffmpeg -i $name -b:a $Bitrate`K -vn -loglevel $loglevel $over $mp3
+				# or...
+				#ffmpeg -i $name -acodec libmp3lame -aq 2 -loglevel $loglevel $over $mp3
+			}
 		}
 	}
 }

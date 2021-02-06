@@ -84,11 +84,19 @@ Process
 
 		if (Test-Path $file)
 		{
-			Write-Host "... copying $file"
-
-			if (!$WhatIfPreference)
+			$type = [System.IO.Path]::GetExtension($_)
+			if ($type -ne '.mp3')
 			{
-				Copy-Item $file $Target -Force
+				ConvertTo-Mp3 $file $Target #-Info
+			}
+			else
+			{
+				Write-Host "... copying $file"
+
+				if (!$WhatIfPreference)
+				{
+					Copy-Item $file $Target -Force
+				}
 			}
 
 			$count = $count + 1
