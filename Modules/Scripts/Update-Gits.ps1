@@ -34,7 +34,7 @@ Begin
         )
 
         Write-Host $divider
-        Write-Host "... updating $Project"
+        Write-Host "... updating $Project" -ForegroundColor Blue
 
         Push-Location $Project
 
