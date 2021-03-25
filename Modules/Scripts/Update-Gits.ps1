@@ -33,9 +33,6 @@ Begin
             [string] $Project
         )
 
-        Write-Host $divider
-        Write-Host "... updating $Project" -ForegroundColor Blue
-
         Push-Location $Project
 
         $br = $branch
@@ -43,6 +40,9 @@ Begin
         {
             $br = ReadBranch
         }
+
+        Write-Host $divider
+        Write-Host "... updating $Project ($br)" -ForegroundColor Blue
 
         if ($Reset)
         {
