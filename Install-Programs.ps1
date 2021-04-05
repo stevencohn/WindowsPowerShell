@@ -6,7 +6,7 @@ Automates the installation of applications, development tools, and other utiliti
 Invoke a single command from this script; default is to run all.
 
 .PARAMETER AccessKey
-AWS access key used to download bits.
+AWS access key used to download bits. Required for: BareTail, DateInTray, VisualStudio, WiLMa
 
 .PARAMETER Enterprise
 Install Visual Studio Enterprise; default is to install Professional
