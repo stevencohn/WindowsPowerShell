@@ -75,7 +75,6 @@ Process
     }
     else
     {
-        Get-ChildItem | ? { Test-Path (Join-Path $_.FullName '.git') } | `
-            Select -ExpandProperty Name | ? { $_ -ne 'CDS' } | % { Update $_ }
+        Get-ChildItem | ? { Test-Path (Join-Path $_.FullName '.git') } | Select -ExpandProperty Name | % { Update $_ }
     }
 }
