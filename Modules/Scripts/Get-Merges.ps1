@@ -4,7 +4,8 @@ Reports all merges for the given git repo after a specified date
 
 .PARAMETER Project
 The name or path of a local git repo containing a .git\ subdirectory.
-Defaults to the current directory.
+Defaults to the current directory if there is a .git subdirectory or 
+looks in all subdirectories for local git repos (not recursive)
 
 .PARAMETER Branch
 The name of the branch receiving merges to be reported
@@ -38,6 +39,7 @@ Begin
             return $a.Matches.Groups[1].Value
         }
 
+        Write-Verbose 'defaulting to master branch'
         return 'master'
     }
 
@@ -47,24 +49,34 @@ Begin
         if ($a.Matches.Success)
         {
 			$url = $a.Matches.Groups[1].Value + 'jira/browse/'
-			
+		    $url
+
+            <#
 			$request = [System.Net.WebRequest]::Create($url)
 			$request.Timeout = 2000
 			try {
 				$response = $request.getResponse()
+                $response
 				if ($response.StatusCode -eq "200") 
 				{
 					return $url
 				}
-			} catch {}
+			} catch {
+                $Error
+            }
+            #>
         }
 
-        Write-Verbose '*** could not determine remote URL'
+        Write-Verbose 'could not determine remote URL'
         return $null
 	}
 
     function Report
     {
+        param (
+            [Parameter(Mandatory=$true, Position=0, ValueFromPipeline=$true)]
+            [string] $Project
+        )
         <#
         https://www.git-scm.com/docs/git-log
 
@@ -76,7 +88,18 @@ Begin
         %s  - subject
         #>
 
-		$remote = ReadRemote
+        Write-Host
+        Write-Host "Merges in $Project since $After" -ForegroundColor Green
+        Write-Host
+
+        Push-Location $Project
+
+        if (!$Branch)
+        {
+            $Branch = ReadBranch
+        }
+
+        $remote = ReadRemote
 
 		if ($Simple -or ($remote -eq $null))
         {
@@ -91,39 +114,40 @@ Begin
 
                 $parts = $_.Split('~')
 
-                $a =$parts[3] | Select-String -Pattern "Merge pull request (#[0-9]+) .+ feature/([A-Z]+-[0-9]+)-(.+) to $Branch"
+                $a =$parts[3] | Select-String -Pattern "Merge pull request (#[0-9]+)(?: .+ feature/([A-Z]+-[0-9]+)-(.+) to $Branch)?"
                 if ($a.Matches.Success)
                 {
                     $groups = $a.Matches.Groups
+                    $uri = ''
+                    if ($a.Matches.Groups[2].Value) { $uri = "  $remote$($a.Matches.Groups[2].Value)" }
 
-                    Write-Host "$($parts[1])  $($parts[2])  $remote$($a.Matches.Groups[2].Value)  PR $($groups[1].Value) $($groups[3].Value) "
+                    Write-Host "$($parts[1])  $($parts[2])$uri  PR $($groups[1].Value) $($groups[3].Value) "
                 }
             }
         }
+
+        Pop-Location
     }
 }
 Process
 {
-    if (!$Project) { $Project = '.' }
-    if (!(Test-Path (Join-Path $project '.git')))
-    {
-        Write-Host '*** Enter the path to a local git repo or run from within a local repo' -ForegroundColor Yellow
-        return
-    }
-
-    if ($Project -ne '.') { Push-Location $Project }
-
-    if (!$Branch)
-    {
-        $Branch = ReadBranch
-    }
-
     if (!$After)
     {
         $After = [DateTime]::Now.AddDays(-14).ToString('yyyy-MM-dd')
     }
 
-    Report
+    if (!$Project)
+    {
+        Get-ChildItem | ? { Test-Path (Join-Path $_.FullName '.git') } | Select -ExpandProperty Name | % { Report $_ }
+    }
+    else
+    {
+        if (!(Test-Path (Join-Path $Project '.git')))
+        {
+            Write-Host "*** $Project is not the path to a local repo" -ForegroundColor Yellow
+            return
+        }
 
-    if ($Project -ne '.') { Pop-Location }
+        Report $Project
+    }
 }
