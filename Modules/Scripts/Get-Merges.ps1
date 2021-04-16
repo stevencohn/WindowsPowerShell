@@ -15,10 +15,10 @@ Default is the last 14 days
 
 .PARAMETER Simple
 A switch to display simple git log output
-
-.DESCRIPTION
-When 
 #>
+
+# CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
+[CmdletBinding(SupportsShouldProcess = $true)]
 
 param(
     [parameter(Position = 0)] [string] $Project,
@@ -46,13 +46,22 @@ Begin
         $a = Get-Content .\.git\FETCH_HEAD | Select-String -Pattern '(https://.+?/)'
         if ($a.Matches.Success)
         {
-            return $a.Matches.Groups[1].Value + 'jira/browse/'
+			$url = $a.Matches.Groups[1].Value + 'jira/browse/'
+			
+			$request = [System.Net.WebRequest]::Create($url)
+			$request.Timeout = 2000
+			try {
+				$response = $request.getResponse()
+				if ($response.StatusCode -eq "200") 
+				{
+					return $url
+				}
+			} catch {}
         }
 
-        Write-Host "** could not determine remote URL" -ForegroundColor Red
+        Write-Verbose '*** could not determine remote URL'
         return $null
-    }
-
+	}
 
     function Report
     {
@@ -67,24 +76,22 @@ Begin
         %s  - subject
         #>
 
-        if ($Simple)
+		$remote = ReadRemote
+
+		if ($Simple -or ($remote -eq $null))
         {
             git log --merges --first-parent $Branch --after $After `
                 --pretty=format:"%h %<(12,trunc)%aN %C(white)%<(15)%ar%Creset %s %Cred%<(15)%D%Creset"
         }
         else
         {
-            $remote = ReadRemote
-            if ($remote -eq $null)
-            {
-                return
-            }
-
             git log --merges --first-parent $Branch --after $After --pretty=format:"%h~%<(15,trunc)%aN~%ar~%s" | % `
             {
+				Write-Verbose $_
+
                 $parts = $_.Split('~')
 
-                $a =$parts[3] | Select-String -Pattern 'Merge pull request (#[0-9]+) .+ feature/([A-Z]+-[0-9]+)-(.+) to develop'
+                $a =$parts[3] | Select-String -Pattern "Merge pull request (#[0-9]+) .+ feature/([A-Z]+-[0-9]+)-(.+) to $Branch"
                 if ($a.Matches.Success)
                 {
                     $groups = $a.Matches.Groups
