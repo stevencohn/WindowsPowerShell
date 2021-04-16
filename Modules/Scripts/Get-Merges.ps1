@@ -49,7 +49,7 @@ Begin
         if ($a.Matches.Success)
         {
 			$url = $a.Matches.Groups[1].Value + 'jira/browse/'
-		    $url
+		    return $url
 
             <#
 			$request = [System.Net.WebRequest]::Create($url)
