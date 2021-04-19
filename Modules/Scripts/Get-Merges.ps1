@@ -132,7 +132,7 @@ Begin
 				$parts = $line.Split('~')
 
 				$a = $parts[3] | Select-String `
-					-Pattern "Merge pull request (#[0-9]+)(?: .+ feature/([A-Z]+-[0-9]+)-(.+) to $Branch)"
+					-Pattern "Merge pull request (#[0-9]+)(?: .+ [\w]+/([A-Z]+-[0-9]+)-(.+) to $Branch)"
 
 				if ($a.Matches.Success)
 				{
