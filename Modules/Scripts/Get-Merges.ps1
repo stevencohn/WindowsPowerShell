@@ -61,7 +61,7 @@ Begin
 	{
 		if (Test-Path .\.git\FETCH_HEAD)
 		{
-			$a = Get-Content .\.git\FETCH_HEAD | Select-String -Pattern '(https://.+?/)'
+			$a = Get-Content .\.git\FETCH_HEAD | Select-String -Pattern '((?:https|ssh)://.+?/)'
 			if ($a.Matches.Success)
 			{
 				$url = $a.Matches.Groups[1].Value + 'jira/browse/'
@@ -105,16 +105,16 @@ Begin
 		%s  - subject
 		#>
 
-		Write-Host
-		Write-Host "Merges in $Project since $Since" -ForegroundColor Green
-		Write-Host
-
 		Push-Location $Project
 
 		if (!$Branch)
 		{
 			$Branch = ReadBranch
 		}
+
+		Write-Host
+		Write-Host "Merges in $Project to $Branch since $Since" -ForegroundColor Green
+		Write-Host
 
 		$remote = ReadRemote
 
@@ -132,17 +132,25 @@ Begin
 				$parts = $line.Split('~')
 
 				$a = $parts[3] | Select-String `
-					-Pattern "Merge pull request (#[0-9]+)(?: .+ [\w]+/([A-Z]+-[0-9]+)-(.+) to $Branch)"
+					-Pattern "Merge pull request (#[0-9]+) in .+ from (?:(?:\w+/)?([A-Z]+-[0-9]+)[-_ ]?(.+)? to $Branch)"
 
 				if ($a.Matches.Success)
 				{
+					$ago = $parts[2]
+					if ($ago.Length -lt 12) { $ago = $ago.PadRight(12) }
+
 					$groups = $a.Matches.Groups
 					$uri = ''
-					if ($a.Matches.Groups[2].Value) { $uri = "  $remote$($a.Matches.Groups[2].Value)" }
+					if ($a.Matches.Groups[2].Value)
+					{
+						if ($remote.StartsWith('http')) { $uri = "  $remote$($a.Matches.Groups[2].Value)" }
+						else { $uri = " $($a.Matches.Groups[2].Value)" }
+					}
 
-					Write-Host "$($parts[1])  $($parts[2])$uri  PR $($groups[1].Value) $($groups[3].Value) "
+					Write-Host "$($parts[1])  $($ago)$uri  PR $($groups[1].Value) $($groups[3].Value) "
 				}
 				else {
+					Write-Verbose "fallback: $line"
 					ReportRaw
 					break
 				}
