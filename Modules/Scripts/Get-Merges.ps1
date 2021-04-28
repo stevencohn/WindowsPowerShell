@@ -100,9 +100,12 @@ Begin
 		%h  - abbrev commit hash (%H is full hash)
 		%aN - author name
 		C() - foreground color, %Creset resets foreground; Cred, Cgreen, Cblue
-		%ar - author date relative
+		%ad - author date, based on --date=format
 		%D  - ref names
 		%s  - subject
+
+		--date-format options: (defaults to local time)
+		https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strftime-wcsftime-strftime-l-wcsftime-l
 		#>
 
 		Push-Location $Project
@@ -124,7 +127,7 @@ Begin
 		}
 		else
 		{
-			$lines = git log --merges --first-parent $Branch --after $Since `--pretty=format:"%h~%<(15,trunc)%aN~%ar~%s"
+			$lines = git log --merges --first-parent $Branch --after $Since --date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h~%<(15,trunc)%aN~%ad~%s"
 			foreach ($line in $lines)
 			{
 				Write-Verbose $line
