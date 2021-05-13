@@ -64,8 +64,8 @@ $cmd = (gwmi win32_process -filter ("ProcessID={0}" -f (gwmi win32_process -filt
 if ($cmd -notmatch 'cmd\.exe')
 {
 	if (Test-Path 'C:\Github') { Set-Location 'C:\Github'; }
+	elseif (Test-Path 'D:\SCP') { Set-Location 'D:\SCP'; }
 	elseif (Test-Path 'C:\Code') { Set-Location 'C:\Code'; }
-	elseif (Test-Path 'D:\Code') { Set-Location 'D:\Code'; }
 	elseif (Test-Path 'C:\River') { Set-Location 'C:\River'; }
 	else { Set-Location '\'; }
 }
