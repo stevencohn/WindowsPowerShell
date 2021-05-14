@@ -64,28 +64,92 @@ Begin
 			$a = Get-Content .\.git\FETCH_HEAD | Select-String -Pattern '((?:https|ssh)://.+?/)'
 			if ($a.Matches.Success)
 			{
-				$url = $a.Matches.Groups[1].Value + 'jira/browse/'
-				return $url
-
-				<#
-				$request = [System.Net.WebRequest]::Create($url)
-				$request.Timeout = 2000
-				try {
-					$response = $request.getResponse()
-					$response
-					if ($response.StatusCode -eq "200") 
-					{
-						return $url
-					}
-				} catch {
-					$Error
-				}
-				#>
+				return $a.Matches.Groups[1].Value + 'jira/rest/api/2/issue/'
 			}
 		}
 
 		Write-Verbose 'could not determine remote URL'
 		return $null
+	}
+
+	function ReportRaw
+	{
+		git log --merges --first-parent $Branch --after $Since `
+			--pretty=format:"%h %<(12,trunc)%aN %C(white)%<(15)%ar%Creset %s %Cred%<(15)%D%Creset"
+	}
+
+	function ReportPretty
+	{
+		$lines = git log --merges --first-parent $Branch --after $Since --date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h~%<(15,trunc)%aN~%ad~%s"
+		foreach ($line in $lines)
+		{
+			Write-Verbose $line
+
+			$parts = $line.Split('~')
+
+			$a = $parts[3] | Select-String `
+				-Pattern "Merge pull request (#[0-9]+) in .+ from (?:(?:\w+/)?([A-Z]+-[0-9]+)[-_ ]?(.+)? to $Branch)"
+
+			if ($a.Matches.Success)
+			{
+				$ago = $parts[2]
+				if ($ago.Length -lt 12) { $ago = $ago.PadRight(12) }
+
+				$groups = $a.Matches.Groups
+				$ticket = ''
+				if ($a.Matches.Groups[2].Value)
+				{
+					$key = $a.Matches.Groups[2].Value
+					if ($remote.StartsWith('http'))
+					{
+						$response = curl -s "$($remote)$key" | ConvertFrom-Json
+						$status = $response.fields.status.name.PadRight(8)
+
+						$key = $key.PadRight(12)
+						$ticket = "  $key $status"
+
+						if ($response.fields.issueType.name -eq "Story")
+						{
+							Write-Host -NoNewLine $parts[1]
+							Write-Host -NoNewLine '  '
+							Write-Host -NoNewLine $ago
+							Write-Host -NoNewLine '  '
+							Write-Host -NoNewLine $key.PadRight(12)
+							Write-Host -NoNewline ' '
+
+							switch ($status)
+							{
+								"Verified" { Write-Host -NoNewline $status.PadRight(8) -ForegroundColor Green }
+								"Passed" { Write-Host -NoNewline $status.PadRight(8) -ForegroundColor Yellow }
+								default { Write-Host -NoNewline $status.PadRight(8) -ForegroundColor Cyan }
+							}
+
+							Write-Host "  PR $($groups[1].Value) $($groups[3].Value)"
+						}
+						else
+						{
+							Write-Host "$($parts[1])  $($ago)$ticket  PR $($groups[1].Value) $($groups[3].Value)" -ForegroundColor DarkGray
+						}
+					}
+					else
+					{
+						$ticket = " $key"
+						Write-Host "$($parts[1])  $($ago)$ticket  PR $($groups[1].Value) $($groups[3].Value)"
+					}
+				}
+				else
+				{
+					Write-Host "$($parts[1])  $($ago)  PR $($groups[1].Value) $($groups[3].Value)"
+				}
+			}
+			else
+			{
+				# should execute on first $line
+				Write-Verbose "fallback: $line"
+				ReportRaw
+				break
+			}
+		}
 	}
 
 	function Report
@@ -116,7 +180,7 @@ Begin
 		}
 
 		Write-Host
-		Write-Host "Merges in $Project to $Branch since $Since" -ForegroundColor Green
+		Write-Host "Merges in $Project to $Branch since $Since" -ForegroundColor Blue
 		Write-Host
 
 		$remote = ReadRemote
@@ -127,46 +191,10 @@ Begin
 		}
 		else
 		{
-			$lines = git log --merges --first-parent $Branch --after $Since --date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h~%<(15,trunc)%aN~%ad~%s"
-			foreach ($line in $lines)
-			{
-				Write-Verbose $line
-
-				$parts = $line.Split('~')
-
-				$a = $parts[3] | Select-String `
-					-Pattern "Merge pull request (#[0-9]+) in .+ from (?:(?:\w+/)?([A-Z]+-[0-9]+)[-_ ]?(.+)? to $Branch)"
-
-				if ($a.Matches.Success)
-				{
-					$ago = $parts[2]
-					if ($ago.Length -lt 12) { $ago = $ago.PadRight(12) }
-
-					$groups = $a.Matches.Groups
-					$uri = ''
-					if ($a.Matches.Groups[2].Value)
-					{
-						if ($remote.StartsWith('http')) { $uri = "  $remote$($a.Matches.Groups[2].Value)" }
-						else { $uri = " $($a.Matches.Groups[2].Value)" }
-					}
-
-					Write-Host "$($parts[1])  $($ago)$uri  PR $($groups[1].Value) $($groups[3].Value) "
-				}
-				else {
-					Write-Verbose "fallback: $line"
-					ReportRaw
-					break
-				}
-			}
+			ReportPretty
 		}
 
 		Pop-Location
-	}
-
-	function ReportRaw
-	{
-		git log --merges --first-parent $Branch --after $Since `
-			--pretty=format:"%h %<(12,trunc)%aN %C(white)%<(15)%ar%Creset %s %Cred%<(15)%D%Creset"
 	}
 }
 Process
