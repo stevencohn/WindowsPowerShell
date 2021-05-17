@@ -8,6 +8,9 @@ Invoke a single command from this script; default is to run all
 .PARAMETER ListCommands
 Show a list of all available commands
 
+.PARAMETER NoChrome
+Do not install Google Chrome
+
 .PARAMETER Password
 The password of the new local admin account to create.
 
@@ -520,9 +523,12 @@ Begin
 		}
 
 		# install Chrome
-		if (!(Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe'))
+		if (!$NoChrome)
 		{
-			choco install -y googlechrome
+			if (!(Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe'))
+			{
+				choco install -y googlechrome
+			}
 		}
 	}
 

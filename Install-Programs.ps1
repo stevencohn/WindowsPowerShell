@@ -6,7 +6,7 @@ Automates the installation of applications, development tools, and other utiliti
 Invoke a single command from this script; default is to run all.
 
 .PARAMETER AccessKey
-AWS access key used to download bits. Required for: BareTail, DateInTray, VisualStudio, WiLMa
+Optional, sets the AWS access key in configuration 
 
 .PARAMETER Enterprise
 Install Visual Studio Enterprise; default is to install Professional
@@ -18,7 +18,7 @@ Installs more than most developers would need or want; this is my personalizatio
 Show a list of all available commands.
 
 .PARAMETER SecretKey
-AWS secret key used to download bits.
+Optional, sets the AWS secret key in configuration
 
 .DESCRIPTION
 Recommend running after Initialize-Machine.ps1 and all Windows updates.
@@ -47,7 +47,6 @@ Begin
 	$stage = 0
 	$stagefile = (Join-Path $env:LOCALAPPDATA 'install-programs.stage')
 	$ContinuationName = 'Install-Programs-Continuation'
-	$bucket = 'cdsbits'
 	$tools = 'C:\tools'
 	$script:reminders = @(@())
 
@@ -156,6 +155,29 @@ Begin
 		param($uri, $target)
 		[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
 		Invoke-WebRequest -Uri $uri -OutFile $target
+	}
+
+
+	function DownloadBootstrap
+	{
+		# source=filename, target=folder
+		param($source, $target)
+
+		$zip = Join-Path $target $source
+
+		if ($env:GITHUB_TOKEN)
+		{
+			curl -s -H "Authorization: token $($env:GITHUB_TOKEN)" `
+				-H 'Accept: application/vnd.github.v3.raw' `
+				-o $zip -L "https://api.github.com/repos/stevencohn/bootstraps/contents/$source`?ref=main"
+		}
+		else
+		{
+			curl -s "https://raw.githubusercontent.com/stevencohn/bootstraps/main/$source" -o $zip
+		}
+
+		Expand-Archive $zip -DestinationPath $target -Force | Out-Null
+		Remove-Item $zip -Force -Confirm:$false
 	}
 
 
@@ -355,14 +377,10 @@ Begin
 		$target = "$tools\BareTail"
 		if (!(Test-Path $target))
 		{
-			InstallAWSCLI
-
+			#https://baremetalsoft.com/baretail/download.php?p=m
 			HighTitle 'BareTail'
 			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
-
-			aws s3 cp s3://$bucket/baretail.exe $target\
-			aws s3 cp s3://$bucket/baretail-dark.udm $target\
-			#Download 'https://baremetalsoft.com/baretail/download.php?p=m' $target\baretail.exe
+			DownloadBootstrap 'baretail.zip' $target
 		}
 		else
 		{
@@ -426,11 +444,15 @@ Begin
 
 		if (!(Test-Path "$env:ProgramFiles\Macrium\Reflect"))
 		{
-			Chocolatize 'reflect-free'  # just the installer to C:\tools\
+			$target = "$tools\Reflect"
+			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
+
+			DownloadBootstrap 'ReflectDLHF.zip' $target
 
 			$reminder = 'Macrium Reflect', `
-				' 0. Double-click the Macrium Installer icon on the desktop after VS is installed', `
-				' 1. Choose Free version, no registration is necessary'
+				' 0. Run the Macrium Reflect Free installer after VS is installed', `
+				" 1. The installer is here: $target", `
+				' 2. Choose Free version, no registration is necessary'
 
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
@@ -558,8 +580,6 @@ Begin
 		$ent = Test-Path (Join-Path $0 'Enterprise\Common7\IDE\devenv.exe')
 		if (!($pro -or $ent))
 		{
-			InstallAWSCLI
-
 			$sku = 'professional'
 			if ($Enterprise) { $sku = 'enterprise' }
 
@@ -567,15 +587,14 @@ Begin
 			Highlight '... This will take a few minutes'
 
 			# download the installer
-			$bits = "vs_$sku`_2019_16.8.exe"
-			aws s3 cp s3://$bucket/$bits $env:TEMP\
-			aws s3 cp s3://$bucket/vs_$sku.vsconfig $env:TEMP\.vsconfig
+			$bits = "vs_$sku`_2019_16.9"
+			DownloadBootstrap "$bits`.zip" $env:TEMP
 
 			# run the installer
-			& $env:TEMP\$bits --passive --config $env:TEMP\.vsconfig
+			& "$($env:TEMP)\$bits`.exe" --passive --config "$($env:TEMP)\vs_$sku`.vsconfig"
 
 			$reminder = 'Visual Studio', `
-				' 0. When installation is complete, rerun this script using the InstallVSExtensions command'
+				' .. When installation is complete, rerun this script using the InstallVSExtensions command'
 
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
@@ -613,8 +632,8 @@ Begin
 		param($installer, $name, $uri)
 		Write-Host "... installing $name extension in the background" -ForegroundColor Yellow
 
-		$url = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/$($uri)"
-		$vsix = "$($env:TEMP)\$($name).vsix"
+		$url = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/$uri"
+		$vsix = "$($env:TEMP)\$name`.vsix"
 
 		# download package directly from VS Marketplace and install
 		[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
@@ -679,19 +698,12 @@ Begin
 		$target = "$tools\DateInTray"
 		if (!(Test-Path $target))
 		{
-			InstallAWSCLI
+			#https://softpedia-secure-download.com/dl/ba833328e1e20d7848a5498418cb5796/5dfe1db7/100016805/software/os_enhance/DITSetup.exe
 
 			HighTitle 'DateInTray'
 			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
-			# $0 = 'https://softpedia-secure-download.com/dl/ba833328e1e20d7848a5498418cb5796/5dfe1db7/100016805/software/os_enhance/DITSetup.exe'
-			# $zip = "$target\DITSetup.zip"
-			#Download $0 $zip
-			aws s3 cp s3://$bucket/DITSetup.exe $target\
-
-			# extract just the main program; must use 7z instead of Expand-Archive
-			7z e $target\DITSetup.exe DateInTray.exe -o"$target" | Out-Null
-			Remove-Item $target\DITSetup.exe -Force -Confirm:$false
+			DownloadBootstrap 'DateInTray.zip' $target
 
 			# add to Startup
 			$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run'
@@ -716,17 +728,11 @@ Begin
 		$target = "$tools\WiLMa"
 		if (!(Test-Path $target))
 		{
-			InstallAWSCLI
-
 			HighTitle 'WiLMa'
 			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
-			# $0 = 'http://www.stefandidak.com/wilma/winlayoutmanager.zip'
-			$zip = "$target\winlayoutmanager.zip"
-			#Download $0 $zip
-			aws s3 cp s3://$bucket/winlayoutmanager.zip $target\
-			Expand-Archive $zip -DestinationPath $target | Out-Null
-			Remove-Item $zip -Force -Confirm:$false
+			# http://www.stefandidak.com/wilma/winlayoutmanager.zip
+			DownloadBootstrap 'winlayoutmanager.zip' $target
 
 			# Register WindowsLayoutManager sheduled task to run as admin
 			$trigger = New-ScheduledTaskTrigger -AtLogOn
@@ -760,10 +766,12 @@ Process
 		# harmless to do this even before AWS is installed
 		ConfigureAws $AccessKey $SecretKey
 	}
+	<#
 	elseif (!(TestAwsConfiguration))
 	{
 		return
 	}
+	#>
 
 	# install chocolatey
 	if ((Get-Command choco -ErrorAction:SilentlyContinue) -eq $null)
