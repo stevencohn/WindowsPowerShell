@@ -176,7 +176,7 @@ Begin
 			curl -s "https://raw.githubusercontent.com/stevencohn/bootstraps/main/$source" -o $zip
 		}
 
-		Expand-Archive $zip -DestinationPath $target | Out-Null
+		Expand-Archive $zip -DestinationPath $target -Force | Out-Null
 		Remove-Item $zip -Force -Confirm:$false
 	}
 
@@ -444,9 +444,9 @@ Begin
 
 		if (!(Test-Path "$env:ProgramFiles\Macrium\Reflect"))
 		{
+			$target = "$tools\Reflect"
 			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
-			$target = "$tools\Reflect"
 			DownloadBootstrap 'ReflectDLHF.zip' $target
 
 			$reminder = 'Macrium Reflect', `
@@ -587,14 +587,14 @@ Begin
 			Highlight '... This will take a few minutes'
 
 			# download the installer
-			$bits = "vs_$sku`_2019_16.9.zip"
-			DownloadBootstrap $bits $env:TEMP
+			$bits = "vs_$sku`_2019_16.9"
+			DownloadBootstrap "$bits`.zip" $env:TEMP
 
 			# run the installer
-			& $env:TEMP\$bits --passive --config $env:TEMP\vs_$sku.vsconfig
+			& "$($env:TEMP)\$bits`.exe" --passive --config "$($env:TEMP)\vs_$sku`.vsconfig"
 
 			$reminder = 'Visual Studio', `
-				' 0. When installation is complete, rerun this script using the InstallVSExtensions command'
+				' .. When installation is complete, rerun this script using the InstallVSExtensions command'
 
 			$script:reminders += ,$reminder
 			Highlight $reminder 'Cyan'
