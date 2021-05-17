@@ -39,6 +39,7 @@ param (
 
 	[string] $Username,
 	[securestring] $Password,
+	[switch] $NoChrome,
 	[switch] $RemoveOneDrive,
 	[switch] $RemoveCortana,
 	[switch] $ListCommands
