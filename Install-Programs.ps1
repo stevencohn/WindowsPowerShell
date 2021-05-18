@@ -107,7 +107,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose "$name already installed by chocolatey"
+			Write-Host "$name already installed by chocolatey" -ForegroundColor Blue
 		}
 	}
 
@@ -254,7 +254,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose '.NET Framework 3.5 already installed'
+			Write-Host '.NET Framework 3.5 already installed' -ForegroundColor Blue
 		}
 
 		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
@@ -266,7 +266,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose '.NET 5.0 already installed'
+			Write-Host '.NET 5.0 already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -317,7 +317,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'Angular already installed'
+			Write-Host 'Angular already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -384,7 +384,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'BareTail already installed'
+			Write-Host 'BareTail already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -413,7 +413,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'Docker Desktop already installed'
+			Write-Host 'Docker Desktop already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -433,7 +433,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'Greenshot already installed'
+			Write-Host 'Greenshot already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -462,7 +462,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'Macrium installer already installed'
+			Write-Host 'Macrium installer already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -480,7 +480,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'Nodejs already installed'
+			Write-Host 'Nodejs already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -507,7 +507,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'Notepad++ already installed'
+			Write-Host 'Notepad++ already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -522,7 +522,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 's3browser already installed'
+			Write-Host 's3browser already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -544,7 +544,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'SourceTree already installed'
+			Write-Host 'SourceTree already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -601,7 +601,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'Visual Studio already installed'
+			Write-Host 'Visual Studio already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -684,7 +684,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'VSCode already installed'
+			Write-Host 'VSCode already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -716,7 +716,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'DateInTray already installed'
+			Write-Host 'DateInTray already installed' -ForegroundColor Blue
 		}
 	}
 
@@ -744,7 +744,7 @@ Begin
 		}
 		else
 		{
-			Write-Verbose 'WiLMa already installed'
+			Write-Host 'WiLMa already installed' -ForegroundColor Blue
 		}
 	}
 }
