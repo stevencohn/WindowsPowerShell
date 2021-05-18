@@ -447,6 +447,9 @@ Begin
 			$target = "$tools\Reflect"
 			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
+			# Do NOT use chocolatey to install reflect-free because that includes a version of
+			# autohotkey that Cortex antivirus detects as malware but the base installer does not
+
 			DownloadBootstrap 'ReflectDLHF.zip' $target
 
 			$reminder = 'Macrium Reflect', `
