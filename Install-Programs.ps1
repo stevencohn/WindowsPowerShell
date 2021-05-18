@@ -230,7 +230,7 @@ Begin
 		else
 		{
 			$script:stage = 1
-			Write-Verbose 'Hyper-V installed'
+			Write-Host 'Hyper-V already installed' -ForegroundColor Green
 		}
 	}
 
