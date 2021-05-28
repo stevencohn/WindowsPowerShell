@@ -25,6 +25,10 @@ Default is the last $Last days
 
 .PARAMETER Raw
 A switch to display raw git log output
+
+.DESCRIPTION
+Can override remote with $env:MERGE_REMOTE of the form https://sub.domain.com
+without a trailing slash
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -49,7 +53,9 @@ Begin
 			$a = Get-Content .\.git\config | Select-String -Pattern '^\[branch "(.+)"\]$'
 			if ($a.Matches.Success)
 			{
-				return $a.Matches.Groups[1].Value
+				$0 = $a.Matches.Groups[1].Value
+				Write-Verbose "found branch $0"
+				return $0
 			}
 		}
 
@@ -59,12 +65,22 @@ Begin
 
 	function ReadRemote
 	{
+		# temporary override with env variable, no trailing slash
+		if ($env:MERGE_REMOTE)
+		{
+			$0 = "$($env:MERGE_REMOTE)/jira/rest/api/2/issue/"
+			Write-Verbose "using remote $0"
+			return $0
+		}
+
 		if (Test-Path .\.git\FETCH_HEAD)
 		{
 			$a = Get-Content .\.git\FETCH_HEAD | Select-String -Pattern '((?:https|ssh)://.+?/)'
 			if ($a.Matches.Success)
 			{
-				return $a.Matches.Groups[1].Value + 'jira/rest/api/2/issue/'
+				$0 = $a.Matches.Groups[1].Value + 'jira/rest/api/2/issue/'
+				Write-Verbose "found remote $0"
+				return $0
 			}
 		}
 
@@ -88,7 +104,7 @@ Begin
 			$parts = $line.Split('~')
 
 			$a = $parts[3] | Select-String `
-				-Pattern "Merge pull request (#[0-9]+) in .+ from (?:(?:\w+/)?([A-Z]+-[0-9]+)[-_ ]?(.+)? to $Branch)"
+				-Pattern "Merge pull request (#[0-9]+)(?: in [\w/]+)? from (?:(?:[\w/]+/)?([A-Z]+-[0-9]+)[-_ ]?(.+)?(?:to $Branch)?)"
 
 			if ($a.Matches.Success)
 			{
