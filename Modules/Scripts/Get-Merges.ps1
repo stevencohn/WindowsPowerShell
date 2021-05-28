@@ -46,6 +46,51 @@ param(
 
 Begin
 {
+	function Report
+	{
+		param (
+			[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+			[string] $Project
+		)
+		<#
+		https://www.git-scm.com/docs/git-log
+
+		%h  - abbrev commit hash (%H is full hash)
+		%aN - author name
+		C() - foreground color, %Creset resets foreground; Cred, Cgreen, Cblue
+		%ad - author date, based on --date=format
+		%D  - ref names
+		%s  - subject
+
+		--date-format options: (defaults to local time)
+		https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strftime-wcsftime-strftime-l-wcsftime-l
+		#>
+
+		Push-Location $Project
+
+		if (!$Branch)
+		{
+			$Branch = ReadBranch
+		}
+
+		Write-Host
+		Write-Host "Merges in $Project to $Branch since $Since" -ForegroundColor Blue
+		Write-Host
+
+		$script:remote = ReadRemote
+
+		if ($Raw -or ($remote -eq $null))
+		{
+			ReportRaw
+		}
+		else
+		{
+			ReportPretty
+		}
+
+		Pop-Location
+	}
+	
 	function ReadBranch
 	{
 		if (Test-Path .\.git\config)
@@ -96,7 +141,9 @@ Begin
 
 	function ReportPretty
 	{
-		$lines = git log --merges --first-parent $Branch --after $Since --date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h~%<(15,trunc)%aN~%ad~%s"
+		$lines = git log --merges --first-parent $Branch --after $Since `
+			--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h~%<(15,trunc)%aN~%ad~%s"
+
 		foreach ($line in $lines)
 		{
 			Write-Verbose $line
@@ -106,111 +153,76 @@ Begin
 			$a = $parts[3] | Select-String `
 				-Pattern "Merge pull request (#[0-9]+)(?: in [\w/]+)? from (?:(?:[\w/]+/)?([A-Z]+-[0-9]+)[-_ ]?(.+)?(?:to $Branch)?)"
 
-			if ($a.Matches.Success)
-			{
-				$ago = $parts[2]
-				if ($ago.Length -lt 12) { $ago = $ago.PadRight(12) }
-
-				$groups = $a.Matches.Groups
-				$ticket = ''
-				if ($a.Matches.Groups[2].Value)
-				{
-					$key = $a.Matches.Groups[2].Value
-					if ($remote.StartsWith('http'))
-					{
-						$response = curl -s "$($remote)$key" | ConvertFrom-Json
-						$status = $response.fields.status.name.PadRight(8)
-
-						$key = $key.PadRight(12)
-						$ticket = "  $key $status"
-
-						if ($response.fields.issueType.name -eq "Story")
-						{
-							Write-Host -NoNewLine $parts[1]
-							Write-Host -NoNewLine '  '
-							Write-Host -NoNewLine $ago
-							Write-Host -NoNewLine '  '
-							Write-Host -NoNewLine $key.PadRight(12)
-							Write-Host -NoNewline ' '
-
-							switch ($status)
-							{
-								"Verified" { Write-Host -NoNewline $status.PadRight(8) -ForegroundColor Green }
-								"Passed" { Write-Host -NoNewline $status.PadRight(8) -ForegroundColor Yellow }
-								default { Write-Host -NoNewline $status.PadRight(8) -ForegroundColor Cyan }
-							}
-
-							Write-Host "  PR $($groups[1].Value) $($groups[3].Value)"
-						}
-						else
-						{
-							Write-Host "$($parts[1])  $($ago)$ticket  PR $($groups[1].Value) $($groups[3].Value)" -ForegroundColor DarkGray
-						}
-					}
-					else
-					{
-						$ticket = " $key"
-						Write-Host "$($parts[1])  $($ago)$ticket  PR $($groups[1].Value) $($groups[3].Value)"
-					}
-				}
-				else
-				{
-					Write-Host "$($parts[1])  $($ago)  PR $($groups[1].Value) $($groups[3].Value)"
-				}
-			}
-			else
+			if (-not $a.Matches.Success)
 			{
 				# should execute on first $line
+				# repo is non-conformant so fallback entire report and exit quickly
 				Write-Verbose "fallback: $line"
 				ReportRaw
 				break
 			}
+
+			$groups = $a.Matches.Groups
+
+			ReportPrettyLine $parts[1] $parts[2] $groups[1] $groups[2] $groups[3]
 		}
 	}
 
-	function Report
+	function ReportPrettyLine
 	{
-		param (
-			[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
-			[string] $Project
+		param(
+			[string] $author,
+			[string] $ago,
+			[string] $pr,
+			[string] $key,
+			[string] $desc
 		)
-		<#
-		https://www.git-scm.com/docs/git-log
 
-		%h  - abbrev commit hash (%H is full hash)
-		%aN - author name
-		C() - foreground color, %Creset resets foreground; Cred, Cgreen, Cblue
-		%ad - author date, based on --date=format
-		%D  - ref names
-		%s  - subject
+		if ($ago.Length -lt 15) { $ago = $ago.PadRight(15) }
 
-		--date-format options: (defaults to local time)
-		https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strftime-wcsftime-strftime-l-wcsftime-l
-		#>
-
-		Push-Location $Project
-
-		if (!$Branch)
+		if (-not $key)
 		{
-			$Branch = ReadBranch
+			Write-Host "$author  $ago  PR $pr $desc"
+			return
 		}
 
-		Write-Host
-		Write-Host "Merges in $Project to $Branch since $Since" -ForegroundColor Blue
-		Write-Host
+		$pkey = $key.PadRight(12)
 
-		$remote = ReadRemote
-
-		if ($Raw -or ($remote -eq $null))
+		if (-not $remote.StartsWith('http'))
 		{
-			ReportRaw
+			Write-Host "$author  $ago  $pkey  PR $pr $desc"
+			return
+		}
+
+		$response = curl -s "$remote$key" | ConvertFrom-Json
+		if (-not ($response -and $response.fields))
+		{
+			Write-Host "$author  $ago  $pkey " -NoNewLine
+			Write-Host 'unknown    ' -NoNewline -ForegroundColor DarkGray
+			Write-Host "  PR $pr $desc"
+			return
+		}
+
+		$status = $response.fields.status.name
+		$pstatus = $status.PadRight(11)
+
+		if ($response.fields.issueType.name -eq "Story")
+		{
+			Write-Host "$author  $ago  $pkey " -NoNewline
+
+			switch ($status)
+			{
+				"Verified" { Write-Host $pstatus -NoNewline -ForegroundColor Green }
+				"Passed" { Write-Host $pstatus -NoNewline -ForegroundColor Yellow }
+				default { Write-Host $pstatus -NoNewline -ForegroundColor Cyan }
+			}
+
+			Write-Host "  PR $pr $desc"
 		}
 		else
 		{
-			ReportPretty
+			Write-Host "$author  $ago  $pkey $pstatus  PR $pr $desc (task)" -ForegroundColor DarkGray
 		}
-
-		Pop-Location
 	}
 }
 Process
