@@ -41,8 +41,10 @@ Begin
             $br = ReadBranch
         }
 
+        $updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")
+
         Write-Host $divider
-        Write-Host "... updating $Project ($br)" -ForegroundColor Blue
+        Write-Host "... updating $Project from $br, last updated $updated" -ForegroundColor Blue
 
         if ($Reset)
         {
