@@ -552,6 +552,102 @@ Begin
 	}
 
 
+	function InstallTerminal
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+
+		$parentId = (gwmi win32_process -Filter "processid='$pid'").parentprocessid
+		if ((gwmi win32_process -Filter "processid='$parentId'").Name -eq 'WindowsTerminal.exe')
+		{
+			Write-Host 'Cannot install microsoft-windows-terminal from a Windows Terminal console' -ForegroundColor Red
+			return
+		}
+
+		Chocolatize 'microsoft-windows-terminal'
+
+		# customize settings... for Terminal v1.8.1444.0
+
+		$0 = "$($env:LOCALAPPDATA)\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+		if (!(Test-Path $0))
+		{
+			Write-Host 'Cannot find Windows Terminal settings file' -ForegroundColor Yellow
+			return
+		}
+
+		# must remove comments to feed into ConvertFrom-Json
+		$settings = (Get-Content $0) -replace '^\s*//.*' | ConvertFrom-Json
+
+		$settings.initialCols = 160
+		$settings.initialRows = 90
+
+		$scheme = New-Object -TypeName PsObject -Property @{
+			background = '#080808'
+            black = '#0C0C0C'
+            blue = '#3465A4'
+            brightBlack = '#767676'
+            brightBlue = '#729FCF'
+            brightCyan = '#34E2E2'
+            brightGreen = '#8AE234'
+            brightPurple = '#AD7FA8'
+            brightRed = '#EF2929'
+            brightWhite = '#F2F2F2'
+            brightYellow = '#FCE94F'
+            cursorColor = '#FFFFFF'
+            cyan = '#06989A'
+            foreground = '#CCCCCC'
+            green = '#4E9A06'
+            name = 'DarkSelenitic'
+            purple = '#75507B'
+            red = '#CC0000'
+            selectionBackground = '#FFFFFF'
+            white = '#CCCCCC'
+            yellow = '#C4A000'
+        }
+
+		$schemes = [Collections.Generic.List[Object]]($settings.schemes)
+		$index = $schemes.FindIndex({ $args[0].name -eq 'DarkSelenitic' })
+		if ($index -lt 0) {
+			$settings.schemes += $scheme
+		} else {
+			$settings.schemes[$index] = $scheme
+		}
+
+		$profile = $settings.profiles.list | ? { $_.commandline -and (Split-Path $_.commandline -Leaf) -eq 'powershell.exe' }
+		if ($profile)
+		{
+			$profile.antialiasingMode = 'aliased'
+			$profile.colorScheme = 'DarkSelenitic'
+			$profile.cursorShape = 'underscore'
+			$profile.fontFace = 'Lucida Console'
+			$profile.fontSize = 9
+
+			$png = Join-Path ([Environment]::GetFolderPath('MyPictures')) 'architecture.png'
+			if (!(Test-Path $png))
+			{
+				$png = "$($env:APPDATA)\ConEmu\architecture.png"
+			}
+			if (Test-Path $png)
+			{
+				if ($profile.backgroundImage) {
+					$profile.backgroundImage = $png
+				} else {
+					$profile | Add-Member -MemberType NoteProperty -Name 'backgroundImage' -Value $png
+				}
+
+				if ($profile.backgroundImageOpacity) {
+					$profile.backgroundImageOpacity = 0.03
+				} else {
+					$profile | Add-Member -MemberType NoteProperty -Name 'backgroundImageOpacity' -Value 0.03
+				}
+			}
+		}
+
+		# use -Depth to retain fidelity in complex objects without converting
+		# object properties to key/value collections
+		ConvertTo-Json $settings -Depth 100 | Out-File $0 -Encoding Utf8
+	}
+
+
 	function InstallThings
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
@@ -807,14 +903,14 @@ Process
 
 	DisableCFG
 
-	# run first so we have the aws CLI for downloads
-	InstallAWSCLI
-
 	InstallThings
+	InstallTerminal
+
 	InstallMacrium
 
 	# Development...
 
+	InstallAWSCLI
 	InstallNodeJs
 	InstallAngular
 	InstallVSCode
