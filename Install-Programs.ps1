@@ -570,8 +570,10 @@ Begin
 		$0 = "$($env:LOCALAPPDATA)\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 		if (!(Test-Path $0))
 		{
-			Write-Host 'Cannot find Windows Terminal settings file' -ForegroundColor Yellow
-			return
+			# when Terminal is first installed, no settings file exists so download default
+			$zip = ((choco list -l -r -e microsoft-windows-terminal) -replace '\|','_') + '.json.zip'
+			Write-Host "Downloading default Terminal settings file $zip" -ForegroundColor DarkGray
+			DownloadBootstrap $zip (Split-Path $0)
 		}
 
 		# must remove comments to feed into ConvertFrom-Json
