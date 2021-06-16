@@ -139,6 +139,8 @@ Begin
 		$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 		# taskbar small buttons
 		Set-ItemProperty $0 -Name 'TaskbarSmallIcons' -Value 1 -Type DWord
+		# disable item checkboxes
+		Set-ItemProperty $0 -Name 'AutoCheckSelect' -Value 0 -Type DWord
 		# replace cmd prompt with PowerShell
 		Set-ItemProperty $0 -Name 'DontUsePowerShellOnWinX' -Value 0 -Type DWord
 		# show known file extensions - must restart Explorer.exe
