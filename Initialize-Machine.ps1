@@ -208,10 +208,13 @@ Begin
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
 		Set-ItemProperty $0 -Name 'NoDriveTypeAutoRun' -Type DWord -Value 255
 
-		# unlock start menu customization. Some companies may set this to prevent stupid users
-		# from rearranging the start menu icons.
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer'
-		if (Test-Path $0) { Set-ItemProperty $0 -Name 'LockedStartLayout' -Type DWord -Value 0 }
+		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
+		# unlock start menu customization. Some companies set this to prevent stupid users
+		# from rearranging the start menu icons.
+		Set-ItemProperty $0 -Name 'LockedStartLayout' -Type DWord -Value 0
+		# hide Recently Added apps sections from Start menu
+		Set-ItemProperty $0 -Name 'HideRecentlyAddedApps' -Type DWord -Value 1
 	}
 
 	function EnablePhotoViewer
