@@ -173,6 +173,9 @@ Create a persistent mapping of a folder to a new drive letter. (persistent SUBST
 #### `New-Host` -IP a -Name n
 Adds or updates an entry in the Windows hosts file
 
+#### `New-RunAsShortcut` -LinkPath l -TargetPath t [-Arguments a]
+Creates a new elevated shortcut (.lnk file) to a given target
+
 #### `New-VMClone` -Name n -Path p -Template t [-Checkpoint]
 Create a new VM from a registered VM or an exported VM.
 
@@ -205,6 +208,9 @@ Set the ownership of an item - folder or file - to the specified user group.
 
 #### `Set-OutDefaultOverride`
 (Internal) Helper function for Get-ChildItemColorized.
+
+#### `Set-PinTaskbar` -Target t [-Unpin]
+Pins or unpins a target item to the Windows Taskbar (_currently broken!_)
 
 #### `Set-RegistryOwner` -Hive h -Key k [-Recurse]
 Set full-access ownership of a specified Registry key.
