@@ -320,6 +320,7 @@ Default applications:
    * SysInternals procexp and procmon
    * Visual Studio 2019 _and extensions_ (_professional or enterpise_)
    * VSCode _and extensions_
+   * Windows Terminal
 
 Other applications included when -Extras is specified
 
