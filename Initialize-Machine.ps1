@@ -556,7 +556,7 @@ Begin
 
 		Write-Verbose 'fetching WindowsPowerShell environment'
 
-		Push-Location [Environment]::GetFolderPath('MyDocuments')
+		Push-Location ([Environment]::GetFolderPath('MyDocuments'))
 		git clone https://github.com/stevencohn/WindowsPowerShell.git
 		Pop-Location
 	}
@@ -567,7 +567,7 @@ Begin
 
 		Write-Verbose 'enabling yellow mouse cursors'
 
-		Push-Location [Environment]::GetFolderPath('MyDocuments')
+		Push-Location ([Environment]::GetFolderPath('MyDocuments'))
 		git clone https://github.com/stevencohn/YellowCursors.git
 		Push-Location YellowCursors
 		.\Install.ps1
