@@ -248,7 +248,15 @@ and update the content in $home\Documents\WindowsPowerShell.
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
 setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
+
 Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use of PowerShell.
+
+The Initialize-Machine script will download this repo into the MyDocuments folder, but
+if you have OneDrive enabled then the MyDocuments folder may differ from $home\Documents.
+So before initializing, you can create a junction point to MyDocuments using this command:
+
+   1. `cd $home\Documents` 
+   1. `cmd 'mklink /j WindowsPowerShell ([Environment]::GetFolderPath('MyDocuments'))`
 
 This script can optionally create a new local administrator so it runs in two phases:
 
