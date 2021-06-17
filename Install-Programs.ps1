@@ -946,6 +946,7 @@ Process
 	InstallVSCode
 	InstallS3Browser
 	InstallSourceTree
+	InstallSysInternals
 
 	InstallDockerDesktop
 
