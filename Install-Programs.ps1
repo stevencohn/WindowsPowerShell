@@ -562,6 +562,24 @@ Begin
 	}
 
 
+	function InstallSysInternals
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+
+		$target = "$tools\SysInternals"
+		if (!(Test-Path $target))
+		{
+			HighTitle 'SysInternals'
+			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
+			DownloadBootstrap 'SysInternals.zip' $target
+		}
+		else
+		{
+			Write-Host 'SysInternals already installed' -ForegroundColor Green
+		}
+	}
+
+
 	function InstallTerminal
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
@@ -968,6 +986,6 @@ Process
 
 	$script:reminders | % { $_ | % { Write-Host $_ -ForegroundColor Cyan }; Write-Host }
 
-	Write-Host '... Initialization compelte   ' -ForegroundColor Green
+	Write-Host '... Initialization compelete   ' -ForegroundColor Green
 	Read-Host '... Press Enter to finish'
 }
