@@ -428,6 +428,29 @@ Begin
 	}
 
 
+	function InstallGreenfish
+	{
+		[CmdletBinding(HelpURI='manualcmd')] param()
+
+		$0 = 'C:\Program Files (x86)\Greenfish Icon Editor Pro 3.6\gfie.exe'
+		if (!(Test-Path $0))
+		{
+			HighTitle 'Greenfish'
+
+			# download the installer
+			$zip = 'greenfish_icon_editor_pro_3.6.zip'
+			DownloadBootstrap $zip $env:TEMP
+
+			# run the installer
+			& "$($env:TEMP)\$zip" /verysilent
+		}
+		else
+		{
+			Write-Host 'Greenfish already installed' -ForegroundColor Green
+		}
+	}
+
+
 	function InstallGreenshot
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
