@@ -438,11 +438,11 @@ Begin
 			HighTitle 'Greenfish'
 
 			# download the installer
-			$zip = 'greenfish_icon_editor_pro_3.6.zip'
-			DownloadBootstrap $zip $env:TEMP
+			$name = 'greenfish_icon_editor_pro_setup_3.6'
+			DownloadBootstrap "$name`.zip" $env:TEMP
 
 			# run the installer
-			& "$($env:TEMP)\$zip" /verysilent
+			& "$($env:TEMP)\$name`.exe" /verysilent
 		}
 		else
 		{
@@ -719,6 +719,7 @@ Begin
 		Chocolatize 'robo3t'
 
 		InstallBareTail
+		InstallGreenfish
 		InstallNotepadPP
 	}
 
@@ -968,7 +969,7 @@ Process
 	InstallAngular
 	InstallVSCode
 	InstallS3Browser
-	InstallSourceTree
+	#InstallSourceTree
 	InstallSysInternals
 
 	InstallDockerDesktop

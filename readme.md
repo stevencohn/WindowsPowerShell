@@ -307,6 +307,7 @@ Default applications:
    * Docker Desktop
    * Git
    * Google Chrome
+   * Greenfish Icon Editor Pro
    * Greenshot
    * LINQPad
    * Macrium Reflect Free (_installer_)
@@ -316,7 +317,6 @@ Default applications:
    * Nuget command line
    * Robot3T
    * S3Browser
-   * SourceTree
    * SysInternals procexp and procmon
    * Visual Studio 2019 _and extensions_ (_professional or enterpise_)
    * VSCode _and extensions_
