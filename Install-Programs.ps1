@@ -717,6 +717,7 @@ Begin
 		Chocolatize 'procexp'
 		Chocolatize 'procmon'
 		Chocolatize 'robo3t'
+		Chocolatize 'sharpkeys'
 
 		InstallBareTail
 		InstallGreenfish

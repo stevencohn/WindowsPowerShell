@@ -317,6 +317,7 @@ Default applications:
    * Nuget command line
    * Robot3T
    * S3Browser
+   * SharpKeys
    * SysInternals procexp and procmon
    * Visual Studio 2019 _and extensions_ (_professional or enterpise_)
    * VSCode _and extensions_
