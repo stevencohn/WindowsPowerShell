@@ -15,4 +15,12 @@ if (!(Test-Elevated))
 	Write-Host '... not currently elevated; you may not be able to save changes' -ForegroundColor Yellow
 }
 
-notepad "$file"
+if (Get-Command 'notepad++')
+{
+	# npp handles files without extensions directly
+	notepad++ $file
+}
+else
+{
+	notepad $file
+}
