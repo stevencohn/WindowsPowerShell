@@ -204,6 +204,16 @@ Begin
 		# ensure Hyper-V
 		if (!(HyperVInstalled))
 		{
+			$progressPreference = 'silentlyContinue'
+			$0 = (Get-ComputerInfo).WindowsProductName
+			$progressPreference = 'Continue'
+
+			if ($0.Contains('Home'))
+			{
+				Write-Warning "Cannot install Hyper-V on $0"
+				return
+			}
+
 			HighTitle 'Hyper-V'
 			Highlight '', '... Reboot will be required after installing Hyper-V', `
 				'... This script will continue automagically after the reboot' 'Cyan'
