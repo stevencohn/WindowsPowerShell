@@ -741,7 +741,7 @@ Begin
 			Highlight '... This will take a few minutes'
 
 			# download the installer
-			$bits = "vs_$sku`_2019_16.9"
+			$bits = "vs_$sku`_2019_16.10"
 			DownloadBootstrap "$bits`.zip" $env:TEMP
 
 			# run the installer
