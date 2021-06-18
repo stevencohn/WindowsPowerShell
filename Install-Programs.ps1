@@ -540,6 +540,11 @@ Begin
 			$cmd = """$exe"" -notepadStyleCmdline -z"
 			if (!(Test-Path $0)) { New-Item -Path $0 -Force | Out-Null }
 			New-ItemProperty -Path $0 -Name 'Debugger' -Value $cmd -Force | Out-Null
+
+			# add Open with Notepad to Explorer context menu
+			Push-Location -LiteralPath 'HKLM:\SOFTWARE\Classes\*\shell'
+			New-Item -Path 'Open with Notepad\command' -Force | New-ItemProperty -Name '(Default)' -Value 'notepad "%1"'
+			Pop-Location
 		}
 		else
 		{
