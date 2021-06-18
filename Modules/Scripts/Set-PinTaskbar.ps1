@@ -10,6 +10,7 @@ If true then unpin target from the Taskbar
 
 .NOTES
 https://community.spiceworks.com/topic/2165665-pinning-taskbar-items-with-powershell-script
+https://github.com/gunnarhaslinger/Add-or-Remove-Application-To-Windows-10-Taskbar/blob/master/TaskbarPinning.ps1
 #>
 
 param(
@@ -44,8 +45,12 @@ Begin
         {
             Write-Verbose '... unregistering shell handler verb'
             $shellKey.DeleteSubKeyTree('{:}', $false)
-            $shellKey.Close()
-            $shellKey.Dispose()
+            if ($shellKey.SubKeyCount -eq 0 -and $shellKey.ValueCount -eq 0)
+            {
+                (Get-Item 'HKCU:\SOFTWARE\Classes'
+                    ).OpenSubKey('*', $true
+                    ).DeleteSubKey("shell")
+            }
             Write-Verbose '... shell handler verb unregistered'
         }
     }
