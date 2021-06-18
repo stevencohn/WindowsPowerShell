@@ -711,7 +711,7 @@ Begin
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		Chocolatize '7zip'
 		Chocolatize 'adobereader'
-		Chocolatize 'curl'
+		Chocolatize 'curl' # may be required for DownloadBootstrap
 		Chocolatize 'git'
 		Chocolatize 'googlechrome'
 		Chocolatize 'greenshot'
@@ -984,7 +984,8 @@ Process
 
 	if ($Extras)
 	{
-		#Chocolatize 'dopamine' # music player
+		Chocolatize 'audacity' # audio editor
+		Chocolatize 'dopamine' # music player
 		Chocolatize 'paint.net'
 		Chocolatize 'treesizefree'
 		Chocolatize 'vlc'

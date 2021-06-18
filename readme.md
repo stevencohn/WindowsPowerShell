@@ -325,7 +325,9 @@ Default applications:
 
 Other applications included when -Extras is specified
 
+   * Audacity audio editor
    * DateInTray (_installed to C:\tools_)
+   * Dopamine music player
    * Paint.net
    * TreeSize Free
    * VLC
