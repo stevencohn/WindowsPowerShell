@@ -616,6 +616,36 @@ Begin
 		Set-ItemProperty HKCU:\Console -Name 'ScreenBufferSize' -Value 0x2329008c -Force
 	}
 
+
+	function CreateHeadlessPowerPlan()
+	{
+		[CmdletBinding(HelpURI='manualcmd')] param()
+
+		# create a power plan, duplicate of Balanced, that adjusts the screen
+		# brightness to zero; used during backups and watching movies over HDMI :)
+
+		# unique ID generated just for our custom power plan
+		$headlessGuid = '1015f01d-73d6-47dd-906b-dc8af8cd7711'
+
+		if (powercfg /list | ? { $_.Contains($headlessGuid) })
+		{
+			Write-Verbose 'Headless power scheme already exists'
+			return
+		}
+
+		# these are well-known hard-coded values in Windows 10 21H1
+		# I do not know the first version in which they appeared
+		$balancedGuid = '381b4222-f694-41f0-9685-ff5bb260df2e'
+		$displayGuid = '7516b95f-f776-4464-8c53-06167f40cc99'
+		$brightnessGuid = 'aded5e82-b909-4619-9949-f5d71dac0bcb'
+
+		powercfg /duplicatescheme $balancedGuid $headlessGuid | Out-Null
+		powercfg /changename $headlessGuid 'Headless'
+		powercfg /setacvalueindex $headlessGuid $displayGuid $brightnessGuid 0
+		powercfg /setdcvalueindex $headlessGuid $displayGuid $brightnessGuid 0
+	}
+
+
 	function EnsureHKCRDrive
 	{
 		if (!(Test-Path 'HKCR:'))
@@ -693,6 +723,7 @@ Process
 
 		GetYellowCursors
 		SetConsoleProperties
+		CreateHeadlessPowerPlan
 
 		Remove-Item $stagefile -Force -Confirm:$false
 
