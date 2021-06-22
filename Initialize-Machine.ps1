@@ -640,7 +640,7 @@ Begin
 		$brightnessGuid = 'aded5e82-b909-4619-9949-f5d71dac0bcb'
 
 		powercfg /duplicatescheme $balancedGuid $headlessGuid | Out-Null
-		powercfg /changename $headlessGuid 'Headless'
+		powercfg /changename $headlessGuid 'Headless' 'Run backups or watch movies'
 		powercfg /setacvalueindex $headlessGuid $displayGuid $brightnessGuid 0
 		powercfg /setdcvalueindex $headlessGuid $displayGuid $brightnessGuid 0
 	}
