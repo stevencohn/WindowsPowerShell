@@ -906,6 +906,25 @@ Begin
 			Write-Host 'WiLMa already installed' -ForegroundColor Green
 		}
 	}
+
+
+	function InstallWmiExplorer
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+
+		$target = "$tools\WmiExplorer"
+		if (!(Test-Path $target))
+		{
+			HighTitle 'WmiExplorer'
+			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
+
+			DownloadBootstrap 'wmiexplorer.zip' $target
+		}
+		else
+		{
+			Write-Host 'WmiExplorer already installed' -ForegroundColor Green
+		}
+	}
 }
 Process
 {
@@ -991,6 +1010,7 @@ Process
 		Chocolatize 'vlc'
 		InstallDateInTray
 		InstallWiLMa
+		InstallWmiExplorer
 	}
 
 	# may reboot multiple times, so do it last
