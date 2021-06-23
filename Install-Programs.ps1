@@ -703,6 +703,12 @@ Begin
 		# use -Depth to retain fidelity in complex objects without converting
 		# object properties to key/value collections
 		ConvertTo-Json $settings -Depth 100 | Out-File $0 -Encoding Utf8
+
+		$reminder = 'Windows Terminal', `
+			' 0. initialPosition can be set globally in settings.json ("x,y" value)'
+
+		$script:reminders += ,$reminder
+		Highlight $reminder 'Cyan'
 	}
 
 
