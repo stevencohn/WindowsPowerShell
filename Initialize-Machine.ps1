@@ -169,6 +169,8 @@ Begin
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
 		Set-ItemProperty $0 -Name 'ShowRecent' -Type DWord -Value 0
 		Set-ItemProperty $0 -Name 'ShowFrequent' -Type DWord -Value 0
+		# disable "-shortcut" suffix to newly created shortcuts, first byte must be 0
+		Set-ItemProperty $0 -Name 'link' -Type Binary -Value ([byte[]](0,0,0,0))
 
 		# unpin all items from Quick access
 		$shapp = New-Object -ComObject shell.application
