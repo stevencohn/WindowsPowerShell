@@ -20,17 +20,15 @@ function prompt {
 # Aliases
 
 New-Alias ep Edit-PSProfile
-New-Alias gs Get-Services
 New-Alias nu Invoke-NormalUser
 New-Alias su Invoke-SuperUser
 New-Alias vs Invoke-VsDevCmd
-New-Alias cc Show-ColorizedContent
 
 . $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
 Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
 
 # curl.exe is installed as a choco package to \system32
-# so need to remove Invoke-WebRequest alis
+# so need to remove Invoke-WebRequest alias
 Remove-Item alias:curl
 
 function Start-Wilma { & 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe' }
@@ -64,7 +62,7 @@ $cmd = (gwmi win32_process -filter ("ProcessID={0}" -f (gwmi win32_process -filt
 if ($cmd -notmatch 'cmd\.exe')
 {
 	if (Test-Path 'C:\Github') { Set-Location 'C:\Github'; }
-	elseif (Test-Path 'D:\SCP') { Set-Location 'D:\SCP'; }
+	elseif (Test-Path 'D:\scp') { Set-Location 'D:\scp'; }
 	elseif (Test-Path 'C:\Code') { Set-Location 'C:\Code'; }
 	elseif (Test-Path 'C:\River') { Set-Location 'C:\River'; }
 	else { Set-Location '\'; }
