@@ -98,6 +98,9 @@ Display the console colors for Command console, PowerShell console, and ConEmu c
 
 ![alt text](Images/get-colors.png "Get-Colors Example")
 
+#### `Get-CommandLine` [-Name n] [-Only] [-ReturnValue] [-ShowSystem]
+Report processes with their command lines, highlighting an optional search string
+
 #### `Get-DirSize` -Dir d [-la]
 Report the size of all items in the specified folder. Used as a sub-routine of Get-ChildItemColorized.
 
