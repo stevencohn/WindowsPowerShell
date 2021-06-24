@@ -589,24 +589,6 @@ Begin
 
 		Write-Verbose 'setting console properties'
 
-		# customize console colors for CMD, PS, and ConEmu
-		# Set-Colors -Name Black -Color 0x292929 -Bgr -Background
-		# Set-Colors -Name DarkBlue -Color 0x916200 -Bgr
-		# Set-Colors -Name DarkGreen -Color 0x008000 -Bgr
-		# Set-Colors -Name DarkCyan -Color 0x808000 -Bgr
-		# Set-Colors -Name DarkRed -Color 0x000080 -Bgr
-		# Set-Colors -Name DarkMagenta -Color 0x800080 -Bgr
-		# Set-Colors -Name DarkYellow -Color 0x008080 -Bgr
-		# Set-Colors -Name Gray -Color 0xC0C0C0 -Bgr -Foreground
-		# Set-Colors -Name DarkGray -Color 0x808080 -Bgr
-		# Set-Colors -Name Blue -Color 0xFF8B17 -Bgr
-		# Set-Colors -Name Green -Color 0x00FF00 -Bgr
-		# Set-Colors -Name Cyan -Color 0xFFFF00 -Bgr
-		# Set-Colors -Name Red -Color 0x0000FF -Bgr
-		# Set-Colors -Name Magenta -Color 0x005EBB -Bgr
-		# Set-Colors -Name Yellow -Color 0x00FFFF -Bgr
-		# Set-Colors -Name White -Color 0xFFFFFF -Bgr
-
 		Set-Colors -Theme ubuntu
 
 		# font
