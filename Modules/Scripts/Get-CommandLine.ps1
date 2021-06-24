@@ -23,10 +23,19 @@ param (
 	[switch] $Only,
 	[switch] $ReturnValue)
 
+if (!$Name)
+{
+	$Only = $false
+	$ReturnValue = $false
+}
+
 $format = '{0,10} {1,-33} {2}'
 
-Write-Host ($format -f 'processid', 'ProcessName', 'CommandLine')
-Write-Host ($format -f '---------', '-----------', '-----------')
+if (!$ReturnValue)
+{
+	Write-Host ($format -f 'processid', 'ProcessName', 'CommandLine')
+	Write-Host ($format -f '---------', '-----------', '-----------')
+}
 
 gcim Win32_Process | sort -Property ProcessName | select ProcessId, ProcessName, CommandLine | % `
 {
@@ -36,15 +45,17 @@ gcim Win32_Process | sort -Property ProcessName | select ProcessId, ProcessName,
 	$commandLine = $_.CommandLine
 	if (!$commandLine) { $commandLine = '' }
 	$cmd = $commandLine
-	$max = $host.UI.RawUI.WindowSize.Width - 44
-	if ($cmd.Length -gt $max) { $cmd = $cmd.Substring(0, $max - 4) + '...' }
+	$max = $host.UI.RawUI.WindowSize.Width - 45
+	if ($cmd.Length -gt $max) { $cmd = $cmd.Substring(0, $max - 3) + '...' }
 
-	if ($name -and ($procnam -like "*$name*" -or $commandLine -like "*$name*"))
+	if ($Name -and ($procnam -like "*$Name*" -or $commandLine -like "*$Name*"))
 	{
+		if ($ReturnValue) { return $_.CommandLine }
+
 		Write-Host ($format -f $_.ProcessId, $procnam, $cmd) -ForegroundColor Green
 		if ($Only) { return }
 	}
-	elseif (!$name -and !$Only)
+	elseif (!$Only -and !$ReturnValue)
 	{
 		if ($cmd -and ($cmd -like "*$($env:windir)\System32*"))
 		{
@@ -56,20 +67,6 @@ gcim Win32_Process | sort -Property ProcessName | select ProcessId, ProcessName,
 		else
 		{
 			Write-Host ($format -f $_.ProcessId, $procnam, $cmd)
-		}
-	}
-	elseif (!$Only)
-	{
-		if ($cmd -and ($cmd -like "*$($env:windir)\System32*"))
-		{
-			if ($ShowSystem)
-			{
-				Write-Host ($format -f $_.ProcessId, $procnam, $cmd) -ForegroundColor DarkGray
-			}
-		}
-		else
-		{
-			Write-Host ($format -f $_.ProcessId, $procnam, $cmd)			
 		}
 	}
 }
