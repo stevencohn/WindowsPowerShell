@@ -265,6 +265,19 @@ Begin
 		Enable-NetFirewallRule -Name 'RemoteDesktop*'
 	}
 
+
+	function FixAirpodConnectivity
+	{
+		# If airpods will pair but then continually lose connection after manually connecting...
+		# this disables power management on the Intel(R) Wireless Bluetooth(R) device
+		$0 = 'HKLM:\SYSTEM\ControlSet001\Control\Class\{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}\0000'
+		if (Test-Path $0)
+		{
+			Set-ItemProperty $0 -Name 'PnPCapabilities' -Type String -Value '24'
+		}
+	}
+
+
 	function SetExtras
 	{
 		[CmdletBinding(HelpURI='manualcmd')] param()
@@ -708,6 +721,7 @@ Process
 		GetYellowCursors
 		SetConsoleProperties
 		CreateHeadlessPowerPlan
+		FixAirpodConnectivity
 
 		Remove-Item $stagefile -Force -Confirm:$false
 
