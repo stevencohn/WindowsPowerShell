@@ -18,16 +18,18 @@ param(
 Begin
 {
     $script:TrayKey = 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\TrayNotify'
+    $HeaderSize = 20
+    $BlockSize = 1640
 
     function GetStreamData
     {
-        param([byte[]] $streams)
+        param([byte[]] $stream)
         $builder = New-Object System.Text.StringBuilder
         
         # this line will ROT13 the data so you view/debug the ASCII contents of the stream
-        #$streams | % { if ($_ -ge 32 -and $_ -le 125) { [void]$builder.Append( [char](Rot13 $_) ) } };
+        #$stream | % { if ($_ -ge 32 -and $_ -le 125) { [void]$builder.Append( [char](Rot13 $_) ) } };
 
-        $streams | % { [void]$builder.Append( ('{0:x2}' -f $_) ) }
+        $stream | % { [void]$builder.Append( ('{0:x2}' -f $_) ) }
         return $builder.ToString()
     }
 
@@ -41,6 +43,20 @@ Begin
         $builder = New-Object System.Text.StringBuilder
         $bytes | % { [void]$builder.Append( ('{0:x2}00' -f (Rot13 $_)) ) }
         return $builder.ToString()
+    }
+
+    function BuildItemTable
+    {
+        param([byte[]] $stream)
+
+        $table = @{}
+        for ($x = 0; $x -lt $(($stream.Count - $HeaderSize) / $BlockSize); $x++)
+        {
+            $offset = $HeaderSize + ($x * $BlockSize)
+            $table.Add($offset.ToString(), $stream[$($offset)..$($offset + ($BlockSize - 1))])
+        }
+    
+        return $table
     }
 
     function Rot13
@@ -57,11 +73,13 @@ Begin
 }
 Process
 {
-    $streams = (Get-ItemProperty (Get-Item $TrayKey).PSPath).IconStreams
+    $stream = (Get-ItemProperty (Get-Item $TrayKey).PSPath).IconStreams
 
-    $data = GetStreamData $streams
+    $data = GetStreamData $stream
+    #Write-Host $data
 
     $path = EncodeProgramPath $ProgramPath
+    #Write-Host $path
     #Write-Host ( $path.Split('00') | ? { $_.Length -gt 0 } | % { [char](Rot13 ([Convert]::ToByte($_, 16))) } )
 
     if (-not $data.Contains($path))
@@ -70,29 +88,22 @@ Process
         return
     }
 
-    write-host 'Found!'
+    # [byte[]] $header = @()
+    # for ($x = 0; $x -lt $HeaderSize; $x++)
+    # {
+    #     $header += $stream[$x]
+    # }
+
+    $table = BuildItemTable $stream
+
+    $table.Keys | % { Write-Host "$_`: " -ForegroundColor Yellow -NoNewline; Write-Host $table[$_] }
     return
 
-    [byte[]] $header = @()
-    $items = @{}
-    for ($x = 0; $x -lt 20; $x++)
+    foreach ($key in $table.Keys)
     {
-        $header += $streams[$x]
-    }
-
-    for ($x = 0; $x -lt $(($streams.Count - 20) / 1640); $x++)
-    {
-        [byte[]] $item = @()
-        $startingByte = 20 + ($x * 1640)
-        $item += $streams[$($startingByte)..$($startingByte + 1639)]
-        $items.Add($startingByte.ToString(), $item)
-    }
-
-    foreach ($key in $items.Keys)
-    {
-        $item = $items[$key]
-        $strItem = ""
-        $tempString = ""
+        $item = $table[$key]
+        $strItem = ''
+        $tempString = ''
         for ($x = 0; $x -le $item.Count; $x++)
         {
             $tempString = [Convert]::ToString($item[$x], 16)
@@ -106,17 +117,17 @@ Process
         if ($strItem.Contains($strAppPath))
         {
             Write-Host Item Found with $ProgramPath in item starting with byte $key
-            $streams[$([Convert]::ToInt32($key) + 528)] = $setting
+            $stream[$([Convert]::ToInt32($key) + 528)] = $setting
 
             $0 = (Get-Item $TrayKey).PSPath
 
             if (!$WhatIfPreference)
             {
-                Set-ItemProperty $0 -name IconStreams -value $streams
+                Set-ItemProperty $0 -name IconStreams -value $stream
             }
             else
             {
-                Write-Host "Set-ItemProperty '$0' -name IconStreams -value $streams"
+                Write-Host "Set-ItemProperty '$0' -name IconStreams -value $stream"
             }
         }
     }
