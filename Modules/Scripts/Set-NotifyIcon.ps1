@@ -20,6 +20,7 @@ Begin
     $script:TrayKey = 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\TrayNotify'
     $HeaderSize = 20
     $BlockSize = 1640
+    $SettingOffset = 528
 
     function GetStreamData
     {
@@ -88,46 +89,31 @@ Process
         return
     }
 
-    # [byte[]] $header = @()
-    # for ($x = 0; $x -lt $HeaderSize; $x++)
-    # {
-    #     $header += $stream[$x]
-    # }
-
     $table = BuildItemTable $stream
-
-    $table.Keys | % { Write-Host "$_`: " -ForegroundColor Yellow -NoNewline; Write-Host $table[$_] }
-    return
+    #$table.Keys | % { Write-Host "$_`: " -ForegroundColor Yellow -NoNewline; Write-Host $table[$_] }
 
     foreach ($key in $table.Keys)
     {
         $item = $table[$key]
-        $strItem = ''
-        $tempString = ''
-        for ($x = 0; $x -le $item.Count; $x++)
+
+        $builder = New-Object System.Text.StringBuilder
+        $item | % { [void]$builder.Append( ('{0:x2}' -f $_) ) }
+        $hex = $builder.ToString()
+
+        if ($hex.Contains($path))
         {
-            $tempString = [Convert]::ToString($item[$x], 16)
-            switch ($tempString.Length)
-            {
-                0 { $strItem += "00" }
-                1 { $strItem += "0" + $tempString }
-                2 { $strItem += $tempString }
-            }
-        }
-        if ($strItem.Contains($strAppPath))
-        {
-            Write-Host Item Found with $ProgramPath in item starting with byte $key
-            $stream[$([Convert]::ToInt32($key) + 528)] = $setting
+            Write-Host "$ProgramPath found in item at byte offset $key"
+            $stream[$([Convert]::ToInt32($key) + $SettingOffset)] = $Setting
 
             $0 = (Get-Item $TrayKey).PSPath
 
             if (!$WhatIfPreference)
             {
-                Set-ItemProperty $0 -name IconStreams -value $stream
+                #Set-ItemProperty $0 -name IconStreams -value $stream
             }
             else
             {
-                Write-Host "Set-ItemProperty '$0' -name IconStreams -value $stream"
+                #Write-Host "Set-ItemProperty '$0' -name IconStreams -value $stream"
             }
         }
     }
