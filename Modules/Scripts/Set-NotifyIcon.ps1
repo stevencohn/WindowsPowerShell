@@ -1,26 +1,35 @@
 <#
+.SYNOPSIS
+Show or hides the notify icon of the specified program.
+
+.PARAMETER ProgramPath
+The full path of a program to find in the TrayNotify Registry item. The program must have
+been run at least once to be recorded in the Registry.
+
+.PARAMETER Hide
+If specified as $true, hides the notify icon for the program. The default is to show the
+icon and notifications.
+
+.DESCRIPTION
+Windows makes changes in memory and (over)writes changes to the Registry when explorer.exe
+shuts down, so if changes are made, they get overwritten. So the best approach is to terminate
+explorer.exe, run this script, and then start explorer.exe again.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
 [CmdletBinding(SupportsShouldProcess = $true)]
 
 param(
-    [Parameter(
-        Mandatory=$true,
-        HelpMessage='Path of program')]
-        [string] $ProgramPath,
-    [Parameter(
-        HelpMessage = '0=only show notifications, 1=hide, 2=show icon and notifications')]
-        [ValidateScript( { if ($_ -lt 0 -or $_ -gt 2) { throw 'Invalid setting' } return $true })]
-        [Int16] $Setting = 2
+    [Parameter(Mandatory=$true, HelpMessage='Path of program')] [string] $ProgramPath,
+    [Parameter(HelpMessage='Hide notify icon, default is to show')] [switch] $Hide
 )
 
 Begin
 {
-    $script:TrayKey = 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\TrayNotify'
-    $HeaderSize = 20
-    $BlockSize = 1640
-    $SettingOffset = 528
+    $script:TrayNotifyKey = 'HKCU:\SOFTWARE\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\TrayNotify'
+    $script:HeaderSize = 20
+    $script:BlockSize = 1640
+    $script:SettingOffset = 528
 
     function GetStreamData
     {
@@ -54,7 +63,7 @@ Begin
         for ($x = 0; $x -lt $(($stream.Count - $HeaderSize) / $BlockSize); $x++)
         {
             $offset = $HeaderSize + ($x * $BlockSize)
-            $table.Add($offset.ToString(), $stream[$($offset)..$($offset + ($BlockSize - 1))])
+            $table.Add($offset, $stream[$offset..($offset + ($BlockSize - 1))] )
         }
     
         return $table
@@ -74,7 +83,12 @@ Begin
 }
 Process
 {
-    $stream = (Get-ItemProperty (Get-Item $TrayKey).PSPath).IconStreams
+    # 0=only show notifications, 1=hide, 2=show icon and notifications
+    $Setting = 2
+    if ($Hide) { $Setting = 1 }
+
+    $trayNotifyPath = (Get-Item $TrayNotifyKey).PSPath
+    $stream = (Get-ItemProperty $trayNotifyPath).IconStreams
 
     $data = GetStreamData $stream
     #Write-Host $data
@@ -92,6 +106,8 @@ Process
     $table = BuildItemTable $stream
     #$table.Keys | % { Write-Host "$_`: " -ForegroundColor Yellow -NoNewline; Write-Host $table[$_] }
 
+    # there may be multiple entries in the stream for each program, e.g. DateInTray will
+    # have one entry for every icon, 1..31!!
     foreach ($key in $table.Keys)
     {
         $item = $table[$key]
@@ -103,17 +119,13 @@ Process
         if ($hex.Contains($path))
         {
             Write-Host "$ProgramPath found in item at byte offset $key"
-            $stream[$([Convert]::ToInt32($key) + $SettingOffset)] = $Setting
 
-            $0 = (Get-Item $TrayKey).PSPath
+            # change the setting!
+            $stream[$key + $SettingOffset] = $Setting
 
             if (!$WhatIfPreference)
             {
-                #Set-ItemProperty $0 -name IconStreams -value $stream
-            }
-            else
-            {
-                #Write-Host "Set-ItemProperty '$0' -name IconStreams -value $stream"
+                Set-ItemProperty $trayNotifyPath -name IconStreams -value $stream
             }
         }
     }
