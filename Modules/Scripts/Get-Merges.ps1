@@ -104,8 +104,8 @@ Begin
 			}
 		}
 
-		Write-Verbose 'defaulting to master branch'
-		return 'master'
+		Write-Verbose 'defaulting to main branch'
+		return 'main'
 	}
 
 	function ReadRemote

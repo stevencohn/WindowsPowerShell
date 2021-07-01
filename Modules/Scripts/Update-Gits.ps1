@@ -66,7 +66,7 @@ Begin
             return $a.Matches.Groups[1].Value
         }
 
-        return 'master'
+        return 'main'
     }
 }
 Process

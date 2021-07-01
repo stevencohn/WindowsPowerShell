@@ -16,6 +16,6 @@ if (!(Test-Path "$repo\.git" -PathType Container))
 Push-Location $repo
 
 git -c diff.mnemonicprefix=false -c core.quotepath=false fetch origin
-git -c diff.mnemonicprefix=false -c core.quotepath=false pull --no-commit origin master
+git -c diff.mnemonicprefix=false -c core.quotepath=false pull --no-commit origin main
 
 Pop-Location

@@ -22,7 +22,7 @@ To download just the [Initialize-Machine.ps1](#initmach) script:
 
 ```powershell
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
-Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1' -OutFile C:\Initialize-Machine.ps1
+Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/main/Initialize-Machine.ps1' -OutFile C:\Initialize-Machine.ps1
 ```
 
 Loosen up the execution policy. Consider signing the scripts and setting the
@@ -264,7 +264,7 @@ So before initializing, you can create a junction point to MyDocuments using thi
 This script can optionally create a new local administrator so it runs in two phases:
 
    1. Log on as an administrator
-   1. Download [Initialize-Machine.ps1](https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/master/Initialize-Machine.ps1) to C:\Initialize-Machine.ps1
+   1. Download [Initialize-Machine.ps1](https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/main/Initialize-Machine.ps1) to C:\Initialize-Machine.ps1
    1. Open an administrative PowerShell window
    1. PS> `Set-ExecutionPolicy RemoteSigned`
    1. PS> `cd C:\`
