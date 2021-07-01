@@ -11,6 +11,9 @@ If true then unpin target from the Taskbar
 .NOTES
 https://community.spiceworks.com/topic/2165665-pinning-taskbar-items-with-powershell-script
 https://github.com/gunnarhaslinger/Add-or-Remove-Application-To-Windows-10-Taskbar/blob/master/TaskbarPinning.ps1
+
+Handling Add-/Remove-TaskbarPinningApp can only be done by Processes named "explorer.exe"
+Workaround to do this with Powershell: Make a copy of PowerShell to $env:TEMP\explorer.exe
 #>
 
 param(
@@ -86,6 +89,23 @@ Process
     if (!(Test-Elevated))
     {
         Write-Warning 'must run from an elevated process'
+    }
+
+    if ((get-process | ? { $_.id -eq $pid }).ProcessName -ne 'explorer')
+    {
+        # presume current process is powershell
+        $psh = (gcim win32_process | ? { $_.ProcessId -eq $pid }).CommandLine
+        # restart this script, emulating the process name as 'explorer'
+        Copy-Item $psh $env:TEMP\explorer.exe -Force
+
+        $splat = @{ 
+            Target = $Target
+            Unpin = "`$$Unpin"
+            Verbose = "`$$($PSCmdlet.MyInvocation.BoundParameters['Verbose'].IsPresent)"
+        }
+
+        . $env:TEMP\explorer.exe Set-PinTaskbar @splat
+        return
     }
 
     if (Test-Path $Target)
