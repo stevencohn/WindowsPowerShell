@@ -614,6 +614,16 @@ Begin
 	}
 
 
+	function SetKeyboardProperties
+	{
+		# Some vendors configure keyboards with a slow delay and repeat rate. This customizes those
+		# values to be more responsive. Can be done manually via Keyboard Properties control panel
+		$0 = 'HKCU:\Control Panel\Keyboard'
+		Set-ItemProperty $0 -Name 'KeyboardDelay' -Value '1' -Force
+		Set-ItemProperty $0 -Name 'KeyboardSpeed' -Value '28' -Force
+	}
+
+
 	function CreateHeadlessPowerPlan()
 	{
 		[CmdletBinding(HelpURI='manualcmd')] param()
@@ -703,6 +713,7 @@ Process
 
 		SetTimeZone
 		SetExplorerProperties
+		SetKeyboardProperties
 		SetExtras
 		DisableHomeGroups
 		EnablePhotoViewer
