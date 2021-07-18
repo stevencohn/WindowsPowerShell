@@ -23,6 +23,8 @@ New-Alias ep Edit-PSProfile
 New-Alias nu Invoke-NormalUser
 New-Alias su Invoke-SuperUser
 New-Alias vs Invoke-VsDevCmd
+New-Alias push Push-Location
+New-Alias pop Pop-Location
 
 . $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
 Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
