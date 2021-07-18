@@ -612,6 +612,9 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
+		$appName = 'Microsoft.WindowsTerminal'
+		$appKey = '8wekyb3d8bbwe'
+
 		$parentId = (gwmi win32_process -Filter "processid='$pid'").parentprocessid
 		if ((gwmi win32_process -Filter "processid='$parentId'").Name -eq 'WindowsTerminal.exe')
 		{
@@ -621,9 +624,9 @@ Begin
 
 		Chocolatize 'microsoft-windows-terminal'
 
-		# customize settings... for Terminal v1.8.1444.0
+		# customize settings... for Terminal 1.8.1444.0, 1.9.1942.0
 
-		$0 = "$($env:LOCALAPPDATA)\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+		$0 = "$($env:LOCALAPPDATA)\Packages\$appName`_$appKey\LocalState\settings.json"
 		if (!(Test-Path $0))
 		{
 			# when Terminal is first installed, no settings file exists so download default
@@ -637,6 +640,7 @@ Begin
 
 		$settings.initialCols = 160
 		$settings.initialRows = 90
+		$settings.initialPosition = '200,25'
 
 		$scheme = New-Object -TypeName PsObject -Property @{
 			background = '#080808'
@@ -704,8 +708,13 @@ Begin
 		# object properties to key/value collections
 		ConvertTo-Json $settings -Depth 100 | Out-File $0 -Encoding Utf8
 
+		# Create shortcut to pin to taskbar
+		$version = (choco list -l -r -e microsoft-windows-terminal).Split('|')[1]
+		New-RunasShortcut C:\Tools\wt.lnk "$($env:ProgramFiles)\WindowsApps\$appName`_$version`_x64__$appKey\wt.exe"
+
 		$reminder = 'Windows Terminal', `
-			' 0. initialPosition can be set globally in settings.json ("x,y" value)'
+			" 0. Pin C:\Tools\wt.lnk to Taskbar", `
+			' 1. initialPosition can be set globally in settings.json ("x,y" value)'
 
 		$script:reminders += ,$reminder
 		Highlight $reminder 'Cyan'
