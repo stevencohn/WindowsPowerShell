@@ -204,24 +204,26 @@ Begin
 		}
 
 		$status = $response.fields.status.name
-		$pstatus = $status.PadRight(11)
 
 		if ($response.fields.issueType.name -eq "Story")
 		{
 			Write-Host "$author  $ago  $pkey " -NoNewline
 
+			$storyStatus = $status.PadRight(11)
+
 			switch ($status)
 			{
-				"Verified" { Write-Host $pstatus -NoNewline -ForegroundColor Green }
-				"Passed" { Write-Host $pstatus -NoNewline -ForegroundColor Yellow }
-				default { Write-Host $pstatus -NoNewline -ForegroundColor Cyan }
+				"Verified" { Write-Host $storyStatus -NoNewline -ForegroundColor Green }
+				"Passed" { Write-Host $storyStatus -NoNewline -ForegroundColor Yellow }
+				default { Write-Host $storyStatus -NoNewline -ForegroundColor Cyan }
 			}
 
 			Write-Host "  PR $pr $desc"
 		}
 		else
 		{
-			Write-Host "$author  $ago  $pkey $pstatus  PR $pr $desc (task)" -ForegroundColor DarkGray
+			$taskStatus = "Task:$status".PadRight(11)
+			Write-Host "$author  $ago  $pkey $taskStatus  PR $pr $desc" -ForegroundColor DarkGray
 		}
 	}
 }
