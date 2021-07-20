@@ -155,16 +155,28 @@ Begin
 
 			if (-not $a.Matches.Success)
 			{
-				# should execute on first $line
-				# repo is non-conformant so fallback entire report and exit quickly
-				Write-Verbose "fallback: $line"
-				ReportRaw
-				break
+				# probably from dependabot
+				$a = $parts[3] | Select-String -Pattern "Merge pull request (#[0-9]+) from (.+)"
+				if ($a.Matches.Success)
+				{
+					$groups = $a.Matches.Groups
+					ReportPrettyLine $parts[1] $parts[2] $groups[1] '-' $groups[2]
+				}
+				else
+				{
+					# should execute on first $line
+					# repo is non-conformant so fallback entire report and exit quickly
+					Write-Verbose "fallback: $line"
+					ReportRaw
+					break
+				}
 			}
+			else
+			{
+				$groups = $a.Matches.Groups
 
-			$groups = $a.Matches.Groups
-
-			ReportPrettyLine $parts[1] $parts[2] $groups[1] $groups[2] $groups[3]
+				ReportPrettyLine $parts[1] $parts[2] $groups[1] $groups[2] $groups[3]
+			}
 		}
 	}
 
