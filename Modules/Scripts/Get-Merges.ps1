@@ -104,8 +104,8 @@ Begin
 			}
 		}
 
-		Write-Verbose 'defaulting to main branch'
-		return 'main'
+		Write-Verbose 'defaulting to master branch'
+		return 'master'
 	}
 
 	function ReadRemote
@@ -155,16 +155,28 @@ Begin
 
 			if (-not $a.Matches.Success)
 			{
-				# should execute on first $line
-				# repo is non-conformant so fallback entire report and exit quickly
-				Write-Verbose "fallback: $line"
-				ReportRaw
-				break
+				# probably from dependabot
+				$a = $parts[3] | Select-String -Pattern "Merge pull request (#[0-9]+) from (.+)"
+				if ($a.Matches.Success)
+				{
+					$groups = $a.Matches.Groups
+					ReportPrettyLine $parts[1] $parts[2] $groups[1] '-' $groups[2]
+				}
+				else
+				{
+					# should execute on first $line
+					# repo is non-conformant so fallback entire report and exit quickly
+					Write-Verbose "fallback: $line"
+					ReportRaw
+					break
+				}
 			}
+			else
+			{
+				$groups = $a.Matches.Groups
 
-			$groups = $a.Matches.Groups
-
-			ReportPrettyLine $parts[1] $parts[2] $groups[1] $groups[2] $groups[3]
+				ReportPrettyLine $parts[1] $parts[2] $groups[1] $groups[2] $groups[3]
+			}
 		}
 	}
 
@@ -204,24 +216,26 @@ Begin
 		}
 
 		$status = $response.fields.status.name
-		$pstatus = $status.PadRight(11)
 
 		if ($response.fields.issueType.name -eq "Story")
 		{
 			Write-Host "$author  $ago  $pkey " -NoNewline
 
+			$storyStatus = $status.PadRight(11)
+
 			switch ($status)
 			{
-				"Verified" { Write-Host $pstatus -NoNewline -ForegroundColor Green }
-				"Passed" { Write-Host $pstatus -NoNewline -ForegroundColor Yellow }
-				default { Write-Host $pstatus -NoNewline -ForegroundColor Cyan }
+				"Verified" { Write-Host $storyStatus -NoNewline -ForegroundColor Green }
+				"Passed" { Write-Host $storyStatus -NoNewline -ForegroundColor Yellow }
+				default { Write-Host $storyStatus -NoNewline -ForegroundColor Cyan }
 			}
 
 			Write-Host "  PR $pr $desc"
 		}
 		else
 		{
-			Write-Host "$author  $ago  $pkey $pstatus  PR $pr $desc (task)" -ForegroundColor DarkGray
+			$taskStatus = "Task:$status".PadRight(11)
+			Write-Host "$author  $ago  $pkey $taskStatus  PR $pr $desc" -ForegroundColor DarkGray
 		}
 	}
 }
