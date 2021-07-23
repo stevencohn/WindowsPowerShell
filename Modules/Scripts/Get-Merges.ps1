@@ -234,8 +234,8 @@ Begin
 		}
 		else
 		{
-			$taskStatus = "Task:$status".PadRight(11)
-			Write-Host "$author  $ago  $pkey $taskStatus  PR $pr $desc" -ForegroundColor DarkGray
+			$taskStatus = $status.PadRight(11)
+			Write-Host "$author  $ago  $pkey $taskStatus  PR $pr Task:$desc" -ForegroundColor DarkGray
 		}
 	}
 }
