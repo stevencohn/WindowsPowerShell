@@ -17,7 +17,7 @@ param([switch] $yes, [switch] $all)
 $yesarg = ''
 if ($yes -or $all) { $yesarg = '-y' }
 
-choco upgrade $yesarg all --except="'linqpad,linqpad5,linqpad5.install,nodejs'"
+choco upgrade $yesarg all --except="'linqpad,linqpad5,linqpad5.install'"
 
 <#
 param ()
