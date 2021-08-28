@@ -731,7 +731,7 @@ Begin
 		Chocolatize 'googlechrome'
 		Chocolatize 'greenshot'
 		Chocolatize 'licecap' # live screen capture -> .gif utility
-		Chocolatize 'linqpad' # free version; can add license (activation.txt)
+		Chocolatize 'linqpad' # free version; can add license from LastPass
 		Chocolatize 'mRemoteNG'
 		Chocolatize 'nuget.commandline'
 		Chocolatize 'procexp'
