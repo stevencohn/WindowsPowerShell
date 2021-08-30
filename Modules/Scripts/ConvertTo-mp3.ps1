@@ -5,6 +5,9 @@ Primarily used to convert .m4a and .mp4 audio files to .mp3
 .PARAMETER Bitrate
 Default bitrate is 128..
 
+.PARAMETER Force
+Overwrite existing .mp3 files without prompting for confirmation.
+
 .PARAMETER FullQuality
 Preserve full quality. Default is to use lame compression to save disk space.
 
@@ -18,8 +21,8 @@ This is not a recursive operation.
 .PARAMETER OutputPath
 Path of output directory. Default is same directory as .m4a file.
 
-.PARAMETER Yes
-Overwrite existing .mp3 files without prompting for confirmation.
+.PARAMETER Recurse
+Recurse directory tree converting all .m4a files, not recommended with -OutputPath
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -31,7 +34,9 @@ param(
 	[int] $Bitrate = 128,
 	[switch] $FullQuality,
 	[switch] $Info,
-	[switch] $Yes
+	[switch] $Recurse,
+	[switch] $Clean,
+	[switch] $Force
 )
 
 Begin
@@ -65,7 +70,7 @@ Begin
 		if ($Info) { $loglevel = 'info' }
 
 		$over = ''
-		if ($Yes) { $over = '-y' }
+		if ($Force) { $over = '-y' }
 
 		if ($FullQuality)
 		{
@@ -87,6 +92,19 @@ Begin
 				#ffmpeg -i $name -acodec libmp3lame -aq 2 -loglevel $loglevel $over $mp3
 			}
 		}
+
+		# some commands like Test-Path don't like '[' in a path so those chars must be escaped
+		$mp3 = [WildcardPattern]::Escape($mp3)
+		if ($Clean -and (Test-Path $mp3))
+		{
+			$name = [WildcardPattern]::Escape($name)
+			$item4 = Get-Item $name
+			$item3 = Get-Item $mp3
+			if (($item3.Length -gt 0) -and ($item3.LastWriteTime -gt $item4.LastWriteTime))
+			{
+				Remove-Item $name -Force -Confirm:$False
+			}
+		}
 	}
 }
 Process
@@ -102,10 +120,19 @@ Process
 	if ($OutputPath -and !(Test-Path $OutputPath))
 	{
 		Write-Host "... creating $OutputPath" -ForegroundColor Cyan
-		New-Item $OutputPath -ItemType Directory -Force -Confirm:$false | Out-Null
+		New-Item $OutputPath -ItemType Directory -Force -Confirm:$False | Out-Null
 	}
 
-	if ((Get-Item $InputPath) -is [IO.DirectoryInfo])
+	if ($Recurse)
+	{
+		(Get-ChildItem .\ -Filter *.m4a -Recurse).DirectoryName | select -Unique | % `
+		{
+			Push-Location ([WildcardPattern]::Escape($_))
+			ConvertTo-MP3 .\ -Clean:$Clean -Force:$Force
+			Pop-Location
+		}
+	}
+	elseif ((Get-Item $InputPath) -is [IO.DirectoryInfo])
 	{
 		Get-ChildItem $InputPath -Filter *.m4a | % { Convert $_.FullName }
 	}
