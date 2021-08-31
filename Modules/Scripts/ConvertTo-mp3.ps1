@@ -23,6 +23,9 @@ Path of output directory. Default is same directory as .m4a file.
 
 .PARAMETER Recurse
 Recurse directory tree converting all .m4a files, not recommended with -OutputPath
+
+.PARAMETER Extension
+File type extension to search for, defaults to .m4a
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -32,6 +35,7 @@ param(
 	[Parameter(Mandatory = $true, Position = 0)] [string] $InputPath,
 	[Parameter(Position = 1)] [string] $OutputPath,
 	[int] $Bitrate = 128,
+	[string] $Extension = '.m4a',
 	[switch] $FullQuality,
 	[switch] $Info,
 	[switch] $Recurse,
@@ -123,9 +127,14 @@ Process
 		New-Item $OutputPath -ItemType Directory -Force -Confirm:$False | Out-Null
 	}
 
+	if ($Extension -and ($Extension[0] -ne '.'))
+	{ 
+		$Extension = ".$Extension"
+	}
+
 	if ($Recurse)
 	{
-		(Get-ChildItem .\ -Filter *.m4a -Recurse).DirectoryName | select -Unique | % `
+		(Get-ChildItem .\ -Filter "*$Extension" -Recurse).DirectoryName | select -Unique | % `
 		{
 			Push-Location ([WildcardPattern]::Escape($_))
 			ConvertTo-MP3 .\ -Clean:$Clean -Force:$Force
@@ -134,7 +143,7 @@ Process
 	}
 	elseif ((Get-Item $InputPath) -is [IO.DirectoryInfo])
 	{
-		Get-ChildItem $InputPath -Filter *.m4a | % { Convert $_.FullName }
+		Get-ChildItem $InputPath -Filter "*$Extension" | % { Convert $_.FullName }
 	}
 	else
 	{
