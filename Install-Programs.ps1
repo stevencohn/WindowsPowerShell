@@ -533,6 +533,14 @@ Begin
 			New-Item $themes -ItemType Directory -Force
 			Copy-Item "$home\Documents\WindowsPowerShell\Themes\Dark Selenitic npp.xml" "$themes\Dark Selenitic.xml"
 
+			$0 = "$($env:APPDATA)\Notepad++\userDefineLangs"
+			if (!(Test-Path $0))
+			{
+				New-Item $0 -ItemType Directory -Force -Confirm:$false
+			}
+			# includes a dark-selenitic Markdown lang theme
+			DownloadBootstrap 'npp-userDefineLangs.zip' $0
+
 			# replace notepad.exe
 			HighTitle 'Replacing notepad with notepad++'
 			$0 = 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\notepad.exe'
