@@ -716,7 +716,7 @@ Begin
 		# object properties to key/value collections
 		ConvertTo-Json $settings -Depth 100 | Out-File $0 -Encoding Utf8
 
-		# Create shortcut to pin to taskbar
+		# Create shortcut wt.lnk file; this then needs to be manually pinned to taskbar
 		$version = (choco list -l -r -e microsoft-windows-terminal).Split('|')[1]
 		New-RunasShortcut C:\Tools\wt.lnk "$($env:ProgramFiles)\WindowsApps\$appName`_$version`_x64__$appKey\wt.exe"
 
