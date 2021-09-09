@@ -620,6 +620,13 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
+		<#
+		UPGRADE NOTE - Can upgrade with these steps:
+			1. choco update microsoft-window-terminal
+			2. New-RunasShortcut C:\Tools\wt.lnk "....\wt.exe" (path built as below)
+			3. Manually pin that wt.lnk shortcut to taskbar
+		#>
+
 		$appName = 'Microsoft.WindowsTerminal'
 		$appKey = '8wekyb3d8bbwe'
 
