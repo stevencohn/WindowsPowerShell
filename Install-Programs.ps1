@@ -861,6 +861,7 @@ Begin
 				code --install-extension ms-vscode.csharp
 				code --install-extension ms-vscode.powershell
 				code --install-extension msjsdiag.debugger-for-chrome
+				code --install-extension jebbs.plantuml
 				code --install-extension sonarlint
 				code --install-extension vscode-icons-team.vscode-icons
 				# Vuln Cost - Security Scanner for VS Code
