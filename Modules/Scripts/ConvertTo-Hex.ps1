@@ -19,9 +19,9 @@ converted independently into three strings, returned as a single text string.
 #>
 
 param(
-	[Parameter(Mandatory=$true,Position=0,HelpMessage="One or three parameters required")] [uint32] $r,
-	[Parameter(Mandatory=$false,Position=1)] [uint32] $g,
-	[Parameter(Mandatory=$false,Position=2)] [uint32] $b
+	[Parameter(Mandatory=$true,Position=0,HelpMessage="One or three parameters required")] [int32] $r,
+	[Parameter(Mandatory=$false,Position=1)] [int32] $g,
+	[Parameter(Mandatory=$false,Position=2)] [int32] $b
 )
 
 if ($b)
