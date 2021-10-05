@@ -743,7 +743,7 @@ Begin
 		Chocolatize 'adobereader'
 		Chocolatize 'curl' # may be required for DownloadBootstrap
 		Chocolatize 'git'
-		Chocolatize 'googlechrome'
+		#Chocolatize 'googlechrome'
 		Chocolatize 'greenshot'
 		Chocolatize 'licecap' # live screen capture -> .gif utility
 		Chocolatize 'linqpad' # free version; can add license from LastPass
@@ -860,7 +860,8 @@ Begin
 				code --install-extension ms-vscode-remote.remote-wsl
 				code --install-extension ms-vscode.csharp
 				code --install-extension ms-vscode.powershell
-				code --install-extension msjsdiag.debugger-for-chrome
+				#code --install-extension msjsdiag.debugger-for-chrome
+				code --install-extension jebbs.plantuml
 				code --install-extension sonarlint
 				code --install-extension vscode-icons-team.vscode-icons
 				# Vuln Cost - Security Scanner for VS Code
