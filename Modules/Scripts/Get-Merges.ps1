@@ -186,7 +186,7 @@ Begin
 						# should execute on first $line
 						# repo is non-conformant so fallback entire report and exit quickly
 						Write-Verbose "fallback: $line"
-						Write-Host $line
+						Write-Host $line.Replace('~', ' ')
 						#break
 					}
 				}
