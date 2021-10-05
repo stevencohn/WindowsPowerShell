@@ -1,26 +1,25 @@
 <#
 .SYNOPSIS
-Reports all merges for the given git repo after a specified date
+Reports all commits to a named branch for the given git repo after a specified date.
 
 .PARAMETER Project
-The name or path of a local git repo containing a .git\ subdirectory.
-Defaults to the current directory if there is a .git subdirectory or 
-looks in all subdirectories for local git repos (not recursive)
+The name or path of a local git repo containing a .git\ subdirectory. Defaults to the current
+directory if there is a .git subdirectory or looks in all subdirectories for local git repos,
+although it is not recursive.
 
 .PARAMETER Branch
-The name of the branch receiving merges to be reported
+The name of the branch to report.
 
 .PARAMETER After
-A date of the form yyyy-mm-dd after which merges will be reported.
-The Since parameter is a synonym for this parameter.
-Default is the last $Last days
+A date of the form yyyy-mm-dd after which commits will be reported. The Since parameter is a
+synonym for this parameter. Default is the last $Last days
 
 .PARAMETER Last
-A number of days to subtract from the current date to calculate the
-After parameter. Default is 14 days.
+A number of days to subtract from the current date to calculate the After parameter.
+Default is 14 days.
 
 .PARAMETER Since
-A date of the form yyyy-mm-dd after which merges will be reported.
+A date of the form yyyy-mm-dd after which commits will be reported.
 Default is the last $Last days
 
 .PARAMETER Raw
@@ -65,7 +64,7 @@ Begin
 		}
 
 		Write-Host
-		Write-Host "Merges in $Project to $Branch since $Since" -ForegroundColor Blue
+		Write-Host "$Project commits to $Branch since $Since" -ForegroundColor Blue
 		Write-Host
 
 		if ($raw)
