@@ -27,8 +27,9 @@ Default is the last $Last days
 A switch to display raw git log output
 
 .DESCRIPTION
-Can override remote with $env:MERGE_REMOTE of the form https://sub.domain.com
-without a trailing slash
+Requires two environment variables:
+$env:MERGE_REMOTE of the form https://sub.domain.com without a trailing slash
+$env:MERGE_TOKEN of the form username:token where token is the Jira API token
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -46,25 +47,15 @@ param(
 
 Begin
 {
+	$script:MergeCommit = 'merge-commit'
+
+
 	function Report
 	{
 		param (
 			[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
 			[string] $Project
 		)
-		<#
-		https://www.git-scm.com/docs/git-log
-
-		%h  - abbrev commit hash (%H is full hash)
-		%aN - author name
-		C() - foreground color, %Creset resets foreground; Cred, Cgreen, Cblue
-		%ad - author date, based on --date=format
-		%D  - ref names
-		%s  - subject
-
-		--date-format options: (defaults to local time)
-		https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strftime-wcsftime-strftime-l-wcsftime-l
-		#>
 
 		Push-Location $Project
 
@@ -77,15 +68,14 @@ Begin
 		Write-Host "Merges in $Project to $Branch since $Since" -ForegroundColor Blue
 		Write-Host
 
-		$script:remote = ReadRemote
-
-		if ($Raw -or ($remote -eq $null))
+		if ($raw)
 		{
 			ReportRaw
 		}
 		else
 		{
-			ReportPretty
+			SetupRemoteAccess
+			ReportCommits
 		}
 
 		Pop-Location
@@ -108,79 +98,104 @@ Begin
 		return 'master'
 	}
 
-	function ReadRemote
+	function SetupRemoteAccess
 	{
-		# temporary override with env variable, no trailing slash
-		if ($env:MERGE_REMOTE)
+		if ($env:MERGE_REMOTE -eq $null -or $env:MERGE_TOKEN -eq $null)
 		{
-			$0 = "$($env:MERGE_REMOTE)/jira/rest/api/2/issue/"
-			Write-Verbose "using remote $0"
-			return $0
+			Write-Verbose 'could not determine remote access; set the MERGE_REMOTE and MERGE_TOKEN env variables'
+			$script:remote = $null
+			return
 		}
 
-		if (Test-Path .\.git\FETCH_HEAD)
-		{
-			$a = Get-Content .\.git\FETCH_HEAD | Select-String -Pattern '((?:https|ssh)://.+?/)'
-			if ($a.Matches.Success)
-			{
-				$0 = $a.Matches.Groups[1].Value + 'jira/rest/api/2/issue/'
-				Write-Verbose "found remote $0"
-				return $0
-			}
-		}
+		# See https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/
 
-		Write-Verbose 'could not determine remote URL'
-		return $null
+		$script:remote = "$($env:MERGE_REMOTE)/rest/api/3/issue/"
+		$script:token = $env:MERGE_TOKEN
+
+		Write-Verbose "using remote $remote"
 	}
+
+	<#
+	https://www.git-scm.com/docs/git-log
+
+	%h  - abbrev commit hash (%H is full hash)
+	%aN - author name
+	C() - foreground color, %Creset resets foreground; Cred, Cgreen, Cblue
+	%ad - author date, based on --date=format
+	%ar - author date, relative
+	%D  - ref names
+	%s  - subject
+
+	--date-format options: (defaults to local time)
+	https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strftime-wcsftime-strftime-l-wcsftime-l
+	#>
 
 	function ReportRaw
 	{
-		git log --merges --first-parent $Branch --after $Since `
-			--pretty=format:"%h %<(12,trunc)%aN %C(white)%<(15)%ar%Creset %s %Cred%<(15)%D%Creset"
+		Write-Host "git log --first-parent $Branch --after $Since " -NoNewline -ForegroundColor DarkGray
+		Write-Host "--date=format-local:'%b %d %H:%M:%S' --pretty=format:""%h  %<(15,trunc)%aN  %ad  %s""" -ForegroundColor DarkGray
+		Write-Host
+
+		git log --first-parent $Branch --after $Since `
+			--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h  %<(15,trunc)%aN  %ad  %s"
+
+		# git log --merges --first-parent $Branch --after $Since `
+		# 	--pretty=format:"%h %<(12,trunc)%aN %C(white)%<(15)%ar%Creset %s %Cred%<(15)%D%Creset"
 	}
 
-	function ReportPretty
+	function ReportCommits
 	{
-		$lines = git log --merges --first-parent $Branch --after $Since `
+		$lines = git log --first-parent $Branch --after $Since `
 			--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h~%<(15,trunc)%aN~%ad~%s"
 
 		foreach ($line in $lines)
 		{
 			Write-Verbose $line
-
 			$parts = $line.Split('~')
 
-			$a = $parts[3] | Select-String `
-				-Pattern "Merge pull request (#[0-9]+)(?: in [\w/]+)? from (?:(?:[\w/]+/)?([A-Z]+-[0-9]+)[-_ ]?(.+)?(?:to $Branch)?)"
-
-			if (-not $a.Matches.Success)
+			# is it a merge commit... $groups[1]=PR, $groups[2]=ticket
+			$a = $parts[3] | Select-String -Pattern "Merge pull request (#[0-9]+) from (?:[\w/]+/)?([A-Z]+-[0-9]+)[-_ ]?"
+			if ($a.Matches.Success)
 			{
-				# probably from dependabot
-				$a = $parts[3] | Select-String -Pattern "Merge pull request (#[0-9]+) from (.+)"
-				if ($a.Matches.Success)
-				{
-					$groups = $a.Matches.Groups
-					ReportPrettyLine $parts[1] $parts[2] $groups[1] '-' $groups[2]
-				}
-				else
-				{
-					# should execute on first $line
-					# repo is non-conformant so fallback entire report and exit quickly
-					Write-Verbose "fallback: $line"
-					ReportRaw
-					break
-				}
+				# ReportCommit(author, time, PR, ticket, $MergeCommit)
+				$groups = $a.Matches.Groups
+				ReportCommit $parts[1] $parts[2] $groups[1] $groups[2] $MergeCommit
 			}
 			else
 			{
-				$groups = $a.Matches.Groups
-
-				ReportPrettyLine $parts[1] $parts[2] $groups[1] $groups[2] $groups[3]
+				# is it a commit... $groups[1]=ticket, $groups[2]=descr, $groups[3]=PR
+				$a = $parts[3] | Select-String -Pattern "(?:fix|feat|[Ff]eature)?[/(]?([A-Z]+[- ][0-9]+)\)?[:-]?\s?(.+)?\s?\((#[0-9]+)\)$"
+				if ($a.Matches.Success)
+				{
+					# ReportCommit(author, time, PR, ticket, description)
+					$groups = $a.Matches.Groups
+					ReportCommit $parts[1] $parts[2] $groups[3] $groups[1] $groups[2]
+				}
+				else
+				{
+					# is it dependabot... $groups[1]=desc, $groups[2]=PR
+					$a = $parts[3] | Select-String -Pattern "build\(deps\): (.+)? \((#[0-9]+)\)$"
+					if ($a.Matches.Success)
+					{
+					# ReportCommit(author, time, PR, '-', description)
+					$groups = $a.Matches.Groups
+						ReportCommit $parts[1] $parts[2] $groups[2] '-' $groups[1]
+					}
+					else
+					{
+						# should execute on first $line
+						# repo is non-conformant so fallback entire report and exit quickly
+						Write-Verbose "fallback: $line"
+						Write-Host $line
+						#break
+					}
+				}
 			}
 		}
 	}
 
-	function ReportPrettyLine
+
+	function ReportCommit
 	{
 		param(
 			[string] $author,
@@ -198,45 +213,54 @@ Begin
 			return
 		}
 
+		$key = $key.ToUpper().Replace(' ', '-')
+
 		$pkey = $key.PadRight(12)
 
 		if (-not $remote.StartsWith('http'))
 		{
-			Write-Host "$author  $ago  $pkey  PR $pr $desc"
+			Write-Host "$author  $ago  $pkey  PR $pr $desc" -ForegroundColor DarkMagenta
 			return
 		}
 
-		$response = curl -s "$remote$key" | ConvertFrom-Json
+		$color = 'Gray'
+		if ($desc -eq $MergeCommit) { $color = 'DarkGray' }
+		if ($author.StartsWith('dependabot')) { $color = 'Magenta' }
+
+		#$cmd = "curl -s -u $($env:merge_token) -X GET -H 'Content-Type: application/json' ""$remote$key"""
+		#Write-Verbose $cmd
+
+		$response = curl -s -u $env:merge_token -X GET -H 'Content-Type: application/json' "$remote$key" | ConvertFrom-Json
+		#$response = curl -s "$remote$key" | ConvertFrom-Json
 		if (-not ($response -and $response.fields))
 		{
 			Write-Host "$author  $ago  $pkey " -NoNewLine
 			Write-Host 'unknown    ' -NoNewline -ForegroundColor DarkGray
-			Write-Host "  PR $pr $desc"
+			Write-Host "  PR $pr $desc" -ForegroundColor $color
 			return
 		}
 
 		$status = $response.fields.status.name
+		$type = $response.fields.issueType.name
 
-		if ($response.fields.issueType.name -eq "Story")
+		if ($type -ne 'Story')
 		{
-			Write-Host "$author  $ago  $pkey " -NoNewline
-
-			$storyStatus = $status.PadRight(11)
-
-			switch ($status)
-			{
-				"Verified" { Write-Host $storyStatus -NoNewline -ForegroundColor Green }
-				"Passed" { Write-Host $storyStatus -NoNewline -ForegroundColor Yellow }
-				default { Write-Host $storyStatus -NoNewline -ForegroundColor Cyan }
-			}
-
-			Write-Host "  PR $pr $desc"
+			$desc = "($type) $desc"
+			if ($type -eq 'Defect') { $color = 'DarkRed' } else { $color = 'DarkCyan' }
 		}
-		else
+
+		Write-Host "$author  $ago  $pkey " -NoNewline
+
+		$storyStatus = $status.PadRight(11)
+
+		switch ($status)
 		{
-			$taskStatus = $status.PadRight(11)
-			Write-Host "$author  $ago  $pkey $taskStatus  PR $pr Task:$desc" -ForegroundColor DarkGray
+			"Verified" { Write-Host $storyStatus -NoNewline -ForegroundColor Green }
+			"Passed" { Write-Host $storyStatus -NoNewline -ForegroundColor Yellow }
+			default { Write-Host $storyStatus -NoNewline -ForegroundColor Cyan }
 		}
+
+		Write-Host "  PR $pr $desc" -ForegroundColor $color
 	}
 }
 Process
