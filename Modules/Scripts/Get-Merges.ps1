@@ -8,7 +8,7 @@ directory if there is a .git subdirectory or looks in all subdirectories for loc
 although it is not recursive.
 
 .PARAMETER Branch
-The name of the branch to report.
+The name of the branch to report. Default is main.
 
 .PARAMETER After
 A date of the form yyyy-mm-dd after which commits will be reported. The Since parameter is a
@@ -37,7 +37,6 @@ $env:MERGE_TOKEN of the form username:token where token is the Jira API token
 param(
 	[parameter(Position = 0)] [string] $Project,
 	[parameter(Position = 1)] [string] $Branch,
-
 	[string] $After,
 	[string] $Since,
 	[int] $Last = 14,
@@ -58,10 +57,7 @@ Begin
 
 		Push-Location $Project
 
-		if (!$Branch)
-		{
-			$Branch = ReadBranch
-		}
+		if (!$Branch) { $Branch = ReadBranch }
 
 		Write-Host
 		Write-Host "$Project commits to $Branch since $Since" -ForegroundColor Blue
@@ -79,7 +75,8 @@ Begin
 
 		Pop-Location
 	}
-	
+
+
 	function ReadBranch
 	{
 		if (Test-Path .\.git\config)
@@ -93,9 +90,10 @@ Begin
 			}
 		}
 
-		Write-Verbose 'defaulting to master branch'
-		return 'master'
+		Write-Verbose 'defaulting to main branch'
+		return 'main'
 	}
+
 
 	function SetupRemoteAccess
 	{
@@ -113,6 +111,7 @@ Begin
 
 		Write-Verbose "using remote $remote"
 	}
+
 
 	<#
 	https://www.git-scm.com/docs/git-log
@@ -132,15 +131,16 @@ Begin
 	function ReportRaw
 	{
 		Write-Host "git log --first-parent $Branch --after $Since " -NoNewline -ForegroundColor DarkGray
-		Write-Host "--date=format-local:'%b %d %H:%M:%S' --pretty=format:""%h  %<(15,trunc)%aN  %ad  %s""" -ForegroundColor DarkGray
+		Write-Host "--date=format-local:'%b %d %H:%M:%S' --pretty=format:""%h %<(15,trunc)%aN %ad %s""" -ForegroundColor DarkGray
 		Write-Host
 
 		git log --first-parent $Branch --after $Since `
-			--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h  %<(15,trunc)%aN  %ad  %s"
+			--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h %<(15,trunc)%aN %ad %s"
 
 		# git log --merges --first-parent $Branch --after $Since `
 		# 	--pretty=format:"%h %<(12,trunc)%aN %C(white)%<(15)%ar%Creset %s %Cred%<(15)%D%Creset"
 	}
+
 
 	function ReportCommits
 	{
@@ -213,7 +213,6 @@ Begin
 		}
 
 		$key = $key.ToUpper().Replace(' ', '-')
-
 		$pkey = $key.PadRight(12)
 
 		if (-not $remote.StartsWith('http'))
@@ -226,10 +225,10 @@ Begin
 		if ($desc -eq $MergeCommit) { $color = 'DarkGray' }
 		if ($author.StartsWith('dependabot')) { $color = 'Magenta' }
 
-		#$cmd = "curl -s -u $($env:merge_token) -X GET -H 'Content-Type: application/json' ""$remote$key"""
+		#$cmd = "curl -s -u $($token) -X GET -H 'Content-Type: application/json' ""$remote$key"""
 		#Write-Verbose $cmd
 
-		$response = curl -s -u $env:merge_token -X GET -H 'Content-Type: application/json' "$remote$key" | ConvertFrom-Json
+		$response = curl -s -u $token -X GET -H 'Content-Type: application/json' "$remote$key" | ConvertFrom-Json
 		#$response = curl -s "$remote$key" | ConvertFrom-Json
 		if (-not ($response -and $response.fields))
 		{
@@ -251,7 +250,6 @@ Begin
 		Write-Host "$author  $ago  $pkey " -NoNewline
 
 		$storyStatus = $status.PadRight(11)
-
 		switch ($status)
 		{
 			"Verified" { Write-Host $storyStatus -NoNewline -ForegroundColor Green }
@@ -265,15 +263,13 @@ Begin
 Process
 {
 	if (!$Since) { $Since = $After }
-	if (!$Since)
-	{
-		$Since = [DateTime]::Now.AddDays(-$Last).ToString('yyyy-MM-dd')
-	}
+	if (!$Since) { $Since = [DateTime]::Now.AddDays(-$Last).ToString('yyyy-MM-dd') }
 
 	if (!$Project -and (Test-Path '.git')) { $Project = '.' }
 
 	if (!$Project)
 	{
+		# report all Git repos under current directory
 		Get-ChildItem | ? { Test-Path (Join-Path $_.FullName '.git') } | Select -ExpandProperty Name | % { Report $_ }
 		return
 	}
