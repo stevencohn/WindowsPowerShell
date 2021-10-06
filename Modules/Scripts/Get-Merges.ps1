@@ -182,11 +182,9 @@ Begin
 					}
 					else
 					{
-						# should execute on first $line
-						# repo is non-conformant so fallback entire report and exit quickly
-						Write-Verbose "fallback: $line"
+						# no idea what this is so just dump it out
+						Write-Verbose "fallback..."
 						Write-Host $line.Replace('~', ' ')
-						#break
 					}
 				}
 			}
