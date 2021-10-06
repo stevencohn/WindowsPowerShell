@@ -348,6 +348,9 @@ Begin
 			if ((choco list awscli -limit-output | select-string 'awscli\|2' | measure).count -gt 0)
 			{
 				Chocolatize 'awscli'
+
+				# alternatively...
+				#msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
 			}
 			else
 			{
