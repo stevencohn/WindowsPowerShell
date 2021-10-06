@@ -627,9 +627,6 @@ Begin
 			3. Manually pin that wt.lnk shortcut to taskbar
 		#>
 
-		$appName = 'Microsoft.WindowsTerminal'
-		$appKey = '8wekyb3d8bbwe'
-
 		$parentId = (gwmi win32_process -Filter "processid='$pid'").parentprocessid
 		if ((gwmi win32_process -Filter "processid='$parentId'").Name -eq 'WindowsTerminal.exe')
 		{
@@ -639,7 +636,26 @@ Begin
 
 		Chocolatize 'microsoft-windows-terminal'
 
+		ConfigureTerminalSettings
+		ConfigureTerminalShortcut
+
+		$reminder = 'Windows Terminal', `
+			" 0. Pin C:\Tools\wt.lnk to Taskbar", `
+			' 1. initialPosition can be set globally in settings.json ("x,y" value)'
+
+		$script:reminders += ,$reminder
+		Highlight $reminder 'Cyan'
+	}
+
+
+	function ConfigureTerminalSettings
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
+
 		# customize settings... for Terminal 1.8.1444.0, 1.9.1942.0
+
+		$appName = 'Microsoft.WindowsTerminal'
+		$appKey = '8wekyb3d8bbwe'
 
 		$0 = "$($env:LOCALAPPDATA)\Packages\$appName`_$appKey\LocalState\settings.json"
 		if (!(Test-Path $0))
@@ -659,27 +675,27 @@ Begin
 
 		$scheme = New-Object -TypeName PsObject -Property @{
 			background = '#080808'
-            black = '#0C0C0C'
-            blue = '#3465A4'
-            brightBlack = '#767676'
-            brightBlue = '#729FCF'
-            brightCyan = '#34E2E2'
-            brightGreen = '#8AE234'
-            brightPurple = '#AD7FA8'
-            brightRed = '#EF2929'
-            brightWhite = '#F2F2F2'
-            brightYellow = '#FCE94F'
-            cursorColor = '#FFFFFF'
-            cyan = '#06989A'
-            foreground = '#CCCCCC'
-            green = '#4E9A06'
-            name = 'DarkSelenitic'
-            purple = '#75507B'
-            red = '#CC0000'
-            selectionBackground = '#FFFFFF'
-            white = '#CCCCCC'
-            yellow = '#C4A000'
-        }
+			black = '#0C0C0C'
+			blue = '#3465A4'
+			brightBlack = '#767676'
+			brightBlue = '#729FCF'
+			brightCyan = '#34E2E2'
+			brightGreen = '#8AE234'
+			brightPurple = '#AD7FA8'
+			brightRed = '#EF2929'
+			brightWhite = '#F2F2F2'
+			brightYellow = '#FCE94F'
+			cursorColor = '#FFFFFF'
+			cyan = '#06989A'
+			foreground = '#CCCCCC'
+			green = '#4E9A06'
+			name = 'DarkSelenitic'
+			purple = '#75507B'
+			red = '#CC0000'
+			selectionBackground = '#FFFFFF'
+			white = '#CCCCCC'
+			yellow = '#C4A000'
+		}
 
 		$schemes = [Collections.Generic.List[Object]]($settings.schemes)
 		$index = $schemes.FindIndex({ $args[0].name -eq 'DarkSelenitic' })
@@ -722,17 +738,18 @@ Begin
 		# use -Depth to retain fidelity in complex objects without converting
 		# object properties to key/value collections
 		ConvertTo-Json $settings -Depth 100 | Out-File $0 -Encoding Utf8
+	}
+
+
+	function ConfigureTerminalShortcut
+	{
+		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
 		# Create shortcut wt.lnk file; this then needs to be manually pinned to taskbar
+		$appName = 'Microsoft.WindowsTerminal'
+		$appKey = '8wekyb3d8bbwe'
 		$version = (choco list -l -r -e microsoft-windows-terminal).Split('|')[1]
 		New-RunasShortcut C:\Tools\wt.lnk "$($env:ProgramFiles)\WindowsApps\$appName`_$version`_x64__$appKey\wt.exe"
-
-		$reminder = 'Windows Terminal', `
-			" 0. Pin C:\Tools\wt.lnk to Taskbar", `
-			' 1. initialPosition can be set globally in settings.json ("x,y" value)'
-
-		$script:reminders += ,$reminder
-		Highlight $reminder 'Cyan'
 	}
 
 
