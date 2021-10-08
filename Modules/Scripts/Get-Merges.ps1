@@ -250,7 +250,7 @@ Begin
 			$ticket = [IssueTicket]::new();
 			$ticket.status = $response.fields.status.name
 			$ticket.type = $response.fields.issueType.name
-			$tickets += ${ $key = $ticket }
+			$tickets += @{ $key = $ticket }
 			$x = $false
 		}
 
