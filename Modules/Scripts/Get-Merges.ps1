@@ -45,7 +45,14 @@ param(
 
 Begin
 {
+	class IssueTicket
+	{
+		[string] $status
+		[string] $type
+	}
+	
 	$script:MergeCommit = 'merge-commit'
+	$script:Tickets = @{}
 
 
 	function Report
@@ -223,32 +230,38 @@ Begin
 		if ($desc -eq $MergeCommit) { $color = 'DarkGray' }
 		if ($author.StartsWith('dependabot')) { $color = 'Magenta' }
 
-		#$cmd = "curl -s -u $($token) -X GET -H 'Content-Type: application/json' ""$remote$key"""
-		#Write-Verbose $cmd
-
-		$response = curl -s -u $token -X GET -H 'Content-Type: application/json' "$remote$key" | ConvertFrom-Json
-		#$response = curl -s "$remote$key" | ConvertFrom-Json
-		if (-not ($response -and $response.fields))
+		$ticket = $tickets[$key]
+		if ($ticket -eq $null)
 		{
-			Write-Host "$author  $ago  $pkey " -NoNewLine
-			Write-Host 'unknown    ' -NoNewline -ForegroundColor DarkGray
-			Write-Host "  PR $pr $desc" -ForegroundColor $color
-			return
+			#$cmd = "curl -s -u $($token) -X GET -H 'Content-Type: application/json' ""$remote$key"""
+			#Write-Verbose $cmd
+
+			$response = curl -s -u $token -X GET -H 'Content-Type: application/json' "$remote$key" | ConvertFrom-Json
+			#$response = curl -s "$remote$key" | ConvertFrom-Json
+			if (-not ($response -and $response.fields))
+			{
+				Write-Host "$author  $ago  $pkey " -NoNewLine
+				Write-Host 'unknown    ' -NoNewline -ForegroundColor DarkGray
+				Write-Host "  PR $pr $desc" -ForegroundColor $color
+				return
+			}
+
+			$ticket = [IssueTicket]::new();
+			$ticket.status = $response.fields.status.name
+			$ticket.type = $response.fields.issueType.name
+			$tickets += ${ $key = $ticket }
 		}
 
-		$status = $response.fields.status.name
-		$type = $response.fields.issueType.name
-
-		if ($type -ne 'Story')
+		if ($ticket.type -ne 'Story')
 		{
-			$desc = "($type) $desc"
-			if ($type -eq 'Defect') { $color = 'DarkRed' } else { $color = 'DarkCyan' }
+			$desc = "($($ticket.type)) $desc"
+			if ($ticket.type -eq 'Defect') { $color = 'DarkRed' } else { $color = 'DarkCyan' }
 		}
 
 		Write-Host "$author  $ago  $pkey " -NoNewline
 
-		$storyStatus = $status.PadRight(11)
-		switch ($status)
+		$storyStatus = $ticket.status.PadRight(11)
+		switch ($ticket.status)
 		{
 			"Verified" { Write-Host $storyStatus -NoNewline -ForegroundColor Green }
 			"Passed" { Write-Host $storyStatus -NoNewline -ForegroundColor Yellow }
