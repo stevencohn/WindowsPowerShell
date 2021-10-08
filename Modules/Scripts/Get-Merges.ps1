@@ -231,6 +231,7 @@ Begin
 		if ($author.StartsWith('dependabot')) { $color = 'Magenta' }
 
 		$ticket = $tickets[$key]
+		$x = true
 		if ($ticket -eq $null)
 		{
 			#$cmd = "curl -s -u $($token) -X GET -H 'Content-Type: application/json' ""$remote$key"""
@@ -250,6 +251,7 @@ Begin
 			$ticket.status = $response.fields.status.name
 			$ticket.type = $response.fields.issueType.name
 			$tickets += ${ $key = $ticket }
+			$x = false
 		}
 
 		if ($ticket.type -ne 'Story')
@@ -258,7 +260,13 @@ Begin
 			if ($ticket.type -eq 'Defect') { $color = 'DarkRed' } else { $color = 'DarkCyan' }
 		}
 
-		Write-Host "$author  $ago  $pkey " -NoNewline
+		if ($x)
+		{
+			Write-Host "$author  $ago  $pkey " -NoNewline -ForegroundColor Green
+		}
+		else {
+			Write-Host "$author  $ago  $pkey " -NoNewline
+		}
 
 		$storyStatus = $ticket.status.PadRight(11)
 		switch ($ticket.status)
