@@ -52,6 +52,8 @@ Begin
 	}
 	
 	$script:MergeCommit = 'merge-commit'
+
+	# cache IssueTickets; may be more than one commit per ticket, prevent repeat lookups
 	$script:Tickets = @{}
 
 
@@ -231,7 +233,6 @@ Begin
 		if ($author.StartsWith('dependabot')) { $color = 'Magenta' }
 
 		$ticket = $tickets[$key]
-		$x = $true
 		if ($ticket -eq $null)
 		{
 			#$cmd = "curl -s -u $($token) -X GET -H 'Content-Type: application/json' ""$remote$key"""
@@ -250,8 +251,7 @@ Begin
 			$ticket = [IssueTicket]::new();
 			$ticket.status = $response.fields.status.name
 			$ticket.type = $response.fields.issueType.name
-			$tickets += @{ $key = $ticket }
-			$x = $false
+			$script:tickets += @{ $key = $ticket }
 		}
 
 		if ($ticket.type -ne 'Story')
@@ -260,13 +260,7 @@ Begin
 			if ($ticket.type -eq 'Defect') { $color = 'DarkRed' } else { $color = 'DarkCyan' }
 		}
 
-		if ($x)
-		{
-			Write-Host "$author  $ago  $pkey " -NoNewline -ForegroundColor Green
-		}
-		else {
-			Write-Host "$author  $ago  $pkey " -NoNewline
-		}
+		Write-Host "$author  $ago  $pkey " -NoNewline
 
 		$storyStatus = $ticket.status.PadRight(11)
 		switch ($ticket.status)
