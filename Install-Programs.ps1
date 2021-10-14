@@ -890,6 +890,8 @@ Begin
 				code --install-extension Arjun.swagger-viewer
 				code --install-extension 42Crunch.vscode-openapi
 				code --install-extension mermade.openapi-lint
+				# thunder client is a Postman alternative built into vscode
+				code --install-extension rangav.vscode-thunder-client			
 			}
 		}
 		else
