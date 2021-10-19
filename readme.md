@@ -309,7 +309,6 @@ Default applications:
    * Curl
    * Docker Desktop
    * Git
-   * Google Chrome
    * Greenfish Icon Editor Pro
    * Greenshot
    * LINQPad
