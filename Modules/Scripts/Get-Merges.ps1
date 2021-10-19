@@ -109,8 +109,8 @@ Begin
 	{
 		if (!(Test-Path $curlcmd))
 		{
-			Write-Host "$0 does not exist" -ForegroundColor Yellow
-			Write-Host 'Install curl from chocolatey.org with the command choco install curl'
+			Write-Host "$0 does not exist" -ForegroundColor Red
+			Write-Host 'Install curl from chocolatey.org with the command choco install curl' -ForegroundColor Yellow
 			exit
 		}
 
