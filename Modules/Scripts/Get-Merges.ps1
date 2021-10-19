@@ -52,6 +52,7 @@ Begin
 	}
 	
 	$script:MergeCommit = 'merge-commit'
+	$script:curlcmd = "$($env:windir)\System32\curl.exe"
 
 	# cache IssueTickets; may be more than one commit per ticket, prevent repeat lookups
 	$script:Tickets = @{}
@@ -106,6 +107,13 @@ Begin
 
 	function SetupRemoteAccess
 	{
+		if (!(Test-Path $curlcmd))
+		{
+			Write-Host "$0 does not exist" -ForegroundColor Yellow
+			Write-Host 'Install curl from chocolatey.org with the command choco install curl'
+			exit
+		}
+
 		if ($env:MERGE_REMOTE -eq $null -or $env:MERGE_TOKEN -eq $null)
 		{
 			Write-Verbose 'could not determine remote access; set the MERGE_REMOTE and MERGE_TOKEN env variables'
@@ -238,7 +246,7 @@ Begin
 			#$cmd = "curl -s -u $($token) -X GET -H 'Content-Type: application/json' ""$remote$key"""
 			#Write-Verbose $cmd
 
-			$response = curl -s -u $token -X GET -H 'Content-Type: application/json' "$remote$key" | ConvertFrom-Json
+			$response = . $curlcmd -s -u $token -X GET -H 'Content-Type: application/json' "$remote$key" | ConvertFrom-Json
 			#$response = curl -s "$remote$key" | ConvertFrom-Json
 			if (-not ($response -and $response.fields))
 			{
