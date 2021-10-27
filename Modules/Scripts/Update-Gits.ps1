@@ -48,11 +48,14 @@ Begin
 
         if ($Reset)
         {
+            # revert uncommitted changes that have been added to the index
             git reset --hard origin/$br
+            # revert uncommitted, unindexed changes (f=force, d=recurse, x=uncontrolled)
+            git clean -dxf
         }
 
-        git -c diff.mnemonicprefix=false -c core.quotepath=false fetch origin
-        git -c diff.mnemonicprefix=false -c core.quotepath=false pull --no-commit origin $br
+        git fetch origin
+        git pull origin $br
 
         Pop-Location
     }
