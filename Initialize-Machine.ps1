@@ -346,6 +346,13 @@ Begin
 		Set-ItemProperty $0 -Name 'BingSearchEnabled' -Type DWord -Value 0
 		Set-ItemProperty $0 -Name 'CortanaConsent' -Type DWord -Value 0
 
+		# DisableWidgets
+		if ($Win11)
+		{
+			$0 = 'HKCU:\SOFTWARE\\Microsoft\Windows\CurrentVersion\Dsh'
+			if (Test-Path $0) { Set-ItemProperty $0 -Name 'IsPrelaunchEnabled' -Type DWord -Value 0 }
+		}
+
 		# DisableCortana
 		Write-Verbose "Disabling Cortana..."
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Personalization\Settings'
@@ -705,6 +712,10 @@ Process
 
 	if ($stage -eq 1)
 	{
+		# running Windows 11?
+		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+		$script:Win11 = [int](get-itempropertyvalue -path $0 -name CurrentBuild) -ge 22000
+		
 		# choco, git, 7zip, chrome
 		InstallTools
 

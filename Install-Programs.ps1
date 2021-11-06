@@ -630,6 +630,8 @@ Begin
 			3. Manually pin that wt.lnk shortcut to taskbar
 		#>
 
+		## winget install --id=Microsoft.WindowsTerminal -e --source winget
+
 		$parentId = (gwmi win32_process -Filter "processid='$pid'").parentprocessid
 		if ((gwmi win32_process -Filter "processid='$parentId'").Name -eq 'WindowsTerminal.exe')
 		{
@@ -640,7 +642,11 @@ Begin
 		Chocolatize 'microsoft-windows-terminal'
 
 		ConfigureTerminalSettings
-		ConfigureTerminalShortcut
+
+		if (!$Win11)
+		{
+			ConfigureTerminalShortcut
+		}
 
 		$reminder = 'Windows Terminal', `
 			" 0. Pin C:\Tools\wt.lnk to Taskbar", `
@@ -822,7 +828,7 @@ Begin
 		$root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
 		$installer = "$root\Common7\IDE\vsixinstaller.exe"
 
-		# TODO: update these versions very now and then...
+		# TODO: update these versions every now and then...
 		
 		InstallVsix $installer 'EditorGuidelines' 'PaulHarrington/vsextensions/EditorGuidelines/2.2.5/vspackage'
 		InstallVsix $installer 'InstallerProjects' 'VisualStudioClient/vsextensions/MicrosoftVisualStudio2017InstallerProjects/1.0.0/vspackage'
@@ -992,6 +998,8 @@ Process
 		return
 	}
 
+	$script:Win11 = [int](get-itempropertyvalue -path $0 -name CurrentBuild) -ge 22000
+
 	if ($AccessKey -and $SecretKey)
 	{
 		# harmless to do this even before AWS is installed
@@ -1036,7 +1044,8 @@ Process
 	DisableCFG
 
 	InstallThings
-	InstallTerminal
+
+	if (!$Win11) { InstallTerminal }
 
 	InstallMacrium
 
@@ -1061,7 +1070,9 @@ Process
 		Chocolatize 'paint.net'
 		Chocolatize 'treesizefree'
 		Chocolatize 'vlc'
-		InstallDateInTray
+
+		if (!$Win11) { InstallDateInTray }
+
 		InstallWiLMa
 		InstallWmiExplorer
 	}
