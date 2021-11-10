@@ -25,6 +25,9 @@ Default is the last $Last days
 .PARAMETER Raw
 A switch to display raw git log output
 
+.PARAMETER Graph
+A switch to display raw graph git log output
+
 .DESCRIPTION
 Requires two environment variables:
 $env:MERGE_REMOTE of the form https://sub.domain.com without a trailing slash
@@ -40,7 +43,8 @@ param(
 	[string] $After,
 	[string] $Since,
 	[int] $Last = 14,
-	[switch] $Raw
+	[switch] $Raw,
+	[switch] $Graph
 )
 
 Begin
@@ -73,7 +77,7 @@ Begin
 		Write-Host "$Project commits to $Branch since $Since" -ForegroundColor Blue
 		Write-Host
 
-		if ($raw)
+		if ($raw -or $graph)
 		{
 			ReportRaw
 		}
@@ -147,15 +151,24 @@ Begin
 
 	function ReportRaw
 	{
-		Write-Host "git log --first-parent $Branch --after $Since " -NoNewline -ForegroundColor DarkGray
-		Write-Host "--date=format-local:'%b %d %H:%M:%S' --pretty=format:""%h %<(15,trunc)%aN %ad %s""" -ForegroundColor DarkGray
-		Write-Host
+		if ($graph)
+		{
+			Write-Host "git log --all --graph  --abbrev-commit --date=relative " -NoNewline -ForegroundColor DarkGray
+			Write-Host "--pretty=format:'%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'" -ForegroundColor DarkGray
+			Write-Host
 
-		git log --first-parent $Branch --after $Since `
-			--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h %<(15,trunc)%aN %ad %s"
+			git log --all --graph --abbrev-commit --date=relative `
+				--pretty=format:'%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+		}
+		else
+		{
+			Write-Host "git log --first-parent $Branch --after $Since " -NoNewline -ForegroundColor DarkGray
+			Write-Host "--date=format-local:'%b %d %H:%M:%S' --pretty=format:""%h %<(15,trunc)%aN %ad %s""" -ForegroundColor DarkGray
+			Write-Host
 
-		# git log --merges --first-parent $Branch --after $Since `
-		# 	--pretty=format:"%h %<(12,trunc)%aN %C(white)%<(15)%ar%Creset %s %Cred%<(15)%D%Creset"
+			git log --first-parent $Branch --after $Since `
+				--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h %<(15,trunc)%aN %ad %s"
+		}
 	}
 
 
