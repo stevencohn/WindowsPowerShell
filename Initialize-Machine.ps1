@@ -381,6 +381,11 @@ Begin
 			}
 		}
 
+		# enabled Device Manager >> HID >> Power Management tab 
+		# used to disable power management of Bluetooth Low Energy devices (Airpod Pro)
+		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power'
+		Set-ItemProperty $0 -Name 'CsEnabled' -Type DWord -Value 0
+
 		# enable Hibernate option
 		Write-Verbose 'enabling hibernate option'
 		powercfg /h on
