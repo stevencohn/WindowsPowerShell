@@ -246,6 +246,8 @@ Process
 		return Get-Addresses
 	}
 
+	$script:verbose = $PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent
+
 	$info = Get-Information
 	if ($info -and $info.Items -and $info.Items.Count -gt 0)
 	{

@@ -137,8 +137,13 @@ Begin
 		Set-ItemProperty $0 -Name 'PeopleBand' -Type DWord -Value 0
 
 		$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-		# taskbar small buttons
-		Set-ItemProperty $0 -Name 'TaskbarSmallIcons' -Value 1 -Type DWord
+
+		if (-not $Win11)
+		{
+			# taskbar small buttons
+			Set-ItemProperty $0 -Name 'TaskbarSmallIcons' -Value 1 -Type DWord
+		}
+
 		# disable item checkboxes
 		Set-ItemProperty $0 -Name 'AutoCheckSelect' -Value 0 -Type DWord
 		# replace cmd prompt with PowerShell
@@ -275,6 +280,11 @@ Begin
 		{
 			Set-ItemProperty $0 -Name 'PnPCapabilities' -Type String -Value '24'
 		}
+
+		# enabled Device Manager >> HID >> Power Management tab 
+		# used to disable power management of Bluetooth Low Energy devices, like Airpods
+		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power'
+		Set-ItemProperty $0 -Name 'CsEnabled' -Type DWord -Value 0
 	}
 
 
