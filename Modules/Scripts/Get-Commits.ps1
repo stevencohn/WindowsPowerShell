@@ -295,17 +295,17 @@ Begin
 
 		switch ($sig)
 		{
-			'G' { $sig = 'ok' }          # good valid signature
-			'B' { $sig = 'bad' }         # bad signature
-			'U' { $sig = 'ok-unknown' }  # good signature with unknown validity
-			'X' { $sig = 'ok-expired' }  # good signature that has expired
-			'Y' { $sig = 'expired' }     # good signature made by expried key
-			'R' { $sig = 'ok-revoked' }  # good signature made by revoked key
-			'E' { $sig = 'missing' }     # cannot be checked, missing
+			'G' { $sig = 'sig-ok' }      # good valid signature
+			'B' { $sig = 'sig-bad' }     # bad signature
+			'U' { $sig = 'sig-ok?' }     # good signature with unknown validity
+			'X' { $sig = 'sig-expired' } # good signature that has expired
+			'Y' { $sig = 'sig-expkey' }  # good signature made by expried key
+			'R' { $sig = 'sig-revoked' } # good signature made by revoked key
+			'E' { $sig = 'sig-missing' } # cannot be checked, missing
 			'N' { $sig = 'no-sig' }      # no signature
 		}
 
-		Write-Host "  PR $pr $desc sig:$sig" -ForegroundColor $color
+		Write-Host "  PR $pr $desc ($sig)" -ForegroundColor $color
 	}
 }
 Process
