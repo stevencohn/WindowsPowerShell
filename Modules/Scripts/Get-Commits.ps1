@@ -305,6 +305,8 @@ Begin
 			'N' { $sig = 'no-sig' }      # no signature
 		}
 
+		$desc = $desc.Trim()
+
 		Write-Host "  PR $pr $desc ($sig)" -ForegroundColor $color
 	}
 }
