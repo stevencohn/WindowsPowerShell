@@ -101,6 +101,9 @@ Display the console colors for Command console, PowerShell console, and ConEmu c
 #### `Get-CommandLine` [-Name n] [-Only] [-ReturnValue] [-ShowSystem]
 Report processes with their command lines, highlighting an optional search string
 
+#### `Get-Commits` -Project p [-Branch b] [-Since yyyy-mm-dd] [-Last n] [-Raw] [-Graph]
+Reports all commits for the given git repo after a specified date or within the last n days.
+
 #### `Get-DirSize` -Dir d [-la]
 Report the size of all items in the specified folder. Used as a sub-routine of Get-ChildItemColorized.
 
@@ -122,9 +125,6 @@ Report all installed applications registered on the local system.
 Determines the most likely candidate for the active Internet-specific network adapter on this machine.  All other adpaters such as tunneling and loopbacks are ignored.  Only connected IP adapters are considered. Wifi aliases are shown.
 
 ![alt text](Images/get-network.png "Get-Network Example")
-
-#### `Get-Merges` -Project p [-Branch b] [-Since yyyy-mm-dd] [-Last n] [-Raw]
-Reports all merges for the given git repo after a specified date or within the last n days.
 
 #### `Get-Path` [-Search s] [-Sort] [-Verbose]
 Display the PATH environment variable as a list of strings rather than a single string and displays the source of each value defined in the Registry: Machine, User, or Process. Verbose mode dumps the User and System Paths as

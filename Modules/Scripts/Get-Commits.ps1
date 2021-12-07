@@ -144,6 +144,7 @@ Begin
 	%ar - author date, relative
 	%D  - ref names
 	%s  - subject
+	%G? - show signing signature status
 
 	--date-format options: (defaults to local time)
 	https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strftime-wcsftime-strftime-l-wcsftime-l
@@ -163,11 +164,11 @@ Begin
 		else
 		{
 			Write-Host "git log --first-parent $Branch --after $Since " -NoNewline -ForegroundColor DarkGray
-			Write-Host "--date=format-local:'%b %d %H:%M:%S' --pretty=format:""%h %<(15,trunc)%aN %ad %s""" -ForegroundColor DarkGray
+			Write-Host "--date=format-local:'%b %d %H:%M:%S' --pretty=format:""%h %<(15,trunc)%aN %ad %s %G?""" -ForegroundColor DarkGray
 			Write-Host
 
 			git log --first-parent $Branch --after $Since `
-				--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h %<(15,trunc)%aN %ad %s"
+				--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h %<(15,trunc)%aN %ad %s %G?"
 		}
 	}
 
@@ -175,7 +176,7 @@ Begin
 	function ReportCommits
 	{
 		$lines = git log --first-parent $Branch --after $Since `
-			--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h~%<(15,trunc)%aN~%ad~%s"
+			--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h~%<(15,trunc)%aN~%ad~%s~%G?"
 
 		foreach ($line in $lines)
 		{
@@ -188,7 +189,7 @@ Begin
 			{
 				# ReportCommit(author, time, PR, ticket, $MergeCommit)
 				$groups = $a.Matches.Groups
-				ReportCommit $parts[1] $parts[2] $groups[1] $groups[2] $MergeCommit
+				ReportCommit $parts[1] $parts[2] $groups[1] $groups[2] $MergeCommit $parts[4]
 			}
 			else
 			{
@@ -198,7 +199,7 @@ Begin
 				{
 					# ReportCommit(author, time, PR, ticket, description)
 					$groups = $a.Matches.Groups
-					ReportCommit $parts[1] $parts[2] $groups[3] $groups[1] $groups[2]
+					ReportCommit $parts[1] $parts[2] $groups[3] $groups[1] $groups[2] $parts[4]
 				}
 				else
 				{
@@ -208,7 +209,7 @@ Begin
 					{
 					# ReportCommit(author, time, PR, '-', description)
 					$groups = $a.Matches.Groups
-						ReportCommit $parts[1] $parts[2] $groups[2] '-' $groups[1]
+						ReportCommit $parts[1] $parts[2] $groups[2] '-' $groups[1] $parts[4]
 					}
 					else
 					{
@@ -229,7 +230,8 @@ Begin
 			[string] $ago,
 			[string] $pr,
 			[string] $key,
-			[string] $desc
+			[string] $desc,
+			[string] $sig
 		)
 
 		if ($ago.Length -lt 15) { $ago = $ago.PadRight(15) }
@@ -286,12 +288,24 @@ Begin
 		$storyStatus = $ticket.status.PadRight(11)
 		switch ($ticket.status)
 		{
-			"Verified" { Write-Host $storyStatus -NoNewline -ForegroundColor Green }
-			"Passed" { Write-Host $storyStatus -NoNewline -ForegroundColor Yellow }
+			'Verified' { Write-Host $storyStatus -NoNewline -ForegroundColor Green }
+			'Passed' { Write-Host $storyStatus -NoNewline -ForegroundColor Yellow }
 			default { Write-Host $storyStatus -NoNewline -ForegroundColor Cyan }
 		}
 
-		Write-Host "  PR $pr $desc" -ForegroundColor $color
+		switch ($sig)
+		{
+			'G' { $sig = 'ok' }          # good valid signature
+			'B' { $sig = 'bad' }         # bad signature
+			'U' { $sig = 'ok-unknown' }  # good signature with unknown validity
+			'X' { $sig = 'ok-expired' }  # good signature that has expired
+			'Y' { $sig = 'expired' }     # good signature made by expried key
+			'R' { $sig = 'ok-revoked' }  # good signature made by revoked key
+			'E' { $sig = 'missing' }     # cannot be checked, missing
+			'N' { $sig = 'no-sig' }      # no signature
+		}
+
+		Write-Host "  PR $pr $desc sig:$sig" -ForegroundColor $color
 	}
 }
 Process
