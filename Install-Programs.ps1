@@ -268,15 +268,15 @@ Begin
 		}
 
 		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
-			((dotnet --list-sdks | ? { $_ -match '^5.0.' }).Count -eq 0))
+			((dotnet --list-sdks | ? { $_ -match '^6.0.' }).Count -eq 0))
 		{
 			# currently required for our apps, may change
-			HighTitle '.NET 5.0'
+			HighTitle '.NET 6.0'
 			choco install -y dotnet
 		}
 		else
 		{
-			Write-Host '.NET 5.0 already installed' -ForegroundColor Green
+			Write-Host '.NET 6.0 already installed' -ForegroundColor Green
 		}
 	}
 
@@ -321,7 +321,7 @@ Begin
 		if ((Get-Command ng -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			HighTitle 'angular'
-			npm install -g @angular/cli@9.1.6
+			npm install -g @angular/cli@latest
 			npm install -g npm-check-updates
 			npm install -g local-web-server
 		}
@@ -512,7 +512,8 @@ Begin
 		if ((Get-Command node -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			HighTitle 'nodejs'
-			choco install -y nodejs --version 12.16.3
+			#choco install -y nodejs --version 12.16.3
+			choco install -y nodejs
 			# update session PATH so we can continue
 			$npmpath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split ';' | ? { $_ -match 'nodejs' }
 			$env:PATH = (($env:PATH -split ';') -join ';') + ";$npmpath"
