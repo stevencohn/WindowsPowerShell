@@ -100,12 +100,13 @@ Begin
 			{
 				$0 = $a.Matches.Groups[1].Value
 				Write-Verbose "found branch $0"
+				if ($0 -eq 'main') { return 'origin/main' }
 				return $0
 			}
 		}
 
 		Write-Verbose 'defaulting to main branch'
-		return 'main'
+		return 'origin/main'
 	}
 
 
