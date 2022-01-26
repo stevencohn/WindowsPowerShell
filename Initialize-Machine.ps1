@@ -222,6 +222,11 @@ Begin
 		Set-ItemProperty $0 -Name 'LockedStartLayout' -Type DWord -Value 0
 		# hide Recently Added apps sections from Start menu
 		Set-ItemProperty $0 -Name 'HideRecentlyAddedApps' -Type DWord -Value 1
+
+		# set Details tab as default in Task Manager
+		# 0=Processes 1=Performance 2=AppHistory 3=Startup 4=Users 5=Details 6=Services
+		$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\TaskManager' 
+		Set-ItemProperty $0 -Name 'StartUpTab' -Type DWord -Value 5
 	}
 
 	function EnablePhotoViewer
