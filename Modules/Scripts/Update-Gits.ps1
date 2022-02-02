@@ -57,6 +57,13 @@ Begin
         git fetch origin
         git pull origin $br
 
+        if ($LASTEXITCODE -ne 0)
+        {
+            Write-Host
+            Write-Host "*** failed git pull origin $br" -ForegroundColor Red
+            Write-Host
+        }
+
         Pop-Location
     }
 
