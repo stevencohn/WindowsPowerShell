@@ -73,7 +73,8 @@ Begin
         $a = Get-Content .\.git\config | Select-String -Pattern '^\[branch "(.+)"\]$'
         if ($a.Matches.Success)
         {
-            return $a.Matches.Groups[1].Value
+            # presume last branch is current
+            return $a.Matches.Groups[$a.Matches.Count].Value
         }
 
         return 'main'
