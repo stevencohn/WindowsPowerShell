@@ -255,16 +255,16 @@ Begin
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
 		# .NET Framework 3.5 is required by many apps
-		if ((Get-WindowsOptionalFeature -Online -FeatureName 'NetFx3' | ? { $_.State -eq 'Enabled'}).Count -eq 0)
+		if ((Get-WindowsOptionalFeature -Online -FeatureName 'NetFx4' | ? { $_.State -eq 'Enabled'}).Count -eq 0)
 		{
-			HighTitle '.NET Framework 3.5'
+			HighTitle '.NET Framework 4.8'
 
 			# don't restart but will after Hyper-V finishes stage 0
-			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx3' -NoRestart
+			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx4' -NoRestart
 		}
 		else
 		{
-			Write-Host '.NET Framework 3.5 already installed' -ForegroundColor Green
+			Write-Host '.NET Framework 4.8 already installed' -ForegroundColor Green
 		}
 
 		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
@@ -434,6 +434,8 @@ Begin
 	function InstallGreenfish
 	{
 		[CmdletBinding(HelpURI='manualcmd')] param()
+
+		# http://greenfishsoftware.org/gfie.php
 
 		$0 = 'C:\Program Files (x86)\Greenfish Icon Editor Pro 3.6\gfie.exe'
 		if (!(Test-Path $0))
@@ -797,7 +799,7 @@ Begin
 	{
 		[CmdletBinding(HelpURI='manualcmd')] param()
 
-		$0 = 'C:\Program Files (x86)\Microsoft Visual Studio\2019'
+		$0 = 'C:\Program Files\Microsoft Visual Studio\2022'
 		$pro = Test-Path (Join-Path $0 'Professional\Common7\IDE\devenv.exe')
 		$ent = Test-Path (Join-Path $0 'Enterprise\Common7\IDE\devenv.exe')
 		if (!($pro -or $ent))
@@ -805,11 +807,11 @@ Begin
 			$sku = 'professional'
 			if ($Enterprise) { $sku = 'enterprise' }
 
-			HighTitle "Visual Studio 2019 ($sku)"
+			HighTitle "Visual Studio 2022 ($sku)"
 			Highlight '... This will take a few minutes'
 
 			# download the installer
-			$bits = "vs_$sku`_2019_16.10"
+			$bits = "vs_$sku`_2022_17.0"
 			DownloadBootstrap "$bits`.zip" $env:TEMP
 
 			# run the installer
