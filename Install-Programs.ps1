@@ -777,6 +777,7 @@ Begin
 		Chocolatize 'git'
 		#Chocolatize 'googlechrome'
 		Chocolatize 'greenshot'
+		Chocolatize 'k9s'
 		Chocolatize 'licecap' # live screen capture -> .gif utility
 		Chocolatize 'linqpad' # free version; can add license from LastPass
 		Chocolatize 'mRemoteNG'
