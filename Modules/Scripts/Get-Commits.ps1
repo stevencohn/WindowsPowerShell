@@ -145,7 +145,7 @@ Begin
 	%ar - author date, relative
 	%D  - ref names
 	%s  - subject
-	%G? - show signing signature status
+	%GK - key used to sign commit
 
 	--date-format options: (defaults to local time)
 	https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strftime-wcsftime-strftime-l-wcsftime-l
@@ -165,11 +165,11 @@ Begin
 		else
 		{
 			Write-Host "git log --first-parent $Branch --after $Since " -NoNewline -ForegroundColor DarkGray
-			Write-Host "--date=format-local:'%b %d %H:%M:%S' --pretty=format:""%h %<(15,trunc)%aN %ad %s %G?""" -ForegroundColor DarkGray
+			Write-Host "--date=format-local:'%b %d %H:%M:%S' --pretty=format:""%h %<(15,trunc)%aN %ad %s %GK""" -ForegroundColor DarkGray
 			Write-Host
 
 			git log --first-parent $Branch --after $Since `
-				--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h %<(15,trunc)%aN %ad %s %G?"
+				--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h %<(15,trunc)%aN %ad %s %GK"
 		}
 	}
 
