@@ -294,11 +294,11 @@ Begin
 			default { Write-Host $storyStatus -NoNewline -ForegroundColor Cyan }
 		}
 
-		if ($sig -eq $null -or $sig -eq '') { $sig = 'no-sig' } else { $sig = 'sig-ok' }
+		if ($sig -eq $null -or $sig -eq '') { $sig = ' SIG-MISSING' } else { $sig = '' }
 
 		$desc = $desc.Trim()
 
-		Write-Host "  PR $pr $desc ($sig)" -ForegroundColor $color
+		Write-Host "  PR $pr $desc$sig" -ForegroundColor $color
 	}
 }
 Process
