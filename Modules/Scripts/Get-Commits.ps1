@@ -177,7 +177,7 @@ Begin
 	function ReportCommits
 	{
 		$lines = git log --first-parent $Branch --after $Since `
-			--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h~%<(15,trunc)%aN~%ad~%s~%G?"
+			--date=format-local:'%b %d %H:%M:%S' `--pretty=format:"%h~%<(15,trunc)%aN~%ad~%s~%GK"
 
 		foreach ($line in $lines)
 		{
@@ -294,17 +294,7 @@ Begin
 			default { Write-Host $storyStatus -NoNewline -ForegroundColor Cyan }
 		}
 
-		switch ($sig)
-		{
-			'G' { $sig = 'sig-ok' }      # good valid signature
-			'B' { $sig = 'sig-bad' }     # bad signature
-			'U' { $sig = 'sig-ok?' }     # good signature with unknown validity
-			'X' { $sig = 'sig-expired' } # good signature that has expired
-			'Y' { $sig = 'sig-expkey' }  # good signature made by expried key
-			'R' { $sig = 'sig-revoked' } # good signature made by revoked key
-			'E' { $sig = 'sig-missing' } # cannot be checked, missing
-			'N' { $sig = 'no-sig' }      # no signature
-		}
+		if ($sig -eq $null -or $sig -eq '') { $sig = 'no-sig' } else { $sig = 'sig-ok' }
 
 		$desc = $desc.Trim()
 
