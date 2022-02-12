@@ -96,11 +96,10 @@ Begin
 
         Write-Host 'taking ownership and granting full access'
         takeown /f $termsrv
+        $owner = (Get-Acl $termsrv).Owner
 
-        # ... and grant (/G) full control (:F) to myself:
-        # $owner = (get-acl c:\windows\system32\termsrv.dll).owner
-        # cacls c:\windows\system32\termsrv.dll /G $owner:F
-        cacls $termsrv /G rene:F
+        # /G grant :F full control to $owner myself 
+        cmd /c "icacls $termsrv /Grant $($owner):F /C"
     }
 
 
