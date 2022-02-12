@@ -81,8 +81,8 @@ Begin
     function StopServices
     {
         Write-Host 'stopping services'
-        Stop-Service UmRdpService
-        Stop-Service TermService
+        Stop-Service UmRdpService -Force
+        Stop-Service TermService -Force
     }
 
     function TakeOwnership
