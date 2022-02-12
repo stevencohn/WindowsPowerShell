@@ -69,6 +69,9 @@ For example, this can be used to copy music in an .m3u playlist file to a USB th
 #### `Edit-Hosts`
 Open the hosts file in Notepad.
 
+#### `Enable-MultiRdp` [-MaxConnection m]
+Patch termsrv.dll to allow multiple concurrent RDP connections to this machine
+
 #### `Edit-Playlist` -Replace r [-Path p] [-Type t]
 Replace the path of all items in a playlist file to the current user's MyMusic path.
 
