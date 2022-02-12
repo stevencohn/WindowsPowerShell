@@ -6,6 +6,9 @@ Patch termsrv.dll to allow multiple concurrent RDP connections to this machine
 When patching a virtual machine, this will stop TermService which means you'll get kicked
 off your remote session. The script should continue. You'll need to wait a minute for it
 to patch, restart services, and complete before you can reconnect.
+
+.NOTES
+Ensure that all "normal" users are members of the Remote Desktop user group
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -112,8 +115,8 @@ Begin
     function StartServices
     {
         Write-Host 'starting services'
-        sc start TermService
-        sc start UmRdpService
+        Start-Service TermService
+        Start-Service UmRdpService
     }
 
     function SetGlobalPolicy
