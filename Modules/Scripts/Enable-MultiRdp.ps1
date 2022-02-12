@@ -63,7 +63,7 @@ Begin
         # recreate byte array
         [byte[]] $bytes = -split $text -replace '^', '0x'
 
-        Set-Content $env:TEMP\termsrv.dll.patched -Encoding Byte -Value $bytes
+        Set-Content $env:TEMP\termsrv.dll.patched -Force -Encoding Byte -Value $bytes
 
         Write-Host 'validating patch'
 
@@ -156,7 +156,7 @@ Process
         TakeOwnership
 
         Write-Host 'ovewriting termsrv.dll'
-        Move-Item $env:TEMP\termsrv.dll.patched $termsrv -Force
+        Copy-Item $env:TEMP\termsrv.dll.patched $termsrv -Force
 
         RestoreOwnership
         StartServices
