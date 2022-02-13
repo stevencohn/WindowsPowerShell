@@ -85,7 +85,11 @@ Begin
     {
         Write-Host 'stopping services'
         Stop-Service UmRdpService -Force
-        Stop-Service TermService -Force
+
+        #Stop-Service TermService -Force
+        # termservice gets stuck in Stopping state so let's kill it
+        $pid = gwmi -Class Win32_Service -Filter "Name LIKE 'TermService'" | Select -ExpandProperty ProcessId
+        taskkill /pid $pid /f
     }
 
     function TakeOwnership
