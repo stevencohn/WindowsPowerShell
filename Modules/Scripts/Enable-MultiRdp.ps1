@@ -119,7 +119,7 @@ Begin
     function StartServices
     {
         Write-Host 'starting services'
-        sc.exe config TermService start= manual
+        sc.exe config TermService start= demand
         Start-Service TermService
         Start-Service UmRdpService
     }
