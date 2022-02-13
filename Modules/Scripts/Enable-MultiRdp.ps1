@@ -88,8 +88,8 @@ Begin
 
         #Stop-Service TermService -Force
         # termservice gets stuck in Stopping state so let's kill it
-        $pid = gwmi -Class Win32_Service -Filter "Name LIKE 'TermService'" | Select -ExpandProperty ProcessId
-        taskkill /pid $pid /f
+        $svcid = gwmi -Class Win32_Service -Filter "Name LIKE 'TermService'" | Select -ExpandProperty ProcessId
+        taskkill /pid $svcid /f
     }
 
     function TakeOwnership
