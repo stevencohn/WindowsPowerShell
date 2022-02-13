@@ -86,10 +86,10 @@ Begin
         Write-Host 'stopping services'
         Stop-Service UmRdpService -Force
 
-        #Stop-Service TermService -Force
-        # termservice gets stuck in Stopping state so let's kill it
+        # termservice is harder to stop...
+        sc.exe config TermService start= disabled
         $svcid = gwmi -Class Win32_Service -Filter "Name LIKE 'TermService'" | Select -ExpandProperty ProcessId
-        taskkill /pid $svcid /f
+        taskkill /f /pid $svcid
     }
 
     function TakeOwnership
@@ -119,6 +119,7 @@ Begin
     function StartServices
     {
         Write-Host 'starting services'
+        sc.exe config TermService start= manual
         Start-Service TermService
         Start-Service UmRdpService
     }
