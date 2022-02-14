@@ -3,9 +3,10 @@
 Patch termsrv.dll to allow multiple concurrent RDP connections to this machine
 
 .DESCRIPTION
-When patching a virtual machine, this will stop TermService which means you'll get kicked
-off your remote session. The script should continue. You'll need to wait a minute for it
-to patch, restart services, and complete before you can reconnect.
+When remoted to a machine, this will stop TermService which means you'll get kicked off your
+ remote session. The script should continue. You'll need to wait a minute for it to patch,
+ restart services, and complete before you can reconnect. When patching a local Hyper-V VM,
+ connect via the manager rather than RDP so you won't get disconnected.
 
 .NOTES
 Ensure that all "normal" users are members of the Remote Desktop user group
@@ -95,8 +96,8 @@ Begin
     function TakeOwnership
     {
         # save ACL and owner of termsrv.dll
-        $script:termsrvAcl = Get-Acl $termsrv
-        Write-Host "termsrv.dll owner: $($termsrvAcl.owner))"
+        $script:savedAcl = Get-Acl $termsrv
+        Write-Host "termsrv.dll owner: $($savedAcl.owner))"
 
         Write-Host 'creating termsrv backup'
         Copy-Item $termsrv "$termsrv.backup" -Force
@@ -113,7 +114,7 @@ Begin
     function RestoreOwnership
     {
         Write-Host 'restoring ownership'
-        Set-Acl $termsrv $termsrvAcl
+        Set-Acl $termsrv $savedAcl
     }
 
     function StartServices
@@ -128,7 +129,7 @@ Begin
     {
         Write-Host 'setting Global Policy'
 
-        # Global Policy settings under...
+        # Global Policy settings from gpedit path:
         # Windows Components\Remote Desktop Services\Remote Desktop Session Host\Connections
         $0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services'
 
@@ -136,7 +137,7 @@ Begin
         Set-ItemProperty $0 -Name 'MaxInstanceCount' -Type DWord -Value $MaxConnections
 
         # Restrict Remote Desktop Services users to a single Remote Desktop Services session
-		Set-ItemProperty $0 -Name 'fSingleSessionPerUser' -Type DWord -Value 0
+        Set-ItemProperty $0 -Name 'fSingleSessionPerUser' -Type DWord -Value 0
     }
 
     function EnableRemoteConnections
@@ -144,9 +145,9 @@ Begin
         Write-Verbose 'enabling Remote Desktop w/o Network Level Authentication...'
 
         $0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
-		Set-ItemProperty $0 -Name 'fDenyTSConnections' -Type DWord -Value 0
-		Set-ItemProperty "$0\WinStations\RDP-Tcp" -Name 'UserAuthentication' -Type DWord -Value 0
-		Enable-NetFirewallRule -Name 'RemoteDesktop*'
+        Set-ItemProperty $0 -Name 'fDenyTSConnections' -Type DWord -Value 0
+        Set-ItemProperty "$0\WinStations\RDP-Tcp" -Name 'UserAuthentication' -Type DWord -Value 0
+        Enable-NetFirewallRule -Name 'RemoteDesktop*'
     }
 }
 Process
