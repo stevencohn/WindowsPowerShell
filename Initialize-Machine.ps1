@@ -193,6 +193,9 @@ Begin
 			Rename-Item "HKLM:\SOFTWARE\WOW6432Node\$0\$k" -NewName ":$k"
 		}
 
+		# restore old traditional context menu (delete GUID key to revert to new style)
+		#reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+
 		# restart explorer.exe
 		Stop-Process -Name explorer
 
