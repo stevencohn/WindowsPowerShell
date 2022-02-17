@@ -18,7 +18,14 @@ $yesarg = ''
 if ($yes -or $all) { $yesarg = '-y' }
 
 #choco upgrade $yesarg all --except="'linqpad,linqpad5,linqpad5.install'"
-choco upgrade $yesarg all
+if ($env:WT_SESSION)
+{
+    choco upgrade $yesarg all --except="'microsoft-windows-terminal'"
+}
+else
+{
+    choco upgrade $yesarg all
+}
 
 <#
 param ()
