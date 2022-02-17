@@ -20,6 +20,7 @@ if ($yes -or $all) { $yesarg = '-y' }
 #choco upgrade $yesarg all --except="'linqpad,linqpad5,linqpad5.install'"
 if ($env:WT_SESSION)
 {
+    Write-Host '... running from Windows Terminal (you may need to update that separately)'
     choco upgrade $yesarg all --except="'microsoft-windows-terminal'"
 }
 else
