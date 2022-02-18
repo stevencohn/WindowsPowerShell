@@ -64,8 +64,8 @@ Begin
             git merge origin/main
         }
 
-        git fetch origin
-        git pull origin $br
+        git fetch #origin
+        git pull #origin $br
 
         if ($LASTEXITCODE -ne 0)
         {
