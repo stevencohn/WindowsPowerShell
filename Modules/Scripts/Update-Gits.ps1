@@ -42,7 +42,7 @@ Begin
         $br = $branch
         if (!$Branch)
         {
-            $br = ReadBranch
+            $br = (git symbolic-ref --short HEAD)
         }
 
         $updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")
@@ -75,23 +75,6 @@ Begin
         }
 
         Pop-Location
-    }
-
-
-    function ReadBranch
-    {
-        $a = Get-Content .\.git\config | Select-String -Pattern '^\[branch "(.+)"\]$'
-        if ($a.Matches.Success)
-        {
-            # presume first [branch ...] in the config file is main branch
-            $script:mainBranch = $a.Matches.Groups[1].Value
-
-            # presume last [branch ...] in the config file is currently active branch
-            return $a.Matches.Groups[$a.Matches.Groups.Count - 1].Value
-        }
-
-        $script:mainBranch = 'main'
-        return $mainBranch
     }
 }
 Process

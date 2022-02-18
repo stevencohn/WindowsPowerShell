@@ -71,7 +71,11 @@ Begin
 
 		Push-Location $Project
 
-		if (!$Branch) { $Branch = ReadBranch }
+		if (!$Branch)
+		{
+			# get name of "main" branch from origin/HEAD
+			$Branch = (git branch -a | ? { $_ -match 'origin/HEAD -> (.*)' } | % { $Matches[1] })
+		}
 
 		Write-Host
 		Write-Host "$Project commits to $Branch since $Since" -ForegroundColor Blue
@@ -88,25 +92,6 @@ Begin
 		}
 
 		Pop-Location
-	}
-
-
-	function ReadBranch
-	{
-		if (Test-Path .\.git\config)
-		{
-			$a = Get-Content .\.git\config | Select-String -Pattern '^\[branch "(.+)"\]$'
-			if ($a.Matches.Success)
-			{
-				$0 = $a.Matches.Groups[1].Value
-				Write-Verbose "found branch $0"
-				if ($0 -eq 'main') { return 'origin/main' }
-				return $0
-			}
-		}
-
-		Write-Verbose 'defaulting to main branch'
-		return 'origin/main'
 	}
 
 
