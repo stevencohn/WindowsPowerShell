@@ -61,6 +61,7 @@ Begin
         if ($Merge -and $br -ne $mainBranch)
         {
             Write-Host "... merging main into $br" -ForegroundColor DarkCyan
+            git fetch origin main
             git merge origin/main
         }
 
