@@ -116,6 +116,7 @@ Process
     }
     else
     {
+        Write-Host '*** This installer will require a system reboot'
         Write-Host '*** It is highly recommend that you close Visual Studio, VSCode, and Office apps'
         Read-Host '*** Press Enter to continue'
 
