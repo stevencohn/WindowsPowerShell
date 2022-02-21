@@ -5,6 +5,9 @@ This is bits and pieces of the Install-Programs.ps1 script
 
 .PARAMETER Enterprise
 Install Visual Studio Enterprise; default is to install Professional
+
+.PARAMETER Extensions
+Install general VSIX extenions
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -12,7 +15,7 @@ Install Visual Studio Enterprise; default is to install Professional
 
 param (
 	[switch] $Enterprise,
-    [switch] $VSIX
+    [switch] $Extensions
 )
 
 Begin
@@ -61,7 +64,7 @@ Begin
 			& "$($env:TEMP)\$bits`.exe" --passive --config "$($env:TEMP)\vs_$sku`.vsconfig"
 
 			Write-host '... Please wait for the installation to complete' -Fore Cyan
-            Write-Host '... When complete, rerun this script using the -VSIX parameter' -Fore Cyan
+            Write-Host '... When complete, rerun this script using the -Extensions parameter' -Fore Cyan
 		}
 		else
 		{
@@ -110,7 +113,7 @@ Begin
 }
 Process
 {
-    if ($VSIX)
+    if ($Extensions)
     {
         InstallVSExtensions
     }
