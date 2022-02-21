@@ -61,8 +61,8 @@ Begin
         # get name of "main" branch from origin/HEAD
         $mainBr = (git branch -a | ? { $_ -match 'origin/HEAD -> (.*)' } | % { $Matches[1] })
 
-        if ($br -match '(?:origin/)?(.*)') { $shortBr = $matches[1] } else { $shortBr = $br }
-        if ($mainBr -match '(?:origin/)?(.*)') { $shortMain = $matches[1] } else { $shortMain = $mainBrach }
+        ($br -match '(?:origin/)?(.*)') | out-null ; $shortBr = $matches[1]
+        ($mainBr -match '(?:origin/)?(.*)') | out-null ; $shortMain = $matches[1]
 
         if ($Merge -and ($shortBr -ne $shortMain))
         {
