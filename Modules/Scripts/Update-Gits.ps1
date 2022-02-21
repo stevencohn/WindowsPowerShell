@@ -59,13 +59,16 @@ Begin
         }
 
         # get name of "main" branch from origin/HEAD
-        $mainBranch = (git branch -a | ? { $_ -match 'origin/HEAD -> (.*)' } | % { $Matches[1] })
+        $mainBr = (git branch -a | ? { $_ -match 'origin/HEAD -> (.*)' } | % { $Matches[1] })
 
-        if ($Merge -and $br -ne $mainBranch)
+        if ($br -match '(?:origin/)?(.*)') { $shortBr = $matches[1] } else { $shortBr = $br }
+        if ($mainBr -match '(?:origin/)?(.*)') { $shortMain = $matches[1] } else { $shortMain = $mainBrach }
+
+        if ($Merge -and ($shortBr -ne $shortMain))
         {
-            Write-Host "... merging main into $br" -ForegroundColor DarkCyan
-            git fetch origin main
-            git merge origin/main
+            Write-Host "... merging $mainBr into $br" -ForegroundColor DarkCyan
+            git fetch origin $shortMain
+            git merge $mainBr
         }
 
         git fetch #origin
