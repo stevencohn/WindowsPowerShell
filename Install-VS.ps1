@@ -116,6 +116,9 @@ Process
     }
     else
     {
+        Write-Host '*** It is highly recommend that you close Visual Studio, VSCode, and Office apps'
+        Read-Host '*** Press Enter to continue'
+
         Write-Host '... clearing the %TEMP% folder'
 		Remove-Item -Path "$env:TEMP\*" -Force -Recurse -ErrorAction:SilentlyContinue
 
