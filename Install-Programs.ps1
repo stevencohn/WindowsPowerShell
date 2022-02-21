@@ -838,12 +838,14 @@ Begin
 		$installer = "$root\Common7\IDE\vsixinstaller.exe"
 
 		# TODO: update these versions every now and then...
-		
-		InstallVsix $installer 'EditorGuidelines' 'PaulHarrington/vsextensions/EditorGuidelines/2.2.5/vspackage'
-		InstallVsix $installer 'InstallerProjects' 'VisualStudioClient/vsextensions/MicrosoftVisualStudio2017InstallerProjects/1.0.0/vspackage'
+		# The URIs are retrieved by visiting the page for each on marketplace.visualstudio.com
+		# and copying the URL behind the big green Download button
+
+		InstallVsix $installer 'EditorGuidelines' 'PaulHarrington/vsextensions/EditorGuidelines/2.2.8/vspackage'
+		InstallVsix $installer 'InstallerProjects' 'VisualStudioClient/vsextensions/MicrosoftVisualStudio2022InstallerProjects/2.0.0/vspackage'
 		InstallVsix $installer 'MarkdownEditor' 'MadsKristensen/vsextensions/MarkdownEditor/1.12.253/vspackage'
-		InstallVsix $installer 'SonarLint' 'SonarSource/vsextensions/SonarLintforVisualStudio2019/4.29.0.25125/vspackage'
-		InstallVsix $installer 'SpecFlow' 'TechTalkSpecFlowTeam/vsextensions/SpecFlowForVisualStudio/2019.0.71.42847/vspackage'
+		InstallVsix $installer 'SonarLint' 'SonarSource/vsextensions/SonarLintforVisualStudio2022/5.4.0.42421/vspackage'
+		InstallVsix $installer 'SpecFlow' 'TechTalkSpecFlowTeam/vsextensions/SpecFlowForVisualStudio2022/2022.1.4.21914/vspackage'
 		InstallVsix $installer 'VSColorOutput' 'MikeWard-AnnArbor/vsextensions/VSColorOutput/2.73/vspackage'
 
 		Write-Host
