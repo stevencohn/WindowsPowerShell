@@ -58,6 +58,9 @@ Begin
             git clean -dxf
         }
 
+        # get name of "main" branch from origin/HEAD
+        $mainBranch = (git branch -a | ? { $_ -match 'origin/HEAD -> (.*)' } | % { $Matches[1] })
+
         if ($Merge -and $br -ne $mainBranch)
         {
             Write-Host "... merging main into $br" -ForegroundColor DarkCyan
