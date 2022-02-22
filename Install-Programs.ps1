@@ -832,41 +832,36 @@ Begin
 
 	function InstallVSExtensions
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
 		HighTitle 'Visual Studio Extensions'
+
+		# MS Marketplace no longer allows anonymous downloads so we've packaged our own
+		# https://marketplace.visualstudio.com/items?itemName=PaulHarrington.EditorGuidelines
+		# https://marketplace.visualstudio.com/items?itemName=SonarSource.SonarLintforVisualStudio2022
+		# https://marketplace.visualstudio.com/items?itemName=SonarSource.SonarLintforVisualStudio2022
+		# https://marketplace.visualstudio.com/items?itemName=TechTalkSpecFlowTeam.SpecFlowForVisualStudio2022
+		# https://marketplace.visualstudio.com/items?itemName=MikeWard-AnnArbor.VSColorOutput64
+
+		DownloadBootstrap "vs_extensions_2022.zip" $env:TEMP
+
 		$root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
 		$installer = "$root\Common7\IDE\vsixinstaller.exe"
 
-		# TODO: update these versions every now and then...
-		# The URIs are retrieved by visiting the page for each on marketplace.visualstudio.com
-		# and copying the URL behind the big green Download button
-
-		InstallVsix $installer 'EditorGuidelines' 'PaulHarrington/vsextensions/EditorGuidelines/2.2.8/vspackage'
-		InstallVsix $installer 'InstallerProjects' 'VisualStudioClient/vsextensions/MicrosoftVisualStudio2022InstallerProjects/2.0.0/vspackage'
-		InstallVsix $installer 'MarkdownEditor' 'MadsKristensen/vsextensions/MarkdownEditor/1.12.253/vspackage'
-		InstallVsix $installer 'SonarLint' 'SonarSource/vsextensions/SonarLintforVisualStudio2022/5.4.0.42421/vspackage'
-		InstallVsix $installer 'SpecFlow' 'TechTalkSpecFlowTeam/vsextensions/SpecFlowForVisualStudio2022/2022.1.4.21914/vspackage'
-		InstallVsix $installer 'VSColorOutput' 'MikeWard-AnnArbor/vsextensions/VSColorOutput/2.73/vspackage'
+		InstallVsix $installer 'EditorGuidelines'
+		InstallVsix $installer 'MarkdownEditor'
+		InstallVsix $installer 'SonarLint'
+		InstallVsix $installer 'SpecFlow'
+		InstallVsix $installer 'VSColorOutput'
 
 		Write-Host
-		Write-Host '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS' -ForegroundColor Yellow
+		Write-Host '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS' -Fore Yellow
 	}
 
 
 	function InstallVsix
 	{
-		param($installer, $name, $uri)
+		param($installer, $name)
 		Write-Host "... installing $name extension in the background" -ForegroundColor Yellow
-
-		$url = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/$uri"
 		$vsix = "$($env:TEMP)\$name`.vsix"
-
-		# download package directly from VS Marketplace and install
-		[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
-		$progressPreference = 'silentlyContinue'
-		Invoke-WebRequest $url -OutFile $vsix
-		$progressPreference = 'Continue'
-
 		& $installer /quiet /norepair $vsix
 	}
 
