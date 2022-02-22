@@ -22,9 +22,13 @@ Begin
 {
 	function InstallCurl
 	{
-		if ((Get-Command curl).Source -ne '') { return }
+		if ((get-alias curl -ErrorAction:SilentlyContinue) -ne $null) {
+			Remove-Item alias:curl -ErrorAction:SilentlyContinue
+		}
+
+		if ((Get-Command curl).Source.Contains('curl.exe')) { return }
 		if ((choco list -l 'curl' | Select-string 'curl ').count -gt 0) { return }
-	
+
 		HighTitle 'Installing Curl'
 		choco install -y curl
 	}
