@@ -20,6 +20,15 @@ param (
 
 Begin
 {
+	function InstallCurl
+	{
+		if ((Get-Command curl).Source -ne '') { return }
+		if ((choco list -l 'curl' | Select-string 'curl ').count -gt 0) { return }
+	
+		HighTitle 'Installing Curl'
+		choco install -y curl
+	}
+
 	function DownloadBootstrap
 	{
 		# source=filename, target=folder
@@ -126,6 +135,7 @@ Process
         Write-Host '... clearing the %TEMP% folder'
 		Remove-Item -Path "$env:TEMP\*" -Force -Recurse -ErrorAction:SilentlyContinue
 
+		InstallCurl
         InstallVisualStudio
     }
 }
