@@ -22,7 +22,7 @@ Begin
 {
 	function InstallCurl
 	{
-		if ((get-alias curl -ErrorAction:SilentlyContinue) -ne $null) {
+		if ((Get-Alias curl -ErrorAction:SilentlyContinue) -ne $null) {
 			Remove-Item alias:curl -ErrorAction:SilentlyContinue
 		}
 
