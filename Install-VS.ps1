@@ -15,7 +15,7 @@ Install general VSIX extenions
 
 param (
 	[switch] $Enterprise,
-    [switch] $Extensions
+	[switch] $Extensions
 )
 
 Begin
@@ -39,7 +39,7 @@ Begin
 		Remove-Item $zip -Force -Confirm:$false
 	}
 
-    function Highlight
+	function Highlight
 	{
 		param($text = '', $color = 'Yellow')
 		$text | Write-Host -ForegroundColor Black -BackgroundColor $color
@@ -52,7 +52,7 @@ Begin
 	}
 
 
-    function InstallVisualStudio
+	function InstallVisualStudio
 	{
 		$0 = 'C:\Program Files\Microsoft Visual Studio\2022'
 		$pro = Test-Path (Join-Path $0 'Professional\Common7\IDE\devenv.exe')
@@ -73,7 +73,7 @@ Begin
 			& "$($env:TEMP)\$bits`.exe" --passive --config "$($env:TEMP)\vs_$sku`.vsconfig"
 
 			Write-host '... Please wait for the installation to complete' -Fore Cyan
-            Write-Host '... When complete, rerun this script using the -Extensions parameter' -Fore Cyan
+			Write-Host '... When complete, rerun this script using the -Extensions parameter' -Fore Cyan
 		}
 		else
 		{
@@ -119,20 +119,20 @@ Begin
 }
 Process
 {
-    if ($Extensions)
-    {
-        InstallVSExtensions
-    }
-    else
-    {
-        Write-Host '*** This installer will require a system reboot'
-        Write-Host '*** It is highly recommend that you close Visual Studio, VSCode, and Office apps'
-        Read-Host '*** Press Enter to continue'
+	if ($Extensions)
+	{
+		InstallVSExtensions
+	}
+	else
+	{
+		Write-Host '*** This installer will require a system reboot'
+		Write-Host '*** It is highly recommend that you close Visual Studio, VSCode, and Office apps'
+		Read-Host '*** Press Enter to continue'
 
-        Write-Host '... clearing the %TEMP% folder'
+		Write-Host '... clearing the %TEMP% folder'
 		Remove-Item -Path "$env:TEMP\*" -Force -Recurse -ErrorAction:SilentlyContinue
 
 		InstallCurl
-        InstallVisualStudio
-    }
+		InstallVisualStudio
+	}
 }
