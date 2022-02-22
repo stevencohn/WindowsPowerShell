@@ -7,34 +7,38 @@ a custom "Dark Selenitic" theme for ISE.
 
 This entire repo can be overlayed ontop of your Documents\WindowsPowerShell folder.
 
-```powershell
-Set-Location $env:USERPROFILE\Documents;
-git clone https://github.com/stevencohn/WindowsPowerShell.git
-```
-
-If downloading the repo as a Zip file then you'll need to unblock all files:
-
-```powershell
-Get-ChildItem -Path "${env:USERPROFILE}\Documents\WindowsPowerShell" -Recurse | Unblock-File
-```
-
-To download just the [Initialize-Machine.ps1](#initmach) script:
-
-```powershell
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
-Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/main/Initialize-Machine.ps1' -OutFile C:\Initialize-Machine.ps1
-```
-
-Loosen up the execution policy. Consider signing the scripts and setting the
-execution policy to AllSigned.
+As with all PowerShell scripts, you'll need to loosen up the execution policy on new machines.
 
 ```powershell
 Set-ExecutionPolicy RemoteSigned -Force -Confirm:$false;
 Set-Executionpolicy -Scope CurrentUser -ExecutionPolicy UnRestricted -Force -Confirm:$false
 ```
 
-See also the [Install-Programs.ps1](#instprog) script below.
+Future: _I'll consider signing the scripts and setting the execution policy to AllSigned._
 
+#### Installation options:
+
+This is the best option for keeping up to date using the update-profile command:
+
+```powershell
+Set-Location $env:USERPROFILE\Documents;
+git clone https://github.com/stevencohn/WindowsPowerShell.git
+```
+
+Or to download the repo as a Zip file then you'll need to unblock all files:
+
+```powershell
+Get-ChildItem -Path "${env:USERPROFILE}\Documents\WindowsPowerShell" -Recurse | Unblock-File
+```
+
+Or to download just the [Initialize-Machine.ps1](#initmach) script:
+
+```powershell
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
+Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/main/Initialize-Machine.ps1' -OutFile C:\Initialize-Machine.ps1
+```
+
+See also the [Install-Programs.ps1](#instprog) script below.
 
 ## Commands
 These scripts are located in the Modules\Scripts folder.
