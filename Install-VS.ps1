@@ -105,12 +105,7 @@ Begin
 		InstallVsix $installer 'VSColorOutput'
 
 		Write-Host
-		Write-Host '... waiting for all VSIXInstaller processes to complete; this will take a couple of minutes' -Fore Yellow
-		Write-Host '... ' -NoNewline
-
-		Wait-Process -Name 'VSIXInstaller'
-
-		Write-host '... installation complete'
+		Write-Host '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS' -Fore Yellow
 	}
 
 
