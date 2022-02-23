@@ -101,16 +101,14 @@ Begin
 }
 Process
 {
-    $Host.PrivateData.VerboseForegroundColor = 'DarkGray'
-
     if ($Project)
     {
+        $Host.PrivateData.VerboseForegroundColor = 'DarkGray'
         Update $Project
+        $Host.PrivateData.VerboseForegroundColor = 'Yellow'
     }
     else
     {
         Get-ChildItem | ? { Test-Path (Join-Path $_.FullName '.git') } | Select -ExpandProperty Name | % { Update $_ }
     }
-
-    $Host.PrivateData.VerboseForegroundColor = 'Yellow'
 }
