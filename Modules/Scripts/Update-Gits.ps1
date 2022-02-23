@@ -18,6 +18,9 @@ Perform a hard reset to the tip of the specified Branch
 for each repo before fetch and pull. This is to discard all local changes.
 #>
 
+# CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
+[CmdletBinding(SupportsShouldProcess = $true)]
+
 param (
 	[Parameter(Position=0)] [string] $Project,
 	[Parameter(Position=1)] [string] $Branch,
@@ -43,9 +46,13 @@ Begin
         if (!$Branch)
         {
             $br = (git symbolic-ref --short HEAD)
+            Write-Verbose '... $br = (git symbolic-ref --short HEAD)'
+            Write-Verbose "... `$br > $br"
         }
 
         $updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")
+        Write-Verbose '... $updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")'
+        Write-Verbose "... `$updated > $updated"
 
         Write-Host $divider
         Write-Host "... updating $Project from $br, last updated $updated" -ForegroundColor Blue
@@ -53,13 +60,17 @@ Begin
         if ($Reset)
         {
             # revert uncommitted changes that have been added to the index
+            Write-Verbose "... git reset --hard origin/$br"
             git reset --hard origin/$br
             # revert uncommitted, unindexed changes (f=force, d=recurse, x=uncontrolled)
+            Write-Verbose '... git clean -dxf'
             git clean -dxf
         }
 
         # get name of "main" branch from origin/HEAD
         $mainBr = (git branch -a | ? { $_ -match 'origin/HEAD -> (.*)' } | % { $Matches[1] })
+        Write-Verbose '... $mainBr = (git branch -a | ? { $_ -match ''origin/HEAD -> (.*)'' } | % { $Matches[1] })'
+        Write-Verbose "... `$mainBr > $mainBr"
 
         ($br -match '(?:origin/)?(.*)') | out-null ; $shortBr = $matches[1]
         ($mainBr -match '(?:origin/)?(.*)') | out-null ; $shortMain = $matches[1]
@@ -67,11 +78,15 @@ Begin
         if ($Merge -and ($shortBr -ne $shortMain))
         {
             Write-Host "... merging $mainBr into $br" -ForegroundColor DarkCyan
+            Write-Verbose "... git fetch origin $shortMain"
             git fetch origin $shortMain
+            Write-Verbose "... git merge $mainBr"
             git merge $mainBr
         }
 
+        Write-Verbose '... git fetch'
         git fetch #origin
+        Write-Verbose '... git pull'
         git pull #origin $br
 
         if ($LASTEXITCODE -ne 0)
@@ -86,6 +101,8 @@ Begin
 }
 Process
 {
+    $Host.PrivateData.VerboseForegroundColor = 'DarkGray'
+
     if ($Project)
     {
         Update $Project
@@ -94,4 +111,6 @@ Process
     {
         Get-ChildItem | ? { Test-Path (Join-Path $_.FullName '.git') } | Select -ExpandProperty Name | % { Update $_ }
     }
+
+    $Host.PrivateData.VerboseForegroundColor = 'Yellow'
 }
