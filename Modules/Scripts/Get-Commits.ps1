@@ -30,8 +30,8 @@ A switch to display raw graph git log output
 
 .DESCRIPTION
 Requires two environment variables:
-$env:MERGE_REMOTE of the form https://sub.domain.com without a trailing slash
-$env:MERGE_TOKEN of the form username:token where token is the Jira API token
+$env:GETCOMMITS_REMOTE of the form https://sub.domain.com without a trailing slash
+$env:GETCOMMITS_TOKEN of the form username:token where token is the Jira API token
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -104,17 +104,17 @@ Begin
 			exit
 		}
 
-		if ($env:MERGE_REMOTE -eq $null -or $env:MERGE_TOKEN -eq $null)
+		if ($env:GETCOMMITS_REMOTE -eq $null -or $env:GETCOMMITS_TOKEN -eq $null)
 		{
-			Write-Verbose 'could not determine remote access; set the MERGE_REMOTE and MERGE_TOKEN env variables'
+			Write-Verbose 'could not determine remote access; set the GETCOMMITS_REMOTE and GETCOMMITS_TOKEN env variables'
 			$script:remote = $null
 			return
 		}
 
 		# See https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/
 
-		$script:remote = "$($env:MERGE_REMOTE)/rest/api/3/issue/"
-		$script:token = $env:MERGE_TOKEN
+		$script:remote = "$($env:GETCOMMITS_REMOTE)/rest/api/3/issue/"
+		$script:token = $env:GETCOMMITS_TOKEN
 
 		Write-Verbose "using remote $remote"
 	}
