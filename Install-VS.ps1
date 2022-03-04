@@ -26,7 +26,11 @@ Begin
 			Remove-Item alias:curl -ErrorAction:SilentlyContinue
 		}
 
-		if ((Get-Command curl).Source.Contains('curl.exe')) { return }
+		$cmd = Get-Command curl -ErrorAction:SilentlyContinue
+		if ($cmd -ne $null)
+		{
+			if ($cmd.Source.Contains('curl.exe')) { return }
+		}
 
 		if ((Get-Command choco -ErrorAction:SilentlyContinue) -eq $null)
 		{
