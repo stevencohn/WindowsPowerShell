@@ -30,8 +30,8 @@ A switch to display raw graph git log output
 
 .DESCRIPTION
 Requires two environment variables:
-$env:GETCOMMITS_REMOTE of the form https://sub.domain.com without a trailing slash
-$env:GETCOMMITS_TOKEN of the form username:token where token is the Jira API token
+$env:JIRA_URL of the form https://sub.domain.com without a trailing slash
+$env:JIRA_TOKEN of the form username:token where token is the Jira API token
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -104,17 +104,17 @@ Begin
 			exit
 		}
 
-		if ($env:GETCOMMITS_REMOTE -eq $null -or $env:GETCOMMITS_TOKEN -eq $null)
+		if ($env:JIRA_URL -eq $null -or $env:JIRA_TOKEN -eq $null)
 		{
-			Write-Verbose 'could not determine remote access; set the GETCOMMITS_REMOTE and GETCOMMITS_TOKEN env variables'
+			Write-Verbose 'could not determine remote access; set the JIRA_URL and JIRA_TOKEN env variables'
 			$script:remote = $null
 			return
 		}
 
 		# See https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/
 
-		$script:remote = "$($env:GETCOMMITS_REMOTE)/rest/api/3/issue/"
-		$script:token = $env:GETCOMMITS_TOKEN
+		$script:remote = "$($env:JIRA_URL)/rest/api/3/issue/"
+		$script:token = $env:JIRA_TOKEN
 
 		Write-Verbose "using remote $remote"
 	}
