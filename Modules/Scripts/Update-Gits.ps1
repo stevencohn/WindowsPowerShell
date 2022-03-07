@@ -60,7 +60,9 @@ Begin
         Write-Verbose "`$mainBr > $mainBr"
 
         Write-Host $divider
-        if ($br -eq $mainBr) {
+        $expected = $mainBr
+        if ($expected.StartsWith('origin/')) { $expected = $mainBr.Substring(7) }
+        if ($br -eq $expected) {
             Write-Host "... updating $Project from $br, last updated $updated" -ForegroundColor Blue
         } else {
             Write-Host "... updating $Project from " -ForegroundColor Blue -NoNewline
