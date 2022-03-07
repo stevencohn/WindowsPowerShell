@@ -54,8 +54,19 @@ Begin
         Write-Verbose '$updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")'
         Write-Verbose "`$updated > $updated"
 
+        # get name of "main" branch from origin/HEAD
+        $mainBr = (git branch -a | ? { $_ -match 'origin/HEAD -> (.*)' } | % { $Matches[1] })
+        Write-Verbose '$mainBr = (git branch -a | ? { $_ -match ''origin/HEAD -> (.*)'' } | % { $Matches[1] })'
+        Write-Verbose "`$mainBr > $mainBr"
+
         Write-Host $divider
-        Write-Host "... updating $Project from $br, last updated $updated" -ForegroundColor Blue
+        if ($br -eq $mainBr) {
+            Write-Host "... updating $Project from $br, last updated $updated" -ForegroundColor Blue
+        } else {
+            Write-Host "... updating $Project from " -ForegroundColor Blue
+            Write-Host $br -ForegroundColor DarkYellow
+            Write-Host ", last updated $updated" -ForegroundColor Blue
+        }
 
         if ($Reset)
         {
@@ -66,11 +77,6 @@ Begin
             Write-Verbose 'git clean -dxf'
             git clean -dxf
         }
-
-        # get name of "main" branch from origin/HEAD
-        $mainBr = (git branch -a | ? { $_ -match 'origin/HEAD -> (.*)' } | % { $Matches[1] })
-        Write-Verbose '$mainBr = (git branch -a | ? { $_ -match ''origin/HEAD -> (.*)'' } | % { $Matches[1] })'
-        Write-Verbose "`$mainBr > $mainBr"
 
         ($br -match '(?:origin/)?(.*)') | out-null ; $shortBr = $matches[1]
         ($mainBr -match '(?:origin/)?(.*)') | out-null ; $shortMain = $matches[1]
