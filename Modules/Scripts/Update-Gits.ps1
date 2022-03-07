@@ -63,8 +63,8 @@ Begin
         if ($br -eq $mainBr) {
             Write-Host "... updating $Project from $br, last updated $updated" -ForegroundColor Blue
         } else {
-            Write-Host "... updating $Project from " -ForegroundColor Blue
-            Write-Host $br -ForegroundColor DarkYellow
+            Write-Host "... updating $Project from " -ForegroundColor Blue -NoNewline
+            Write-Host $br -ForegroundColor DarkYellow -NoNewline
             Write-Host ", last updated $updated" -ForegroundColor Blue
         }
 
