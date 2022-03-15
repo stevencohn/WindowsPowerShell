@@ -117,6 +117,10 @@ Process
     }
     else
     {
-        Get-ChildItem | ? { Test-Path (Join-Path $_.FullName '.git') } | Select -ExpandProperty Name | % { Update $_ }
+        Get-ChildItem | `
+            ? { Test-Path (Join-Path $_.FullName '.git') } | `
+            Select -ExpandProperty Name | `
+            ? { $_ -notmatch '-skip' } | `
+            % { Update $_ }
     }
 }
