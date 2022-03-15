@@ -43,7 +43,7 @@ Begin
         if ($Project -match '-skip')
         {
             Write-Host $divider
-            Write-Host "... skipping $Project"
+            Write-Host "... skipping $Project" -ForegroundColor DarkGray
             return
         }
 
