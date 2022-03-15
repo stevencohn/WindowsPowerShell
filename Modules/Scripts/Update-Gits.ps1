@@ -40,6 +40,13 @@ Begin
             [string] $Project
         )
 
+        if ($Project -match '-skip')
+        {
+            Write-Host $divider
+            Write-Host "... skipping $Project"
+            return
+        }
+
         Push-Location $Project
 
         $br = $branch
@@ -120,7 +127,6 @@ Process
         Get-ChildItem | `
             ? { Test-Path (Join-Path $_.FullName '.git') } | `
             Select -ExpandProperty Name | `
-            ? { $_ -notmatch '-skip' } | `
             % { Update $_ }
     }
 }
