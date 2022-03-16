@@ -55,23 +55,20 @@ Begin
         Write-Verbose '$updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")'
         Write-Verbose "`$updated > $updated"
 
-        if ($detached)
+        if ($detached -and !$Branch -and !$Reset)
         {
-            if (!$Branch -and !$Reset)
-            {
-                Write-Host $divider
-                Write-Host "... detached HEAD at $active, last updated $updated" -ForegroundColor DarkGray
-                return
-            }
+            Write-Host $divider
+            Write-Host "... detached HEAD at $active, last updated $updated" -ForegroundColor DarkGray
+            return
+        }
 
-            $br = $Branch
-            if ($Branch) { $br = $mainBr }
+        $br = $Branch
+        if ($Branch) { $br = $mainBr }
 
-            if ($Reset)
-            {
-                Write-Verbose "git checkout $br"
-                git checkout $br
-            }
+        if ($Reset)
+        {
+            Write-Verbose "git checkout $br"
+            git checkout $br
         }
 
         Write-Host $divider
