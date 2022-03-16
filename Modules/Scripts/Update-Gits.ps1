@@ -49,12 +49,25 @@ Begin
 
         Push-Location $Project
 
-        $br = $branch
-        if (!$Branch)
+        GetBranches
+
+        if ($detached)
         {
-            $br = (git symbolic-ref --short HEAD)
-            Write-Verbose '$br = (git symbolic-ref --short HEAD)'
-            Write-Verbose "`$br > $br"
+            if (!$Branch -and !$Reset)
+            {
+                Write-Host $divider
+                Write-Host "... detached HEAD at $active" -ForegroundColor DarkGray
+                return
+            }
+
+            $br = $Branch
+            if ($Branch) { $br = $main }
+
+            if ($Reset)
+            {
+                Write-Verbose "git checkout $br"
+                git checkout $br
+            }
         }
 
         $updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")
@@ -112,6 +125,27 @@ Begin
         }
 
         Pop-Location
+    }
+
+    function GetBranches
+    {
+        $branches = (git branch)
+        $script:active = $branches | ? { $_.startswith('*') } | % { $_.substring(2) }
+        Write-Verbose '$active = git branch'
+        Write-Verbose "`$active > $active"
+
+        $script:detached = ($active -match '\(HEAD detached at ([a-f0-9]+)\)')
+        if ($detached)
+        {
+            # $active will contain the commit hash
+            $script:active = $matches[1]
+
+            if ($branches -contains 'main') { $script:main = 'main' }
+            elseif ($branches -contains 'develop') { $script:main = 'develop' }
+            elseif ($branches -contains 'master') { $script:main = 'master' }
+
+            return
+        }
     }
 }
 Process
