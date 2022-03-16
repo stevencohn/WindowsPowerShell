@@ -63,7 +63,7 @@ Begin
         }
 
         $br = $Branch
-        if ($Branch) { $br = $mainBr }
+        if (!$Branch) { $br = $mainBr }
 
         if ($Reset)
         {
