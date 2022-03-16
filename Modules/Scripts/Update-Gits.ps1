@@ -64,13 +64,7 @@ Begin
 
         $br = $Branch
         if (!$Branch) { $br = $mainBr }
-
-        if ($Reset)
-        {
-            Write-Verbose "git checkout $br"
-            git checkout $br
-            if ($br.StartsWith('origin/')) { $br = $br.Substring(7) }
-        }
+        if ($br.StartsWith('origin/')) { $br = $br.Substring(7) }
 
         Write-Host $divider
         $expected = $mainBr
@@ -85,6 +79,12 @@ Begin
 
         if ($Reset)
         {
+            if ($detached)
+            {
+                Write-Verbose "git checkout $br"
+                git checkout $br
+            }
+
             # revert uncommitted changes that have been added to the index
             Write-Verbose "git reset --hard origin/$br"
             git reset --hard origin/$br
