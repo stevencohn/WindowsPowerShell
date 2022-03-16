@@ -69,6 +69,7 @@ Begin
             else { $br = $active }
         }
         if ($br.StartsWith('origin/')) { $br = $br.Substring(7) }
+        Write-Verbose "`$br > $br"
 
         Write-Host $divider
         $expected = $mainBr
