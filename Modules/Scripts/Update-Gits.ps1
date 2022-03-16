@@ -81,6 +81,7 @@ Begin
         {
             if ($detached)
             {
+                if (!$Branch) { $br = $mainBr }
                 Write-Verbose "git checkout $br"
                 git checkout $br
             }
