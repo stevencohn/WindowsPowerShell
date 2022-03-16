@@ -63,7 +63,11 @@ Begin
         }
 
         $br = $Branch
-        if (!$Branch) { $br = $active }
+        if (!$Branch)
+        {
+            if ($Reset -and $detached) { $br = $mainBr }
+            else { $br = $active }
+        }
         if ($br.StartsWith('origin/')) { $br = $br.Substring(7) }
 
         Write-Host $divider
