@@ -69,6 +69,7 @@ Begin
         {
             Write-Verbose "git checkout $br"
             git checkout $br
+            if ($br.StartsWith('origin/')) { $br = $br.Substring(7) }
         }
 
         Write-Host $divider
