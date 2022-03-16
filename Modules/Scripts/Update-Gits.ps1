@@ -51,17 +51,21 @@ Begin
 
         GetBranches
 
+        $updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")
+        Write-Verbose '$updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")'
+        Write-Verbose "`$updated > $updated"
+
         if ($detached)
         {
             if (!$Branch -and !$Reset)
             {
                 Write-Host $divider
-                Write-Host "... detached HEAD at $active" -ForegroundColor DarkGray
+                Write-Host "... detached HEAD at $active, last updated $updated" -ForegroundColor DarkGray
                 return
             }
 
             $br = $Branch
-            if ($Branch) { $br = $main }
+            if ($Branch) { $br = $mainBr }
 
             if ($Reset)
             {
@@ -69,15 +73,6 @@ Begin
                 git checkout $br
             }
         }
-
-        $updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")
-        Write-Verbose '$updated = (git log -1 --date=format:"%b %d, %Y" --format="%ad")'
-        Write-Verbose "`$updated > $updated"
-
-        # get name of "main" branch from origin/HEAD
-        $mainBr = (git branch -a | ? { $_ -match 'origin/HEAD -> (.*)' } | % { $Matches[1] })
-        Write-Verbose '$mainBr = (git branch -a | ? { $_ -match ''origin/HEAD -> (.*)'' } | % { $Matches[1] })'
-        Write-Verbose "`$mainBr > $mainBr"
 
         Write-Host $divider
         $expected = $mainBr
@@ -134,16 +129,16 @@ Begin
         Write-Verbose '$active = git branch'
         Write-Verbose "`$active > $active"
 
+        # get name of "main" branch from origin/HEAD
+        $script:mainBr = (git branch -a | ? { $_ -match 'origin/HEAD -> (.*)' } | % { $Matches[1] })
+        Write-Verbose '$mainBr = (git branch -a | ? { $_ -match ''origin/HEAD -> (.*)'' } | % { $Matches[1] })'
+        Write-Verbose "`$mainBr > $mainBr"
+
         $script:detached = ($active -match '\(HEAD detached at ([a-f0-9]+)\)')
         if ($detached)
         {
             # $active will contain the commit hash
             $script:active = $matches[1]
-
-            if ($branches -contains 'main') { $script:main = 'main' }
-            elseif ($branches -contains 'develop') { $script:main = 'develop' }
-            elseif ($branches -contains 'master') { $script:main = 'master' }
-
             return
         }
     }
