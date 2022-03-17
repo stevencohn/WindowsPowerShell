@@ -43,7 +43,7 @@ Get-ChildItem env: | sort name | % `
 	{
 		if ($_.Name -eq 'COMPUTERNAME' -or $_.Name -eq 'USERDOMAIN')
 		{
-			Write-Host ($format -f $ename, $evalue) -ForegroundColor Blue				
+			Write-Host ($format -f $ename, $evalue) -ForegroundColor Blue
 		}
 		elseif ($_.Name -match 'APPDATA' -or $_.Name -eq 'ProgramData')
 		{
@@ -52,6 +52,10 @@ Get-ChildItem env: | sort name | % `
 		elseif ($evalue -match "$env:USERNAME(?:\\\w+){0,1}$")
 		{
 			Write-Host ($format -f $ename, $evalue) -ForegroundColor DarkGreen
+		}
+		elseif ($_.Name -match 'AWS_')
+		{
+			Write-Host ($format -f $ename, $evalue) -ForegroundColor DarkYellow
 		}
 		elseif ($_.Name -match 'ConEmu' -or $_.Value.IndexOf('\') -lt 0)
 		{
