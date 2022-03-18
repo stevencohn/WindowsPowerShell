@@ -207,6 +207,7 @@ Begin
 				$a = $parts[3] | Select-String -Pattern "(.+)? \((#[0-9]+)\)$"
 				if ($a.Matches.Success)
 				{
+					# extract and remove PR from descr
 					$desc = $a.Matches.Groups[1]
 					$pr = $a.Matches.Groups[2]
 					ReportCommit $parts[1] $parts[2] $pr $key $desc $parts[4] -ForegroundColor Magenta
