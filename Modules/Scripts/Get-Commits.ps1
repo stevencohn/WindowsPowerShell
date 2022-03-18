@@ -176,50 +176,47 @@ Begin
 				# ReportCommit(author, time, PR, ticket, $MergeCommit)
 				$groups = $a.Matches.Groups
 				ReportCommit $parts[1] $parts[2] $groups[1] $groups[2] $MergeCommit $parts[4]
+				return
 			}
-			else
+
+			# is it a commit... $groups[1]=ticket, $groups[2]=descr, $groups[3]=PR
+			$a = $parts[3] | Select-String -Pattern "(?:fix|feat|[Ff]eature)?[/(]?([A-Z]+[- ][0-9]+)\)?[:-]?\s?(.+)?\s?\((#[0-9]+)\)$"
+			if ($a.Matches.Success)
 			{
-				# is it a commit... $groups[1]=ticket, $groups[2]=descr, $groups[3]=PR
-				$a = $parts[3] | Select-String -Pattern "(?:fix|feat|[Ff]eature)?[/(]?([A-Z]+[- ][0-9]+)\)?[:-]?\s?(.+)?\s?\((#[0-9]+)\)$"
+				# ReportCommit(author, time, PR, ticket, description)
+				$groups = $a.Matches.Groups
+				ReportCommit $parts[1] $parts[2] $groups[3] $groups[1] $groups[2] $parts[4]
+				return
+			}
+
+			# is it dependabot... $groups[1]=desc, $groups[2]=PR
+			$a = $parts[3] | Select-String -Pattern "build\(deps\): (.+)? \((#[0-9]+)\)$"
+			if ($a.Matches.Success)
+			{
+				# ReportCommit(author, time, PR, '-', description)
+				$groups = $a.Matches.Groups
+				ReportCommit $parts[1] $parts[2] $groups[2] '-' $groups[1] $parts[4]
+				return
+			}
+
+			# untagged commit message but can we find a tagged branch name?
+			$b = (git name-rev --name-only --exclude=tags/* $parts[0])
+			if ($b -match '/([A-Za-z]+\-[0-9]+)')
+			{
+				$key = $matches[1]
+				$a = $parts[3] | Select-String -Pattern "\((#[0-9]+)\)$"
 				if ($a.Matches.Success)
 				{
-					# ReportCommit(author, time, PR, ticket, description)
-					$groups = $a.Matches.Groups
-					ReportCommit $parts[1] $parts[2] $groups[3] $groups[1] $groups[2] $parts[4]
-				}
-				else
-				{
-					# is it dependabot... $groups[1]=desc, $groups[2]=PR
-					$a = $parts[3] | Select-String -Pattern "build\(deps\): (.+)? \((#[0-9]+)\)$"
-					if ($a.Matches.Success)
-					{
-						# ReportCommit(author, time, PR, '-', description)
-						$groups = $a.Matches.Groups
-							ReportCommit $parts[1] $parts[2] $groups[2] '-' $groups[1] $parts[4]
-					}
-					else
-					{
-						# untagged commit message but can we find a tagged branch name?
-						$b = (git name-rev --name-only --exclude=tags/* $parts[0])
-						if ($b -match '/([A-Za-z]+\-[0-9]+)')
-						{
-							$key = $matches[1]
-
-							$a = $parts[3] | Select-String -Pattern "\((#[0-9]+)\)$"
-							$pr = $a.Matches.Groups[1]
-
-							ReportCommit $parts[1] $parts[2] $pr $key $parts[3] $parts[4] -ForegroundColor Magenta
-						}
-						else
-						{
-							# no idea what this is so just dump it out
-							#git name-rev --name-only --exclude=tags/* 573104b6
-							Write-Verbose "fallback... from $b"
-							Write-Host $line.Replace('~', ' ') -ForegroundColor Magenta
-						}
-					}
+					$pr = $a.Matches.Groups[1]
+					ReportCommit $parts[1] $parts[2] $pr $key $parts[3] $parts[4] -ForegroundColor Magenta
+					return
 				}
 			}
+
+			# no idea what this is so just dump it out
+			#git name-rev --name-only --exclude=tags/* 573104b6
+			Write-Verbose "fallback... from $b"
+			Write-Host $line.Replace('~', ' ') -ForegroundColor Magenta
 		}
 	}
 
