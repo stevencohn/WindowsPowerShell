@@ -193,9 +193,9 @@ Begin
 					$a = $parts[3] | Select-String -Pattern "build\(deps\): (.+)? \((#[0-9]+)\)$"
 					if ($a.Matches.Success)
 					{
-					# ReportCommit(author, time, PR, '-', description)
-					$groups = $a.Matches.Groups
-						ReportCommit $parts[1] $parts[2] $groups[2] '-' $groups[1] $parts[4]
+						# ReportCommit(author, time, PR, '-', description)
+						$groups = $a.Matches.Groups
+							ReportCommit $parts[1] $parts[2] $groups[2] '-' $groups[1] $parts[4]
 					}
 					else
 					{
@@ -203,7 +203,12 @@ Begin
 						$b = (git name-rev --name-only --exclude=tags/* $parts[0])
 						if ($b -match '/([A-Za-z]+\-[0-9]+)')
 						{
-							ReportCommit $parts[1] $parts[2] '?' $matches[1] $parts[3] $parts[4] -ForegroundColor Magenta
+							$key = $matches[1]
+
+							$a = $parts[3] | Select-String -Pattern "\((#[0-9]+)\)$"
+							$pr = $a.Matches.Groups[1]
+
+							ReportCommit $parts[1] $parts[2] $pr $key $parts[3] $parts[4] -ForegroundColor Magenta
 						}
 						else
 						{
