@@ -199,9 +199,19 @@ Begin
 					}
 					else
 					{
-						# no idea what this is so just dump it out
-						Write-Verbose "fallback..."
-						Write-Host $line.Replace('~', ' ')
+						# untagged commit message but can we find a tagged branch name?
+						$b = (git name-rev --name-only --exclude=tags/* $parts[0])
+						if ($b -match '/([A-Za-z]+\-[0-9]+)')
+						{
+							ReportCommit $parts[1] $parts[2] '?' $matches[1] $parts[3] $parts[4] -ForegroundColor Magenta
+						}
+						else
+						{
+							# no idea what this is so just dump it out
+							#git name-rev --name-only --exclude=tags/* 573104b6
+							Write-Verbose "fallback... from $b"
+							Write-Host $line.Replace('~', ' ') -ForegroundColor Magenta
+						}
 					}
 				}
 			}
@@ -222,6 +232,8 @@ Begin
 
 		if ($ago.Length -lt 15) { $ago = $ago.PadRight(15) }
 
+		if ($desc.Length -gt $sumax) { $desc = $desc.Substring(0, $sumax) + '..' }
+
 		if (-not $key)
 		{
 			Write-Host "$author  $ago  PR $pr $desc"
@@ -240,6 +252,7 @@ Begin
 		$color = 'Gray'
 		if ($desc -eq $MergeCommit) { $color = 'DarkGray' }
 		if ($author.StartsWith('dependabot')) { $color = 'Magenta' }
+		#if ($pr -eq '?') { $color = 'DarkMagenta' }
 
 		$ticket = $tickets[$key]
 		if ($ticket -eq $null)
@@ -282,6 +295,8 @@ Begin
 		if ($sig -eq $null -or $sig -eq '') { $sig = ' SIG-MISSING' } else { $sig = '' }
 
 		$desc = $desc.Trim()
+		$descSig = "$desc$sig"
+		if ($descSig.Length -gt $sumax) { $descSig = $descSig.Substring(0, $sumax) + '..' }
 
 		Write-Host "  PR $pr $desc$sig" -ForegroundColor $color
 	}
@@ -305,6 +320,9 @@ Process
 		Write-Host "*** $Project is not the path to a local repo" -ForegroundColor Yellow
 		return
 	}
+
+	# max width of summary
+	$script:sumax = $host.UI.RawUI.WindowSize.Width - 70
 
 	Report $Project
 }
