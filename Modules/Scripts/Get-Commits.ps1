@@ -176,7 +176,7 @@ Begin
 				# ReportCommit(author, time, PR, ticket, $MergeCommit)
 				$groups = $a.Matches.Groups
 				ReportCommit $parts[1] $parts[2] $groups[1] $groups[2] $MergeCommit $parts[4]
-				return
+				continue
 			}
 
 			# is it a commit... $groups[1]=ticket, $groups[2]=descr, $groups[3]=PR
@@ -186,7 +186,7 @@ Begin
 				# ReportCommit(author, time, PR, ticket, description)
 				$groups = $a.Matches.Groups
 				ReportCommit $parts[1] $parts[2] $groups[3] $groups[1] $groups[2] $parts[4]
-				return
+				continue
 			}
 
 			# is it dependabot... $groups[1]=desc, $groups[2]=PR
@@ -196,7 +196,7 @@ Begin
 				# ReportCommit(author, time, PR, '-', description)
 				$groups = $a.Matches.Groups
 				ReportCommit $parts[1] $parts[2] $groups[2] '-' $groups[1] $parts[4]
-				return
+				continue
 			}
 
 			# untagged commit message but can we find a tagged branch name?
@@ -209,7 +209,7 @@ Begin
 				{
 					$pr = $a.Matches.Groups[1]
 					ReportCommit $parts[1] $parts[2] $pr $key $parts[3] $parts[4] -ForegroundColor Magenta
-					return
+					continue
 				}
 			}
 
