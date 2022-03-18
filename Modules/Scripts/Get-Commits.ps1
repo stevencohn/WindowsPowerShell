@@ -204,11 +204,12 @@ Begin
 			if ($b -match '/([A-Za-z]+\-[0-9]+)')
 			{
 				$key = $matches[1]
-				$a = $parts[3] | Select-String -Pattern "\((#[0-9]+)\)$"
+				$a = $parts[3] | Select-String -Pattern "(.+)? \((#[0-9]+)\)$"
 				if ($a.Matches.Success)
 				{
-					$pr = $a.Matches.Groups[1]
-					ReportCommit $parts[1] $parts[2] $pr $key $parts[3] $parts[4] -ForegroundColor Magenta
+					$desc = $a.Matches.Groups[1]
+					$pr = $a.Matches.Groups[2]
+					ReportCommit $parts[1] $parts[2] $pr $key $desc $parts[4] -ForegroundColor Magenta
 					continue
 				}
 			}
