@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Restart the named process. This can be used to restart application such as Outlook on a nightly
+Restart the named process. This can be used to restart applications such as Outlook on a nightly
 basis. Apps such as this tend to have memory leaks or become unstable over time when dealing with
 huge amounts of data on a very active system.
 

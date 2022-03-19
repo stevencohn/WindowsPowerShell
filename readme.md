@@ -207,7 +207,7 @@ variable substitutions, and moves paths between User and System paths appropriat
 Verbose mode dumps the User and System Paths as stored in the Windows Registry.
 
 #### `Restart-App` -Name [-Command [-Arguments]] [-Register]
-Restart the named process. This can be used to restart application such as Outlook on a nightly
+Restart the named process. This can be used to restart applications such as Outlook on a nightly
 basis. Apps such as this tend to have memory leaks or become unstable over time when dealing with
 huge amounts of data on a very active system.
 
