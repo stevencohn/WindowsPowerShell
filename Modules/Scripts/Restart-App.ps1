@@ -18,6 +18,10 @@ The name of the process to restart.
 .PARAMETER Register
 If specified then register a Task Scheduler entry to run daily at 2am, for example:
 Restart-App Outlook 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE' '/recycle' -register
+
+.PARAMETER GetCommand
+If specified then report the command line of the specified running process. This value can be
+used to specify the Command parameter when registering.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -27,11 +31,29 @@ param (
 	[Parameter(Mandatory = $true)] [string] $Name,
     [string] $Command,
     [string] $Arguments,
-    [switch] $Register
+    [switch] $Register,
+    [switch] $GetCommand
 )
 
 Begin
 {
+    function GetCommandLine
+    {
+        $process = (Get-Process $Name -ErrorAction:SilentlyContinue)
+        if ($process -eq $null)
+        {
+            $script:cmd = $null
+            Write-Host "... process $Name not found"
+        }
+        else
+        {
+            # get the commandline from the process, strip off quotes
+            $cmd = (gwmi win32_process -filter ("ProcessID={0}" -f $process.id)).CommandLine
+            Write-Host "... found process $Name, ID $($process.ID), running $cmd"
+        }
+    }
+
+
     function Shutdown
     {
         $process = (Get-Process $Name -ErrorAction:SilentlyContinue)
@@ -99,6 +121,12 @@ Begin
 }
 Process
 {
+    if ($GetCommand)
+    {
+        GetCommandLine
+        return
+    }
+
     if ($Register)
     {
         if (!$Command)
