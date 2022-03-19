@@ -206,6 +206,11 @@ Clean up the PATH environment variable, removing duplicates, empty values, inval
 variable substitutions, and moves paths between User and System paths appropriately.
 Verbose mode dumps the User and System Paths as stored in the Windows Registry.
 
+#### `Restart-App` -Name [-Command [-Arguments]] [-Register]
+Restart the named process. This can be used to restart application such as Outlook on a nightly
+basis. Apps such as this tend to have memory leaks or become unstable over time when dealing with
+huge amounts of data on a very active system.
+
 #### `Restart-Bluetooth` [-Show]
 Restarts the Bluetooth radio device on the current machine. This is useful when the radio stops
 communicating with a device such as a mouse. The alternative would be to reboot the system.

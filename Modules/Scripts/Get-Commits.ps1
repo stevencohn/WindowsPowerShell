@@ -216,7 +216,6 @@ Begin
 			}
 
 			# no idea what this is so just dump it out
-			#git name-rev --name-only --exclude=tags/* 573104b6
 			Write-Verbose "fallback... from $b"
 			Write-Host $line.Replace('~', ' ') -ForegroundColor Magenta
 		}
