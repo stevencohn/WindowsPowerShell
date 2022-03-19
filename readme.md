@@ -209,7 +209,7 @@ Verbose mode dumps the User and System Paths as stored in the Windows Registry.
 #### `Restart-App` -Name [-Command [-Arguments]] [-Register]
 Restart the named process. This can be used to restart applications such as Outlook on a nightly
 basis. Apps such as this tend to have memory leaks or become unstable over time when dealing with
-huge amounts of data on a very active system.
+huge amounts of data on a very active system. The -Register switch creates a nightly automation task.
 
 #### `Restart-Bluetooth` [-Show]
 Restarts the Bluetooth radio device on the current machine. This is useful when the radio stops
