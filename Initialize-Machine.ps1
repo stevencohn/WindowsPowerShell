@@ -580,6 +580,8 @@ Begin
 
 	function DisableZipFolders
 	{
+		[CmdletBinding(HelpURI='manualcmd')] param()
+
 		Write-Verbose 'disabling default Windows Zip folder Explorer integration'
 
 		# take ownership of all Compressed Folders keys (e.g. replacing with 7-Zip)
