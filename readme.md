@@ -230,6 +230,9 @@ Pins or unpins a target item to the Windows Taskbar (_currently broken!_)
 #### `Set-RegistryOwner` -Hive h -Key k [-Recurse]
 Set full-access ownership of a specified Registry key.
 
+#### `Set-SleepSchedule` (-SleepTime -WakeTime) | (-Clear [-ClearTimers])
+Creates scheduled tasks to sleep and wake the computer at specified times.
+
 #### `Show-ColorizedContent` -Filename f [-ExcludeLineNumbers]
 Type the contents of a PowerShell script with syntax highlighting.
 
