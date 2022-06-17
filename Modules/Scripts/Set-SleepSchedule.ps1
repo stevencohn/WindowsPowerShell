@@ -82,9 +82,13 @@ Begin
 
     function RegisterSleepTask
     {
+        # cannot use command "rundll32.exe 'Powrprof.dll,SetSuspendState Sleep'" because there
+        # appears to be a bug in rundll32 that prevents the computer from waking up so instead
+        # use the PSTools command "PSShutdown.exe -d -t 0"
+
         RegisterTask 'Scheduled Sleep' `
             (New-ScheduledTaskTrigger -Daily -At $SleepTime) `
-		    (New-ScheduledTaskAction -Execute 'rundll32.exe' -Argument 'Powrprof.dll,SetSuspendState Sleep') `
+		    (New-ScheduledTaskAction -Execute 'C:\tools\PSTools\psshutdown.exe' -Argument '-d -t 0') `
             (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries:$false)
     }
 
