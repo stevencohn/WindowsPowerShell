@@ -80,6 +80,27 @@ Begin
         }
     }
 
+    function ClearUnattendedTimeout
+    {
+        # System unattended timeout is a hidden Advanced Power option that can be made visible by
+        # changing its Attribute property from 1 to 2 under 7bc4a2f9-d8fc-4469-b07b-33eb785aaca0
+        # This function will not make that visible but will set each scheme to never sleep
+        # Requires a logout/login or reboot to apply
+        #
+        # Seems this is required when the computer wakes and then you RDP to it, it doesn't
+        # consider the RDP session as "activity" so will interrupt you and go to sleep anyway!
+        # This prevents that.
+        #
+        $root = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings'
+        $transitionsKey = '238C9FA8-0AAD-41ED-83F4-97BE242C8F20'
+        $idleTimeoutKey = '7bc4a2f9-d8fc-4469-b07b-33eb785aaca0'
+        Get-ChildItem "$root\$transitionsKey\$idleTimeoutKey\DefaultPowerSchemeValues" | `
+        foreach {
+            Set-ItemProperty $_.PSPath -Name 'AcSettingIndex' -Type DWord -Value 0
+            Set-ItemProperty $_.PSPath -Name 'DcSettingIndex' -Type DWord -Value 0
+        }
+    }
+
     function RegisterSleepTask
     {
         # cannot use command "rundll32.exe 'Powrprof.dll,SetSuspendState Sleep'" because there
@@ -138,6 +159,8 @@ Process
 
         $settingID = GetWakeTimerSettingID
         GetPowerSchemesIDs | SetWakeTimers -settingID $settingID -abled $Enabled
+
+        ClearUnattendedTimeout
 
         RegisterSleepTask
         RegisterWakeTask
