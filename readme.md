@@ -248,10 +248,15 @@ Start the named VM, optionally restoring the latest snapshot, and waiting
 until the OS provides a stable heartbeat.
 
 #### `Test-Elevated` [-Action a ] [-Warn]
-Determine if the current session is elevated and displays a warning message if not. Can be run without the warning message and simply return a boolean result.
+Determine if the current session is elevated and displays a warning message if not.
+Can be run without the warning message and simply return a boolean result.
 
 #### `Test-RebootPending` [-Report]
 Check the pending reboot status of the local computer.
+
+#### `Update-Environment`
+Refresh the current session environment variables from the Registry by harvesting
+from both the local machine and the current user hives.
 
 #### `Update-Gits` [-Branch b] [-Project p] [-Reset]
 Scan all sub-folders looking for .git directories and fetch/pull each to get latest code.
