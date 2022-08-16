@@ -133,6 +133,9 @@ Determines the most likely candidate for the active Internet-specific network ad
 
 ![alt text](Images/get-network.png "Get-Network Example")
 
+#### `Get-ParentBranch`
+Determine the name of the nearest parent branch of the current branch in the local Git repo.
+
 #### `Get-Path` [-Search s] [-Sort] [-Verbose]
 Display the PATH environment variable as a list of strings rather than a single string and displays the source of each value defined in the Registry: Machine, User, or Process. Verbose mode dumps the User and System Paths as
 stored in the Windows Registry.
