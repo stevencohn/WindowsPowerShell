@@ -207,58 +207,6 @@ Begin
 
 	# Stage 0 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	function InstallHyperV
-	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
-
-		if (!WindowsProEdition) {
-			Write-Host 'Hyper-V cannot be enabled on Windows Home edition' -ForegroundColor Yellow
-			return
-		}
-
-		# ensure Hyper-V
-		if (!(HyperVInstalled))
-		{
-			$progressPreference = 'silentlyContinue'
-			$0 = (Get-ComputerInfo).WindowsProductName
-			$progressPreference = 'Continue'
-
-			if ($0.Contains('Home'))
-			{
-				Write-Warning "Cannot install Hyper-V on $0"
-				return
-			}
-
-			HighTitle 'Hyper-V'
-			Highlight '', '... Reboot will be required after installing Hyper-V', `
-				'... This script will continue automagically after the reboot' 'Cyan'
-
-			Set-Content $stagefile '1' -Force
-			$script:stage = 1
-
-			# prep a logon continuation task
-			$exarg = '-Continue'
-			if ($Extras) { $exarg = "$exarg -Extras" }
-			if ($Enterprise) { $exarg = "$exarg -Enterprise" }
-
-			$trigger = New-ScheduledTaskTrigger -AtLogOn;
-			# note here that the -Command arg string must be wrapped with double-quotes
-			$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-Command ""$PSCommandPath $exarg"""
-			$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest;
-			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal | Out-Null
-
-			Enable-WindowsOptionalFeature -Online -FeatureName containers -All -NoRestart
-			Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
-
-			Restart-Computer -Force
-		}
-		else
-		{
-			$script:stage = 1
-			Write-Host 'Hyper-V already installed' -ForegroundColor Green
-		}
-	}
-
 	function HyperVInstalled
 	{
 		((Get-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online).State -eq 'Enabled')
@@ -274,7 +222,7 @@ Begin
 		{
 			HighTitle '.NET Framework 4.8'
 
-			# don't restart but will after Hyper-V finishes stage 0
+			# don't restart but will after .NET (Core) is installed
 			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx4' -NoRestart
 		}
 		else
@@ -295,12 +243,38 @@ Begin
 		}
 	}
 
+	function ForceStagedReboot
+	{
+		Set-Content $stagefile '1' -Force
+		$script:stage = 1
+
+		# prep a logon continuation task
+		$exarg = '-Continue'
+		if ($Extras) { $exarg = "$exarg -Extras" }
+		if ($Enterprise) { $exarg = "$exarg -Enterprise" }
+
+		$trigger = New-ScheduledTaskTrigger -AtLogOn;
+		# note here that the -Command arg string must be wrapped with double-quotes
+		$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-Command ""$PSCommandPath $exarg"""
+		$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest;
+		Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal | Out-Null
+
+		Restart-Computer -Force
+	}
+
+
 
 	# Stage 1 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function DisableCFG
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
+
+		if (!(HyperVInstalled))
+		{
+			Highlight '... Cannot disable CFG until Hyper-V is installed'
+			return
+		}
 
 		# customize Hyper-V host file locations
 		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
@@ -423,8 +397,7 @@ Begin
 
 		if (!(HyperVInstalled))
 		{
-			Highlight '... Installing Hyper-V prerequisite before Docker Desktop'
-			InstallHyperV
+			Highlight '... Hyper-V must be installed before Docker Desktop'
 			return
 		}
 
@@ -1050,7 +1023,7 @@ Process
 	if ($stage -eq 0)
 	{
 		InstallNetFx
-		InstallHyperV
+		ForceStagedReboot
 	}
 
 	if (Get-ScheduledTask -TaskName $ContinuationName -ErrorAction:silentlycontinue)

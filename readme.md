@@ -304,6 +304,11 @@ Finally, since this updates the PowerShell console colors, you can close and reo
 
 <a name="instprog"></a>
 
+# Install-HyperV.ps1
+Automates the installation of Hyper-V on Windows 11 for either Professional or
+Home editions. The script doesn't require any parameters but will prompt to reboot
+the computer to complete the configuration.
+
 # Install-Programs.ps1
 Automates the installation of applications, development tools, and other utilities.
 All applications, including Visual Studio, install unattended in about 25 minutes.
@@ -324,7 +329,6 @@ automatically and the script picks up where it left off immediately after you lo
 
 Default applications:
 
-   * Hyper-V (_auto-reboots after install and the script continues upon logon_)
    * 7Zip
    * Angular (_specific version_)
    * AWSCli
@@ -351,7 +355,7 @@ Default applications:
 Other applications included when -Extras is specified
 
    * Audacity audio editor
-   * DateInTray (_installed to C:\tools_)
+   * DateInTray (_installed to C:\tools_; Win10 only)
    * Dopamine music player
    * Paint.net
    * TreeSize Free
