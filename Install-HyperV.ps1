@@ -13,23 +13,22 @@ param ()
 
 Begin
 {
+	. $PSScriptRoot\common.ps1
+
 	function CheckPrerequisites
 	{
-        # Elevated?
-        if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()`
-			).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+        if (!(IsElevated))
 		{
 			Write-Host
-			Write-Host '... This script must be run from an elevated console' -ForegroundColor Yellow
-			Write-Host '... Open an administrative PowerShell window and run again' -ForegroundColor Yellow
+			WriteWarn '... This script must be run from an elevated console'
+			WriteWarn '... Open an administrative PowerShell window and run again'
             return $false
 		}
 
-        # Windows 11?
-        if ([int](Get-ItemPropertyValue -path $0 -name CurrentBuild) -ge 22000)
+        if (!(IsWindows11))
         {
             Write-Host
-            Write-Host '... This script only applies to Windows 11' -ForegroundColor Yellow
+            WriteWarn '... This script only applies to Windows 11'
             return $false
         }
 
@@ -45,22 +44,9 @@ Begin
 	}
 
 
-	$proEdition = $null
-	function ProEdition
-	{
-		if ($null -eq $proEdition)
-		{
-			$script:proEdition = (Get-WindowsEdition -online).Edition -eq 'Professional'
-		}
-
-		$proEdition
-	}
-
-
     function AddFeaturePackages
     {
-		'... Patching Home edition with Hyper-V feature packages' | `
-			Write-Host -ForegroundColor Black -BackgroundColor Yellow
+		Highlight '... Patching Home edition with Hyper-V feature packages'
 
 		(Get-ChildItem $env:SystemRoot\servicing\packages\*Hyper-V*.mum).Name | `
             foreach { 
@@ -71,10 +57,9 @@ Begin
 
     function EnableHyperV
 	{
-		'... Enabling Hyper-V; computer will reboot automatically' | `
-			Write-Host -ForegroundColor Black -BackgroundColor Yellow
+		Highlight '... Enabling Hyper-V; computer will reboot automatically'
 
-		if (ProEdition)
+		if (IsWindowsProEdition)
 		{
 			Enable-WindowsOptionalFeature -Online -FeatureName containers -All -NoRestart
 		}
@@ -89,7 +74,7 @@ Process
 		return
 	}
 
-	if (!(ProEdition))
+	if (IsWindowsHomeEdition)
 	{
    		AddFeaturePackages
 	}
