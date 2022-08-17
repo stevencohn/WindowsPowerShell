@@ -93,6 +93,7 @@ function IsElevated
 
 function IsWindows11
 {
+    $0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
     ([int](Get-ItemPropertyValue -path $0 -name CurrentBuild) -ge 22000)
 }
 
