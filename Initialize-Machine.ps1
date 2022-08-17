@@ -52,6 +52,20 @@ Begin
 	# needs to be in ProgramData because we're switching users between stages
 	$stagefile = (Join-Path $env:PROGRAMDATA 'initialize-machine.stage')
 
+	$proEdition = $null
+	function WindowsProEdition
+	{
+		if ($null -eq $proEdition) {
+			$proEdition = (Get-WindowsEdition -online).Edition -eq 'Professional'
+
+			#alternate:
+			# $proEdition = ((systeminfo | where { $_ -match '^OS Name' }) | `
+			# 	select -first 1 | select-string -pattern 'Pro$').Matches.Success
+		}
+
+		$proEdition
+	}
+
 	# Stage 0... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function NewPrimaryUser ()
@@ -270,6 +284,11 @@ Begin
 	function EnableRemoteDesktop
 	{
 		[CmdletBinding(HelpURI='manualcmd')] param()
+
+		if (!WindowsProEdition) {
+			Write-Host 'Remote Desktop cannot be enabled on Windows Home edition' -ForegroundColor Yellow
+			return
+		}
 
 		Write-Verbose 'enabling Remote Desktop w/o Network Level Authentication...'
 		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'

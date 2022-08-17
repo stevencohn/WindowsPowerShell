@@ -66,6 +66,16 @@ Begin
 		return $ok
 	}
 
+	$proEdition = $null
+	function WindowsProEdition
+	{
+		if ($null -eq $proEdition) {
+			$proEdition = (Get-WindowsEdition -online).Edition -eq 'Professional'
+		}
+
+		$proEdition
+	}
+
 
 	function GetCommandList
 	{
@@ -200,6 +210,11 @@ Begin
 	function InstallHyperV
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
+
+		if (!WindowsProEdition) {
+			Write-Host 'Hyper-V cannot be enabled on Windows Home edition' -ForegroundColor Yellow
+			return
+		}
 
 		# ensure Hyper-V
 		if (!(HyperVInstalled))
@@ -585,29 +600,6 @@ Begin
 			Write-Host 's3browser already installed' -ForegroundColor Green
 		}
 	}
-
-	function InstallSourceTree
-	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
-
-		if (UnChocolatized 'sourcetree')
-		{
-			Chocolatize 'sourcetree'
-
-			$reminder = 'SourceTree configuration', `
-				' 0. Log into choose "BitBucket" option and logon Atlassian online', `
-				' 1. Enabled Advanced/"Configure automatic line endings"', `
-				' 2. Do not create an SSH key'
-
-			$script:reminders += ,$reminder
-			Highlight $reminder 'Cyan'
-		}
-		else
-		{
-			Write-Host 'SourceTree already installed' -ForegroundColor Green
-		}
-	}
-
 
 	function InstallSysInternals
 	{
@@ -1081,7 +1073,6 @@ Process
 	InstallAngular
 	InstallVSCode
 	InstallS3Browser
-	#InstallSourceTree
 	InstallSysInternals
 
 	InstallDockerDesktop
