@@ -624,6 +624,25 @@ Begin
 		{
 			Write-Host 'SysInternals already installed' -ForegroundColor Green
 		}
+
+		$target = "$tools\volumouse"
+		if (!(Test-Path $target))
+		{
+			HighTitle 'Volumouse'
+			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
+			DownloadBootstrap 'volumouse-x64.zip' $target
+
+			# add to Startup
+			$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+			$1 = '"C:\tools\volumouse\volumouse.exe" /nodlg'
+			New-ItemProperty -Path $0 -Name '$Volumouse$' -Value $1 -ErrorAction:SilentlyContinue
+
+			& $target\volumouse.exe
+		}
+		else
+		{
+			Write-Host 'Volumouse already installed' -ForegroundColor Green
+		}
 	}
 
 
