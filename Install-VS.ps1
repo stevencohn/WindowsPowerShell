@@ -1,7 +1,15 @@
 <#
 .SYNOPSIS
-Standalone script to install Visual Studio and its extensions.
-This is bits and pieces of the Install-Programs.ps1 script
+Standalone script to install Visual Studio and its extensions
+or VSCode and its extensions.
+
+All parameters are mutually exlusive!
+
+.PARAMETER Code
+Install VSCode; default is to install Visual Studio
+
+.PARAMETER Community
+Install Visual Studio Community; default is to install Professional
 
 .PARAMETER Enterprise
 Install Visual Studio Enterprise; default is to install Professional
@@ -14,87 +22,90 @@ Install general VSIX extenions
 [CmdletBinding(SupportsShouldProcess = $true)]
 
 param (
-	[switch] $Enterprise,
-	[switch] $Extensions
+	[Parameter(ParameterSetName='cd', Mandatory=$false)] [switch] $Code,
+	[Parameter(ParameterSetName='en', Mandatory=$false)] [switch] $Enterprise,
+	[Parameter(ParameterSetName='cm', Mandatory=$false)] [switch] $Community,
+	[Parameter(ParameterSetName='ex', Mandatory=$false)] [switch] $Extensions
 )
 
 Begin
 {
-	function InstallCurl
-	{
-		if ((Get-Alias curl -ErrorAction:SilentlyContinue) -ne $null) {
-			Remove-Item alias:curl -ErrorAction:SilentlyContinue
-		}
+	. $PSScriptRoot\common.ps1
 
-		$cmd = Get-Command curl -ErrorAction:SilentlyContinue
-		if ($cmd -ne $null)
+	$Year = '2022'
+	$Version = '17.3'
+
+
+	function InstallVSCode
+	{
+		if (Chocolatized 'vscode')
 		{
-			if ($cmd.Source.Contains('curl.exe')) { return }
+			WriteOK 'VSCode is already installed'
+			return
 		}
 
-		if ((Get-Command choco -ErrorAction:SilentlyContinue) -eq $null)
+		Chocolatize 'vscode'
+
+		$0 = 'C:\Program Files\Microsoft VS Code\bin'
+		if (Test-Path $0)
 		{
-			HighTitle 'Installing Chocolatey'
-			Set-ExecutionPolicy Bypass -Scope Process -Force
-			Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+			# path will be added to Machine space but it isn't there yet
+			# so temporarily fix path so we can install add-ons
+			$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
+
+			Highlight 'Adding VSCode extensions...'
+			code --install-extension alexkrechik.cucumberautocomplete
+			code --install-extension anseki.vscode-color
+			code --install-extension eg2.tslint
+			code --install-extension ionutvmi.reg
+			code --install-extension mikeburgh.xml-format
+			code --install-extension ms-azuretools.vscode-docker
+			code --install-extension ms-python.python
+			code --install-extension ms-vscode-remote.remote-wsl
+			code --install-extension ms-vscode.csharp
+			code --install-extension ms-vscode.powershell
+			#code --install-extension msjsdiag.debugger-for-chrome
+			code --install-extension jebbs.plantuml
+			code --install-extension sonarlint
+			code --install-extension vscode-icons-team.vscode-icons
+			# Vuln Cost - Security Scanner for VS Code
+			code --install-extension snyk-security.vscode-vuln-cost	
+			# swagger
+			code --install-extension Arjun.swagger-viewer
+			code --install-extension 42Crunch.vscode-openapi
+			code --install-extension mermade.openapi-lint
+			# thunder client is a Postman alternative built into vscode
+			code --install-extension rangav.vscode-thunder-client			
 		}
-
-		if ((choco list -l 'curl' | Select-string 'curl ').count -gt 0) { return }
-
-		HighTitle 'Installing Curl'
-		choco install -y curl
 	}
-
-	function DownloadBootstrap
-	{
-		# source=filename, target=folder
-		param($source, $target)
-		$zip = Join-Path $target $source
-		curl -s "https://raw.githubusercontent.com/stevencohn/bootstraps/main/$source" -o $zip
-		Expand-Archive $zip -DestinationPath $target -Force | Out-Null
-		Remove-Item $zip -Force -Confirm:$false
-	}
-
-	function Highlight
-	{
-		param($text = '', $color = 'Yellow')
-		$text | Write-Host -ForegroundColor Black -BackgroundColor $color
-	}
-
-	function HighTitle
-	{
-		param($title)
-		Highlight '', "---- Installing $title ---------------------------"
-	}
-
-
+	
 	function InstallVisualStudio
 	{
-		$0 = 'C:\Program Files\Microsoft Visual Studio\2022'
+		$0 = "C:\Program Files\Microsoft Visual Studio\$Year"
 		$pro = Test-Path (Join-Path $0 'Professional\Common7\IDE\devenv.exe')
 		$ent = Test-Path (Join-Path $0 'Enterprise\Common7\IDE\devenv.exe')
-		if (!($pro -or $ent))
+		if ($pro -or $ent)
 		{
-			$sku = 'professional'
-			if ($Enterprise) { $sku = 'enterprise' }
-
-			HighTitle "Visual Studio 2022 ($sku)"
-			Highlight '... This will take a few minutes'
-
-			# download the installer
-			$bits = "vs_$sku`_2022_17.0"
-			DownloadBootstrap "$bits`.zip" $env:TEMP
-
-			# run the installer
-			& "$($env:TEMP)\$bits`.exe" --passive --config "$($env:TEMP)\vs_$sku`.vsconfig"
-
-			Write-host '... Please wait for the installation to complete' -Fore Cyan
-			Write-Host '... When complete, rerun this script using the -Extensions parameter' -Fore Cyan
+			WriteOK "Visual Studio $Year is already installed"
+			return
 		}
-		else
-		{
-			Write-Host 'Visual Studio already installed' -ForegroundColor Green
-		}
+
+		$sku = 'professional'
+		if ($Enterprise) { $sku = 'enterprise' }
+		elseif ($Community) { $sku = 'community' }
+
+		HighTitle "Visual Studio $Year ($sku)"
+		Highlight '... This will take a few minutes'
+
+		# download the installer
+		$bits = "vs_$sku`_$Year`_$Version"
+		DownloadBootstrap "$bits`.zip" $env:TEMP
+
+		# run the installer
+		& "$($env:TEMP)\$bits`.exe" --passive --config "$($env:TEMP)\vs_$sku`.vsconfig"
+
+		Write-host '... Please wait for the installation to complete' -Fore Cyan
+		Write-Host '... When complete, rerun this script using the -Extensions parameter' -Fore Cyan
 	}
 
 
@@ -109,7 +120,7 @@ Begin
 		# https://marketplace.visualstudio.com/items?itemName=TechTalkSpecFlowTeam.SpecFlowForVisualStudio2022
 		# https://marketplace.visualstudio.com/items?itemName=MikeWard-AnnArbor.VSColorOutput64
 
-		DownloadBootstrap "vs_extensions_2022.zip" $env:TEMP
+		DownloadBootstrap "vs_extensions_$Year.zip" $env:TEMP
 
 		$root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
 		$installer = "$root\Common7\IDE\vsixinstaller.exe"

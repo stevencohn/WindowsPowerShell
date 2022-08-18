@@ -4,12 +4,50 @@ Library of common functions shared by the Install-foo scripts.
 
 $proEdition = $null
 
+
+function Chocolatize
+{
+    param($name)
+    if (UnChocolatized $name)
+    {
+        HighTitle $name
+        choco install -y $name
+    }
+    else
+    {
+        WriteOK "$name already installed by chocolatey"
+    }
+}
+
+function Chocolatized
+{
+    param($name)
+    ((choco list -l $name | Select-string "$name ").count -gt 0)
+}
+
+function UnChocolatized
+{
+    param($name)
+    ((choco list -l $name | Select-string "$name ").count -eq 0)
+}
+
 function DownloadBootstrap
 {
     # source=filename, target=folder
     param($source, $target)
     $zip = Join-Path $target $source
-    curl -s "https://raw.githubusercontent.com/stevencohn/bootstraps/main/$source" -o $zip
+
+    if ($false) #$env:GITHUB_TOKEN)
+    {
+        curl -s -H "Authorization: token $($env:GITHUB_TOKEN)" `
+            -H 'Accept: application/vnd.github.v3.raw' `
+            -o $zip -L "https://api.github.com/repos/stevencohn/bootstraps/contents/$source`?ref=main"
+    }
+    else
+    {
+        curl -s "https://raw.githubusercontent.com/stevencohn/bootstraps/main/$source" -o $zip
+    }
+
     Expand-Archive $zip -DestinationPath $target -Force | Out-Null
     Remove-Item $zip -Force -Confirm:$false
 }
@@ -112,6 +150,11 @@ function IsWindowsProEdition
     $proEdition
 }
 
+function WriteOK
+{
+    param($text)
+    $text | Write-Host -ForegroundColor Green
+}
 function WriteWarn
 {
     param($text)

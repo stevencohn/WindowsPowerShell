@@ -8,9 +8,6 @@ Invoke a single command from this script; default is to run all.
 .PARAMETER AccessKey
 Optional, sets the AWS access key in configuration 
 
-.PARAMETER Enterprise
-Install Visual Studio Enterprise; default is to install Professional
-
 .PARAMETER Extras
 Installs more than most developers would need or want; this is my personalization.
 
@@ -38,43 +35,18 @@ param (
 	[Parameter(ParameterSetName = 'go', Position = 2)] [string] $SecretKey,
 	[Parameter(ParameterSetName = 'list')] [switch] $ListCommands,
 	[switch] $Extras,
-	[switch] $Enterprise,
 	[Parameter(ParameterSetName = 'continue')] [switch] $Continue
 )
 
 Begin
 {
+	. $PSScriptRoot\common.ps1
+
 	$stage = 0
 	$stagefile = (Join-Path $env:LOCALAPPDATA 'install-programs.stage')
 	$ContinuationName = 'Install-Programs-Continuation'
 	$tools = 'C:\tools'
 	$script:reminders = @(@())
-
-
-	function TestElevated
-	{
-		$ok = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()`
-			).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-
-		if (!$ok)
-		{
-			Write-Host
-			Write-Host '... This script must be run from an elevated console' -ForegroundColor Yellow
-			Write-Host '... Open an administrative PowerShell window and run again' -ForegroundColor Yellow
-		}
-
-		return $ok
-	}
-
-	$proEdition = $null
-	function WindowsProEdition
-	{
-		if ($null -eq $proEdition) {
-			$proEdition = (Get-WindowsEdition -online).Edition -eq 'Professional'
-		}
-
-		$proEdition
-	}
 
 
 	function GetCommandList
@@ -96,28 +68,6 @@ Begin
 		{
 			Write-Host "$command is not a recognized command" -ForegroundColor Yellow
 			Write-Host 'Use -List argument to see all commands' -ForegroundColor DarkYellow
-		}
-	}
-
-
-	function UnChocolatized
-	{
-		param($name)
-		((choco list -l $name | Select-string "$name ").count -eq 0)
-	}
-
-
-	function Chocolatize
-	{
-		param($name)
-		if (UnChocolatized $name)
-		{
-			HighTitle $name
-			choco install -y $name
-		}
-		else
-		{
-			Write-Host "$name already installed by chocolatey" -ForegroundColor Green
 		}
 	}
 
@@ -157,51 +107,6 @@ Begin
 			| Out-File $home\.aws\credentials -Encoding ascii -Force -Confirm:$false
 
 		Write-Verbose 'AWS configured; no need to specify access/secret keys from now on'
-	}
-
-
-	function Download
-	{
-		param($uri, $target)
-		[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
-		Invoke-WebRequest -Uri $uri -OutFile $target
-	}
-
-
-	function DownloadBootstrap
-	{
-		# source=filename, target=folder
-		param($source, $target)
-
-		$zip = Join-Path $target $source
-
-		if ($env:GITHUB_TOKEN)
-		{
-			curl -s -H "Authorization: token $($env:GITHUB_TOKEN)" `
-				-H 'Accept: application/vnd.github.v3.raw' `
-				-o $zip -L "https://api.github.com/repos/stevencohn/bootstraps/contents/$source`?ref=main"
-		}
-		else
-		{
-			curl -s "https://raw.githubusercontent.com/stevencohn/bootstraps/main/$source" -o $zip
-		}
-
-		Expand-Archive $zip -DestinationPath $target -Force | Out-Null
-		Remove-Item $zip -Force -Confirm:$false
-	}
-
-
-	function Highlight
-	{
-		param($text = '', $color = 'Yellow')
-		$text | Write-Host -ForegroundColor Black -BackgroundColor $color
-	}
-
-
-	function HighTitle
-	{
-		param($title)
-		Highlight '', "---- Installing $title ---------------------------"
 	}
 
 
@@ -779,124 +684,6 @@ Begin
 	}
 
 
-	function InstallVisualStudio
-	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
-
-		$0 = 'C:\Program Files\Microsoft Visual Studio\2022'
-		$pro = Test-Path (Join-Path $0 'Professional\Common7\IDE\devenv.exe')
-		$ent = Test-Path (Join-Path $0 'Enterprise\Common7\IDE\devenv.exe')
-		if (!($pro -or $ent))
-		{
-			$sku = 'professional'
-			if ($Enterprise) { $sku = 'enterprise' }
-
-			HighTitle "Visual Studio 2022 ($sku)"
-			Highlight '... This will take a few minutes'
-
-			# download the installer
-			$bits = "vs_$sku`_2022_17.0"
-			DownloadBootstrap "$bits`.zip" $env:TEMP
-
-			# run the installer
-			& "$($env:TEMP)\$bits`.exe" --passive --config "$($env:TEMP)\vs_$sku`.vsconfig"
-
-			$reminder = 'Visual Studio', `
-				' .. When installation is complete, rerun this script using the InstallVSExtensions command'
-
-			$script:reminders += ,$reminder
-			Highlight $reminder 'Cyan'
-		}
-		else
-		{
-			Write-Host 'Visual Studio already installed' -ForegroundColor Green
-		}
-	}
-
-
-	function InstallVSExtensions
-	{
-		HighTitle 'Visual Studio Extensions'
-
-		# MS Marketplace no longer allows anonymous downloads so we've packaged our own
-		# https://marketplace.visualstudio.com/items?itemName=PaulHarrington.EditorGuidelines
-		# https://marketplace.visualstudio.com/items?itemName=SonarSource.SonarLintforVisualStudio2022
-		# https://marketplace.visualstudio.com/items?itemName=SonarSource.SonarLintforVisualStudio2022
-		# https://marketplace.visualstudio.com/items?itemName=TechTalkSpecFlowTeam.SpecFlowForVisualStudio2022
-		# https://marketplace.visualstudio.com/items?itemName=MikeWard-AnnArbor.VSColorOutput64
-
-		DownloadBootstrap "vs_extensions_2022.zip" $env:TEMP
-
-		$root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
-		$installer = "$root\Common7\IDE\vsixinstaller.exe"
-
-		InstallVsix $installer 'EditorGuidelines'
-		InstallVsix $installer 'MarkdownEditor'
-		InstallVsix $installer 'SonarLint'
-		InstallVsix $installer 'SpecFlow'
-		InstallVsix $installer 'VSColorOutput'
-
-		Write-Host
-		Write-Host '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS' -Fore Yellow
-	}
-
-
-	function InstallVsix
-	{
-		param($installer, $name)
-		Write-Host "... installing $name extension in the background" -ForegroundColor Yellow
-		$vsix = "$($env:TEMP)\$name`.vsix"
-		& $installer /quiet /norepair $vsix
-	}
-
-
-	function InstallVSCode
-	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
-
-		if (UnChocolatized 'vscode')
-		{
-			Chocolatize 'vscode'
-
-			# path will be added to Machine space but it isn't there yet
-			# so temporarily fix path so we can install add-ons
-			$0 = 'C:\Program Files\Microsoft VS Code\bin'
-			if (Test-Path $0)
-			{
-				$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
-
-				Highlight 'Adding VSCode extensions...'
-				code --install-extension alexkrechik.cucumberautocomplete
-				code --install-extension anseki.vscode-color
-				code --install-extension eg2.tslint
-				code --install-extension ionutvmi.reg
-				code --install-extension mikeburgh.xml-format
-				code --install-extension ms-azuretools.vscode-docker
-				code --install-extension ms-python.python
-				code --install-extension ms-vscode-remote.remote-wsl
-				code --install-extension ms-vscode.csharp
-				code --install-extension ms-vscode.powershell
-				#code --install-extension msjsdiag.debugger-for-chrome
-				code --install-extension jebbs.plantuml
-				code --install-extension sonarlint
-				code --install-extension vscode-icons-team.vscode-icons
-				# Vuln Cost - Security Scanner for VS Code
-				code --install-extension snyk-security.vscode-vuln-cost	
-				# swagger
-				code --install-extension Arjun.swagger-viewer
-				code --install-extension 42Crunch.vscode-openapi
-				code --install-extension mermade.openapi-lint
-				# thunder client is a Postman alternative built into vscode
-				code --install-extension rangav.vscode-thunder-client			
-			}
-		}
-		else
-		{
-			Write-Host 'VSCode already installed' -ForegroundColor Green
-		}
-	}
-
-
 	# Extras  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function InstallDateInTray
@@ -980,10 +767,10 @@ Process
 	if ($ListCommands)
 	{
 		GetCommandList
-		$ok = TestElevated
+		$ok = IsElevated
 		return
 	}
-	elseif (!(TestElevated))
+	elseif (!(IsElevated))
 	{
 		return
 	}
@@ -1044,7 +831,6 @@ Process
 	InstallAWSCLI
 	InstallNodeJs
 	InstallAngular
-	InstallVSCode
 	InstallS3Browser
 	InstallSysInternals
 
@@ -1065,9 +851,6 @@ Process
 		InstallWiLMa
 		InstallWmiExplorer
 	}
-
-	# may reboot multiple times, so do it last
-	InstallVisualStudio
 
 	if (Test-Path $stagefile)
 	{
