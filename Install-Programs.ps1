@@ -71,6 +71,7 @@ Begin
 		{
 			HighTitle '.NET 6.0 Runtime'
 			choco install -y dotnet
+
 			# patch Process path with dotnet install
 			$env:PATH = (($env:PATH -split ';') -join ';') + ";C:\Program Files\dotnet"
 		}
@@ -482,6 +483,9 @@ Begin
 			npm install -g @angular/cli@latest
 			npm install -g npm-check-updates
 			npm install -g local-web-server
+
+			# patch Process path until shell is restarted
+			$env:PATH = (($env:PATH -split ';') -join ';') + "$($env:APPDATA)\npm"
 		}
 		else
 		{
