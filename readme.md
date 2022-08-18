@@ -273,7 +273,9 @@ and update the content in $home\Documents\WindowsPowerShell.
 
 <a name="initmach"></a>
 
-# [`Initialize-Machine.ps1`](Initialize-Machine.ps1) [-Command c] [-ListCommands] [-RemoveOneDrive] [-RemoveCortana]
+# Setup
+
+#### [`Initialize-Machine.ps1`](Initialize-Machine.ps1) [-Command c] [-ListCommands] [-RemoveOneDrive] [-RemoveCortana]
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
 setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
@@ -292,12 +294,12 @@ appreciate these fantastic new colors.
 
 <a name="instprog"></a>
 
-# [`Install-HyperV.ps1`](Install-HyperV.ps1)
+#### [`Install-HyperV.ps1`](Install-HyperV.ps1)
 Automates the installation of Hyper-V on Windows 11 for either Professional or
 Home editions. The script doesn't require any parameters but will prompt to reboot
 the computer to complete the configuration.
 
-# [`Install-Programs.ps1`](Install-Programs.ps1)
+#### [`Install-Programs.ps1`](Install-Programs.ps1)
 Automates the installation of applications, development tools, and other utilities.
 All applications, including Visual Studio, install unattended in about 25 minutes.
 It's also reentrant, skipping items already installed and installing items missing.
