@@ -158,29 +158,28 @@ function IsWindowsProEdition
     $proEdition
 }
 
-function WriteOK
+function RebootWithContinuation
 {
-    param($text)
-    $text | Write-Host -ForegroundColor Green
-}
-function WriteWarn
-{
-    param($text)
-    $text | Write-Host -ForegroundColor Yellow
-}
+    param([string] $cargs)
 
-
-# staging support
-
-function SetupStaging
-{
-    $script:stage = 0
     $name = ([System.IO.Path]::GetFileNameWithoutExtension(($MyInvocation.ScriptName | split-path -leaf)))
-    $script:stagefile = (Join-Path $env:TEMP "$name.stage")
-    $script:stagetask = "$name-continuation"
+    $name = "$name-continuation"
+
+    # prep a logon continuation task
+    $trigger = New-ScheduledTaskTrigger -AtLogOn;
+    # note here that the -Command arg string must be wrapped with double-quotes
+    $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-Command ""$($MyInvocation.ScriptName) -Continuation $cargs"""
+    $principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest
+    Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $name -Principal $principal | Out-Null
+
+    Write-Host
+	Write-Host '... Press Enter for required reboot ' -BackgroundColor DarkRed -ForegroundColor Black -NoNewline
+    Read-Host
+
+    Restart-Computer -Force
 }
 
-function CleanupStaging
+function CleanupContinuation
 {
     if (Test-Path $stagefile) {
 		Remove-Item $stagefile -Force -Confirm:$false
@@ -191,37 +190,13 @@ function CleanupStaging
 	}
 }
 
-function GetCurrentStage
+function WriteOK
 {
-	if (Test-Path $stagefile) {
-		$script:stage = (Get-Content $stagefile) -as [int]
-		if ($stage -eq $null) { $script:stage = 0 }
-	}
+    param($text)
+    $text | Write-Host -ForegroundColor Green
 }
-
-function SetCurrentStage
+function WriteWarn
 {
-    param($s = $stage + 1)
-    Set-Content $stagefile $s -Force
-    $script:stage = $s
-}
-
-function ForceStagedReboot
-{
-    param([string] $cargs)
-
-    if ($stagetask -eq $null) { SetupStaging }
-
-    # prep a logon continuation task
-    $trigger = New-ScheduledTaskTrigger -AtLogOn;
-    # note here that the -Command arg string must be wrapped with double-quotes
-    $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-Command ""$($MyInvocation.ScriptName) -Continuation $cargs"""
-    $principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest
-    Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $stagetask -Principal $principal | Out-Null
-
-    Write-Host
-	Write-Host '... Press Enter for required reboot ' -BackgroundColor DarkRed -ForegroundColor Black -NoNewline
-    Read-Host
-
-    Restart-Computer -Force
+    param($text)
+    $text | Write-Host -ForegroundColor Yellow
 }

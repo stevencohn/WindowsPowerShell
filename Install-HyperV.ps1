@@ -84,6 +84,7 @@ Process
 {
 	if ($Continuation)
 	{
+		CleanupContinuation
 		CustomizeConfiguration
 		return
 	}
@@ -100,6 +101,5 @@ Process
 
 	EnableHyperV
 
-	SetupStaging
-	ForceStagedReboot
+	RebootWithContinuation
 }

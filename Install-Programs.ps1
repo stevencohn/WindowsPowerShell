@@ -5,46 +5,33 @@ Automates the installation of applications, development tools, and other utiliti
 .PARAMETER Command
 Invoke a single command from this script; default is to run all.
 
-.PARAMETER AccessKey
-Optional, sets the AWS access key in configuration 
+.PARAMETER DeveloperTools
+Installs development tools specific to my needs.
 
 .PARAMETER Extras
-Installs more than most developers would need or want; this is my personalization.
+Installs extra apps and utilities.
 
 .PARAMETER ListCommands
 Show a list of all available commands.
 
-.PARAMETER SecretKey
-Optional, sets the AWS secret key in configuration
-
 .DESCRIPTION
-Recommend running after Initialize-Machine.ps1 and all Windows updates.
-Tested on Windows 10 update 1909.
-
-.EXAMPLE
-.\Install-Programs.ps1 -List
-.\Install-Programs.ps1 -AccessKey <key> -SecretKey <key> -Extras -Enterprise
+Highly recommed that you first run all Windows updates and then run
+Initialize-Machine.ps1 before running this script.
 #>
 
-# CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
-[CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'go')]
-
+[CmdletBinding(SupportsShouldProcess = $true)]
 param (
-	[Parameter(ParameterSetName = 'go', Position = 0)] $command,
-	[Parameter(ParameterSetName = 'go', Position = 1)] [string] $AccessKey,
-	[Parameter(ParameterSetName = 'go', Position = 2)] [string] $SecretKey,
-	[Parameter(ParameterSetName = 'list')] [switch] $ListCommands,
+	[string] $command,
+	[switch] $ListCommands,
+	[switch] $DeveloperTools,
 	[switch] $Extras,
-	[Parameter(ParameterSetName = 'continue')] [switch] $Continue
+	[switch] $Continuation
 )
 
 Begin
 {
 	. $PSScriptRoot\common.ps1
 
-	$stage = 0
-	$stagefile = (Join-Path $env:LOCALAPPDATA 'install-programs.stage')
-	$ContinuationName = 'Install-Programs-Continuation'
 	$tools = 'C:\tools'
 	$script:reminders = @(@())
 
@@ -106,30 +93,12 @@ Begin
 			# don't restart but will after .NET (Core) is installed
 			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx4' -NoRestart
 
-			ForceReboot
+			RebootWithContinuation
 		}
 		else
 		{
 			WriteOK '.NET Framework NetFx4 already installed'
 		}
-	}
-
-	function ForceReboot
-	{
-		Set-Content $stagefile '1' -Force
-		$script:stage = 1
-
-		# prep a logon continuation task
-		$exarg = '-Continue'
-		if ($Extras) { $exarg = "$exarg -Extras" }
-
-		$trigger = New-ScheduledTaskTrigger -AtLogOn;
-		# note here that the -Command arg string must be wrapped with double-quotes
-		$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-Command ""$PSCommandPath $exarg"""
-		$principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest;
-		Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal | Out-Null
-
-		Restart-Computer -Force
 	}
 
 
@@ -520,43 +489,6 @@ Begin
 		}
 	}
 	
-	function TestAwsConfiguration
-	{
-		$ok = (Test-Path $home\.aws\config) -and (Test-Path $home\.aws\credentials)
-
-		if (!$ok)
-		{
-			Write-Host
-			Write-Host '... AWS credentials are required' -ForegroundColor Yellow
-			Write-Host '... Specify the -AccessKey and -SecretKey parameters' -ForegroundColor Yellow
-		}
-
-		return $ok
-	}
-
-
-	function ConfigureAws
-	{
-		param($access, $secret)
-
-		if (!(Test-Path $home\.aws))
-		{
-			New-Item $home\.aws -ItemType Directory -Force -Confirm:$false | Out-Null
-		}
-
-		'[default]', `
-			'region = us-east-1', `
-			'output = json' `
-			| Out-File $home\.aws\config -Encoding ascii -Force -Confirm:$false
-
-		'[default]', `
-			"aws_access_key_id = $access", `
-			"aws_secret_access_key = $secret" `
-			| Out-File $home\.aws\credentials -Encoding ascii -Force -Confirm:$false
-
-		Write-Verbose 'AWS configured; no need to specify access/secret keys from now on'
-	}
-
 
 	function InstallAWSCLI
 	{
@@ -769,6 +701,11 @@ Process
 		return
 	}
 
+	if ($Continuation)
+	{
+		CleanupContinuation
+	}
+
 	# prerequisites... should have been installed by Initialize-Machine
 
 	InstallChocolatey
@@ -811,13 +748,6 @@ Process
 	InstallDotNetSDK
 	InstallNodeJs
 	InstallAngular
-
-	if ($AccessKey -and $SecretKey)
-	{
-		# harmless to do this even before AWS is installed
-		ConfigureAws $AccessKey $SecretKey
-	}
-
 	InstallAWSCli
 	InstallDockerDesktop
 	InstallS3Browser
@@ -845,31 +775,7 @@ Process
 	Chocolatize 'treesizefree'
 	Chocolatize 'vlc'
 
-
-
-	if (Test-Path $stagefile)
-	{
-		$stage = (Get-Content $stagefile) -as [int]
-		if ($stage -eq $null) { $stage = 0 }
-	}
-
-	if ($stage -eq 0)
-	{
-		InstallNetFx
-		ForceStagedReboot
-	}
-
-	if (Get-ScheduledTask -TaskName $ContinuationName -ErrorAction:silentlycontinue)
-	{
-		Unregister-ScheduledTask -TaskName $ContinuationName -Confirm:$false
-	}
-
-	DisableCFG
-
-	if (Test-Path $stagefile)
-	{
-		Remove-Item $stagefile -Force -Confirm:$false
-	}
+	# done...
 
 	$reminder = 'Consider these manually installed apps:', `
 		' - AVG Antivirus', `
