@@ -37,14 +37,17 @@ The script is re-entrant so can be run multiple times without a problem.
 You can then delete C:\common.ps1 and C:\Initialize-Machine.ps1 since they exist in the
 Documents\WindowsPowerShell folder too.
 
-If you already have Git installed, you can download the repo directly to Documents\WindowsPowerShell:
+#### Alternatives
+
+Initialize-Machine downloads the repo to Documents\WindowsPowerShell. If you already have Git
+installed and would prefer to manually download the repo and run Initialize-Machine from there:
 
 ```powershell
 Set-Location $home\Documents;
 git clone https://github.com/stevencohn/WindowsPowerShell.git
 ```
 
-If you download the repo as a Zip file, you'll need to unblock all files after unzipping:
+Or if you download the repo as a Zip file, you'll need to unblock all files after unzipping:
 
 ```powershell
 Get-ChildItem -Path "$home\Documents\WindowsPowerShell" -Recurse | Unblock-File
