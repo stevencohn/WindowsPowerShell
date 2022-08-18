@@ -755,7 +755,6 @@ Process
 		InstallDockerDesktop
 		InstallS3Browser
 
-		Chocolatize 'dotnet-sdk'
 		Chocolatize 'k9s'
 		Chocolatize 'linqpad'
 		Chocolatize 'nuget.commandline'
