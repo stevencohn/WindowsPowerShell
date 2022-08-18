@@ -34,8 +34,12 @@ Then execute Initialize-Machine:
 
 The script is re-entrant so can be run multiple times without a problem.
 
-You can then delete C:\common.ps1 and C:\Initialize-Machine.ps1 since they exist in the
-Documents\WindowsPowerShell folder too.
+You can then delete these files since they exist in the Documents\WindowsPowerShell folder too:
+
+```powershell
+rm C:\common.ps1 -Force;
+rm C:\Initialize-Machine.ps1 -Force
+```
 
 #### Alternatives
 
