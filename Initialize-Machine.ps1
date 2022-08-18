@@ -150,6 +150,7 @@ Begin
 		# set Dark mode
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize'
 		New-ItemProperty $0 -Name 'AppsUseLightTheme' -Value 0 -Type dword -Force | Out-Null
+		New-ItemProperty $0 -Name 'SystemUsesLightTheme' -Value 0 -Type dword -Force | Out-Null
 
 		# set accent color
 		$0 = 'HKCU:\Software\Microsoft\Windows\DWM'
@@ -323,8 +324,8 @@ Begin
 		# DisableWidgets
 		if (IsWindows11)
 		{
-			$0 = 'HKCU:\SOFTWARE\\Microsoft\Windows\CurrentVersion\Dsh'
-			if (Test-Path $0) { Set-ItemProperty $0 -Name 'IsPrelaunchEnabled' -Type DWord -Value 0 }
+			$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+			if (Test-Path $0) { Set-ItemProperty $0 -Name 'TaskbarDa' -Type DWord -Value 0 }
 		}
 
 		# DisableCortana
