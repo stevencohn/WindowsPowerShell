@@ -540,7 +540,7 @@ Begin
 
 		ConfigureTerminalSettings
 
-		if (!$Win11)
+		if (!(IsWindows11))
 		{
 			ConfigureTerminalShortcut
 		}
@@ -775,8 +775,6 @@ Process
 		return
 	}
 
-	$script:Win11 = [int](get-itempropertyvalue -path $0 -name CurrentBuild) -ge 22000
-
 	if ($AccessKey -and $SecretKey)
 	{
 		# harmless to do this even before AWS is installed
@@ -822,7 +820,9 @@ Process
 
 	InstallThings
 
-	if (!$Win11) { InstallTerminal }
+	if (!(IsWindows11)) {
+		InstallTerminal
+	}
 
 	InstallMacrium
 
@@ -846,7 +846,9 @@ Process
 		Chocolatize 'treesizefree'
 		Chocolatize 'vlc'
 
-		if (!$Win11) { InstallDateInTray }
+		if (!(IsWindows11)) {
+			InstallDateInTray
+		}
 
 		InstallWiLMa
 		InstallWmiExplorer
