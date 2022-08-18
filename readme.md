@@ -46,61 +46,61 @@ These scripts are located in the Modules\Scripts folder.
 #### [`Clear-Events`](Modules/Scripts/Clear-Events.ps1) [-Quiet]
 Clear all events from the Windows Event Log.
 
-#### `Clear-Temp` [-Quiet]
+#### [`Clear-Temp`](Modules/Scripts/Clear-Temp.ps1) [-Quiet]
 Clear the contents of TEMP, Windows\TEMP, and LocalAppData\TEMP.
 
-#### `ConvertFrom-BinHex` -Hex v -Unicode
+#### [`ConvertFrom-BinHex`](Modules/Scripts/ConvertFrom-BinHex.ps1) -Hex v -Unicode
 Convert a BinHex encoded string back to its original string value.
 
-#### `ConvertFrom-Hex` -Hex v
+#### [`ConvertFrom-Hex`](Modules/Scripts/ConvertFrom-Hex.ps1) -Hex v
 Convert a Hex string into an integer value. If the string contains six
 or eight characters then it is also interpreted as an ARGB value and each
 component part is displayed.
 
-#### `ConvertTo-Hex` -R r [-G g] [-B b]
+#### [`ConvertTo-Hex`](Modules/Scripts/ConvertTo-Hex.ps1) -R r [-G g] [-B b]
 Convert integer values to a Hex string. If one integer is specified then it is converted. If three integers are specified then they are assumed to be RGB values and combined into a single Hex string.
 
-#### `ConvertTo-mp3` -InputPath p [-Bitrate r] [-FullQuality] [-Info] [-Yes]
+#### [`ConvertTo-mp3`](Modules/Scripts/ConvertTo-mp3.ps1) -InputPath p [-Bitrate r] [-FullQuality] [-Info] [-Yes]
 Primarily used to convert .m4a audio files to .mp3
 
-#### `Copy-Console` [-OutFile f] [-All] [-Rtf] [-Trim]
+#### [`Copy-Console`](Modules/Scripts/Copy-Console.ps1) [-OutFile f] [-All] [-Rtf] [-Trim]
 Copy the contents of the Powershell console window preserving color. Can be sent to an out file or pasted into Word or OneNote.
 
-#### `Copy-Playlist` -Playlist p -Target t -WhatIf
+#### [`Copy-Playlist`](Modules/Scripts/Copy-Playlist.ps1) -Playlist p -Target t -WhatIf
 Copies all music files referenced by the given playlist to the specified location.
 For example, this can be used to copy music in an .m3u playlist file to a USB thumbdrive.
 
-#### `Edit-Hosts`
+#### [`Edit-Hosts`](Modules/Scripts/Edit-Hosts.ps1)
 Open the hosts file in Notepad.
 
-#### `Enable-MultiRdp` [-MaxConnection m]
+#### [`Enable-MultiRdp`](Modules/Scripts/Enable-MultiRdp.ps1) [-MaxConnection m]
 Patch termsrv.dll to allow multiple concurrent RDP connections to this machine
 
-#### `Edit-Playlist` -Replace r [-Path p] [-Type t]
+#### [`Edit-Playlist`](Modules/Scripts/Edit-Playlist.ps1) -Replace r [-Path p] [-Type t]
 Replace the path of all items in a playlist file to the current user's MyMusic path.
 
-#### `Edit-PSProfile`
+#### [`Edit-PSProfile`](Modules/Scripts/Edit-PSProfile.ps1)
 Run VSCode with ~Documents\WindowsPowerShell as root folder. Aliased to `ep`
 
-#### `Enable-PersonalOneDrive`
+#### [`Enable-PersonalOneDrive`](Modules/Scripts/Enable-PersonalOneDrive.ps1)
 Enable Personal OneDrive sync when both Business and Personal accounts are registered
 on the local machine. Will indicate when either is account not available.
 
-#### `Enable-TrustedRemoting`
+#### [`Enable-TrustedRemoting`](Modules/Scripts/Enable-TrustedRemoting.ps1)
 Enable PowerShell remoting and trusted hosts for the current machine,
 typically run on a VM that will be used for automated tasks such as CI/CD.
 
-#### `Get-Account` -Username u [-Domain d] [-SID]
+#### [`Get-Account`](Modules/Scripts/Get-Account.ps1) -Username u [-Domain d] [-SID]
 Report the account information for the given username and optionally a specified domain.
 
 ![alt text](Images/get-account.png "Get-Account Example")
 
-#### `Get-ChildItemColorized` -Dir d [-la]
+#### [`Get-ChildItemColorized`](Modules/Scripts/Get-ChildItemColorized.ps1) -Dir d [-la]
 Display a colorized directory listing along with total size. Aliased to `ls`
 
 ![alt text](Images/get-childitemcolorized.png "Get-ChildItemColorized Example")
 
-#### `Get-Colors` [-All] [-Cmd] [-PS] [-ConEmu] [-Script]
+#### [`Get-Colors`](Modules/Scripts/Get-Colors.ps1) [-All] [-Cmd] [-PS] [-ConEmu] [-Script]
 Display the console colors for Command console, PowerShell console, and ConEmu consoles.
 
 ![alt text](Images/get-colors.png "Get-Colors Example")
