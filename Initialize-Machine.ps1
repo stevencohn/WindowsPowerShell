@@ -8,10 +8,10 @@ Invoke a single command from this script; default is to run all
 .PARAMETER ListCommands
 Show a list of all available commands
 
-.PARAMETER RemoveCortana
+.PARAMETER DisableCortana
 Disable Cortana advanced search support which uses excessive CPU.
 
-.PARAMETER RemoveOneDrive
+.PARAMETER DisableOneDrive
 Remove OneDrive support; default is to keep OneDrive.
 #>
 
@@ -20,8 +20,8 @@ Remove OneDrive support; default is to keep OneDrive.
 
 param (
 	[parameter(Position=0)] $command,
-	[switch] $RemoveOneDrive,
-	[switch] $RemoveCortana,
+	[switch] $DisableOneDrive,
+	[switch] $DisableCortana,
 	[switch] $ListCommands
 )
 
@@ -49,6 +49,8 @@ Begin
 
 	function ScheduleTempCleanup
 	{
+		[CmdletBinding(HelpURI='cmd')] param()
+
 		# purge the current user's TEMP folder every morning at 5am
 		$trigger = New-ScheduledTaskTrigger -Daily -At 5am;
 		$action = New-ScheduledTaskAction -Execute "powershell.exe" `
@@ -84,7 +86,7 @@ Begin
 
 		$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 
-		if (-not $Win11)
+		if (!(IsWindows11))
 		{
 			# taskbar small buttons
 			Set-ItemProperty $0 -Name 'TaskbarSmallIcons' -Value 1 -Type DWord
@@ -316,7 +318,7 @@ Begin
 		Set-ItemProperty $0 -Name 'CortanaConsent' -Type DWord -Value 0
 
 		# DisableWidgets
-		if ($Win11)
+		if (IsWindows11)
 		{
 			$0 = 'HKCU:\SOFTWARE\\Microsoft\Windows\CurrentVersion\Dsh'
 			if (Test-Path $0) { Set-ItemProperty $0 -Name 'IsPrelaunchEnabled' -Type DWord -Value 0 }
@@ -339,7 +341,7 @@ Begin
 		Set-ItemProperty $0 -Name 'AllowCortana' -Type DWord -Value 0
 
 		# Block Cortana SearchUI (uses excessive CPU)
-		if ($RemoveCortana)
+		if ($DisableCortana)
 		{
 			$0 = 'C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy'
 			if (Test-Path "$0\SearchUI.exe")
@@ -442,7 +444,7 @@ Begin
 		#>
 	}
 
-	function RemoveOneDrive
+	function DisableOneDrive
 	{
 		[CmdletBinding(HelpURI='cmd')] param()
 
@@ -609,14 +611,6 @@ Begin
 	}
 
 
-	function EnsureHKCRDrive
-	{
-		if (!(Test-Path 'HKCR:'))
-		{
-			New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT -Scope global | Out-Null
-		}
-	}
-
 	function GetCommandList
 	{
 		Get-ChildItem function:\ | Where HelpUri -match 'cmd' | select -expand Name | sort
@@ -648,10 +642,6 @@ Process
 		return
 	}
 
-	# running Windows 11?
-	$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
-	$script:Win11 = [int](get-itempropertyvalue -path $0 -name CurrentBuild) -ge 22000
-	
 	# choco, git, 7zip
 	InstallTools
 
@@ -669,8 +659,8 @@ Process
 	SecurePagefile
 	ScheduleTempCleanup
 
-	if ($RemoveOneDrive) {
-		RemoveOneDrive
+	if ($DisableOneDrive) {
+		DisableOneDrive
 	}
 
 	# requires powershell profile scripts

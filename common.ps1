@@ -52,6 +52,14 @@ function DownloadBootstrap
     Remove-Item $zip -Force -Confirm:$false
 }
 
+function EnsureHKCRDrive
+{
+    if (!(Test-Path 'HKCR:'))
+    {
+        New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT -Scope global | Out-Null
+    }
+}
+
 function Highlight
 {
     param($text = '', $color = 'Yellow')
