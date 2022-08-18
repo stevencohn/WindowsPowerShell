@@ -65,6 +65,9 @@ Begin
 		}
 
 		Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
+
+		# customize Hyper-V host file locations
+		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
 	}
 }
 Process

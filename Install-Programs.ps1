@@ -72,83 +72,49 @@ Begin
 	}
 
 
-	function TestAwsConfiguration
-	{
-		$ok = (Test-Path $home\.aws\config) -and (Test-Path $home\.aws\credentials)
+	#==============================================================================================
+	# BASE
 
-		if (!$ok)
+	function InstallDotNetRuntime
+	{
+		[CmdletBinding(HelpURI = 'cmd')] param()
+
+		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
+			((dotnet --list-runtimes | where { $_ -match '^6.0.' }).Count -eq 0))
 		{
-			Write-Host
-			Write-Host '... AWS credentials are required' -ForegroundColor Yellow
-			Write-Host '... Specify the -AccessKey and -SecretKey parameters' -ForegroundColor Yellow
+			HighTitle '.NET 6.0 Runtime'
+			choco install -y dotnet
+			# patch Process path with dotnet install
+			$env:PATH = (($env:PATH -split ';') -join ';') + ";C:\Program Files\dotnet"
 		}
-
-		return $ok
-	}
-
-
-	function ConfigureAws
-	{
-		param($access, $secret)
-
-		if (!(Test-Path $home\.aws))
+		else
 		{
-			New-Item $home\.aws -ItemType Directory -Force -Confirm:$false | Out-Null
+			WriteOK '.NET 6.0 Runtime already installed'
 		}
-
-		'[default]', `
-			'region = us-east-1', `
-			'output = json' `
-			| Out-File $home\.aws\config -Encoding ascii -Force -Confirm:$false
-
-		'[default]', `
-			"aws_access_key_id = $access", `
-			"aws_secret_access_key = $secret" `
-			| Out-File $home\.aws\credentials -Encoding ascii -Force -Confirm:$false
-
-		Write-Verbose 'AWS configured; no need to specify access/secret keys from now on'
 	}
 
-
-	# Stage 0 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	function HyperVInstalled
-	{
-		((Get-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online).State -eq 'Enabled')
-	}
-
-
-	function InstallNetFx
+	function InstallDotNetFramework
 	{
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		# .NET Framework is required by many apps
-		if ((Get-WindowsOptionalFeature -Online -FeatureName 'NetFx4' | ? { $_.State -eq 'Enabled'}).Count -eq 0)
+		if ((Get-WindowsOptionalFeature -Online -FeatureName 'NetFx4' | `
+			where { $_.State -eq 'Enabled'}).Count -eq 0)
 		{
 			HighTitle '.NET Framework NetFx4'
 
 			# don't restart but will after .NET (Core) is installed
 			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx4' -NoRestart
+
+			ForceReboot
 		}
 		else
 		{
 			WriteOK '.NET Framework NetFx4 already installed'
 		}
-
-		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
-			((dotnet --list-runtimes | ? { $_ -match '^6.0.' }).Count -eq 0))
-		{
-			# currently required for our apps, may change
-			HighTitle '.NET 6.0'
-			choco install -y dotnet
-		}
-		else
-		{
-			WriteOK '.NET 6.0 already installed'
-		}
 	}
 
-	function ForceStagedReboot
+	function ForceReboot
 	{
 		Set-Content $stagefile '1' -Force
 		$script:stage = 1
@@ -156,7 +122,6 @@ Begin
 		# prep a logon continuation task
 		$exarg = '-Continue'
 		if ($Extras) { $exarg = "$exarg -Extras" }
-		if ($Enterprise) { $exarg = "$exarg -Enterprise" }
 
 		$trigger = New-ScheduledTaskTrigger -AtLogOn;
 		# note here that the -Command arg string must be wrapped with double-quotes
@@ -165,115 +130,6 @@ Begin
 		Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $ContinuationName -Principal $principal | Out-Null
 
 		Restart-Computer -Force
-	}
-
-
-
-	# Stage 1 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	function DisableCFG
-	{
-		[CmdletBinding(HelpURI = 'cmd')] param()
-
-		if (!(HyperVInstalled))
-		{
-			Highlight '... Cannot disable CFG until Hyper-V is installed'
-			return
-		}
-
-		# customize Hyper-V host file locations
-		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
-
-		<#
-		Following is from online to troubleshoot startup errors:
-		1, Open "Window Security"
-		2, Open "App & Browser control"
-		3, Click "Exploit protection settings" at the bottom
-		4, Switch to "Program settings" tab
-		5, Locate "C:\WINDOWS\System32\vmcompute.exe" in the list and expand it
-		6, Click "Edit"
-		7, Scroll down to "Code flow guard (CFG)" and uncheck "Override system settings"
-		8, Start vmcompute from powershell "net start vmcompute"
-		#>
-
-		$0 = 'C:\WINDOWS\System32\vmcompute.exe'
-		if ((Get-ProcessMitigation -Name $0).CFG.Enable -eq 'ON')
-		{
-			# disable Code Flow Guard (CFG) for vmcompute service
-			Set-ProcessMitigation -Name $0 -Disable CFG
-			Set-ProcessMitigation -Name $0 -Disable StrictCFG
-			# restart service
-			net stop vmcompute
-			net start vmcompute
-		}
-	}
-
-
-	function InstallAngular
-	{
-		[CmdletBinding(HelpURI = 'cmd')] param()
-		if ((Get-Command ng -ErrorAction:SilentlyContinue) -eq $null)
-		{
-			HighTitle 'angular'
-			npm install -g @angular/cli@latest
-			npm install -g npm-check-updates
-			npm install -g local-web-server
-		}
-		else
-		{
-			WriteOK 'Angular already installed'
-		}
-	}
-
-
-	function InstallAWSCLI
-	{
-		[CmdletBinding(HelpURI = 'cmd')] param()
-
-		if ((Get-Command aws -ErrorAction:SilentlyContinue) -ne $null)
-		{
-			return
-		}
-
-		$0 = 'C:\Program Files\Amazon\AWSCLIV2'
-		if (!(Test-Path $0))
-		{
-			# ensure V2.x of awscli is available on chocolatey.org
-			if ((choco list awscli -limit-output | select-string 'awscli\|2' | measure).count -gt 0)
-			{
-				Chocolatize 'awscli'
-
-				# alternatively...
-				#msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
-			}
-			else
-			{
-				HighTitle 'awscli (direct)'
-
-				# download package directly and install
-				[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
-				$msi = "$env:TEMP\awscliv2.msi"
-				$progressPreference = 'silentlyContinue'
-				Invoke-WebRequest 'https://awscli.amazonaws.com/AWSCLIV2.msi' -OutFile $msi
-				$progressPreference = 'Continue'
-				if (Test-Path $msi)
-				{
-					& $msi /quiet
-				}
-			}
-		}
-
-		# path will be added to Machine space when installed so
-		# fix Process path so we can continue to install add-ons
-		if ((Get-Command aws -ErrorAction:SilentlyContinue) -eq $null)
-		{
-			$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
-		}
-
-		if ((Get-Command aws -ErrorAction:SilentlyContinue) -ne $null)
-		{
-			Highlight 'aws command verified' 'Cyan'
-		}
 	}
 
 
@@ -292,59 +148,6 @@ Begin
 		else
 		{
 			WriteOK 'BareTail already installed'
-		}
-	}
-
-
-	function InstallDockerDesktop
-	{
-		[CmdletBinding(HelpURI = 'cmd')] param()
-
-		if (!(HyperVInstalled))
-		{
-			Highlight '... Hyper-V must be installed before Docker Desktop'
-			return
-		}
-
-		if (UnChocolatized 'docker-desktop')
-		{
-			Chocolatize 'docker-desktop'
-
-			$reminder = 'Docker Desktop', `
-				' 0. Restart console window to get updated PATH', `
-				' 1. Unsecure repos must be added manually'
-
-			$reminders += ,$reminder
-			Highlight $reminder 'Cyan'
-		}
-		else
-		{
-			WriteOK 'Docker Desktop already installed'
-		}
-	}
-
-
-	function InstallGreenfish
-	{
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		# http://greenfishsoftware.org/gfie.php
-
-		$0 = 'C:\Program Files (x86)\Greenfish Icon Editor Pro 3.6\gfie.exe'
-		if (!(Test-Path $0))
-		{
-			HighTitle 'Greenfish'
-
-			# download the installer
-			$name = 'greenfish_icon_editor_pro_setup_3.6'
-			DownloadBootstrap "$name`.zip" $env:TEMP
-
-			# run the installer
-			& "$($env:TEMP)\$name`.exe" /verysilent
-		}
-		else
-		{
-			WriteOK 'Greenfish already installed'
 		}
 	}
 
@@ -401,25 +204,6 @@ Begin
 	}
 
 
-	function InstallNodeJs
-	{
-		[CmdletBinding(HelpURI = 'cmd')] param()
-		if ((Get-Command node -ErrorAction:SilentlyContinue) -eq $null)
-		{
-			HighTitle 'nodejs'
-			#choco install -y nodejs --version 12.16.3
-			choco install -y nodejs
-			# update session PATH so we can continue
-			$npmpath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split ';' | ? { $_ -match 'nodejs' }
-			$env:PATH = (($env:PATH -split ';') -join ';') + ";$npmpath"
-		}
-		else
-		{
-			WriteOK 'Nodejs already installed'
-		}
-	}
-
-
 	function InstallNotepadPP
 	{
 		[CmdletBinding(HelpURI = 'cmd')] param()
@@ -464,20 +248,6 @@ Begin
 		}
 	}
 
-
-	function InstallS3Browser
-	{
-		[CmdletBinding(HelpURI = 'cmd')] param()
-
-		if (UnChocolatized 's3browser')
-		{
-			Chocolatize 's3browser'
-		}
-		else
-		{
-			WriteOK 's3browser already installed'
-		}
-	}
 
 	function InstallSysInternals
 	{
@@ -659,32 +429,231 @@ Begin
 	}
 
 
-	function InstallThings
+	function HyperVInstalled
+	{
+		((Get-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online).State -eq 'Enabled')
+	}
+
+	function DisableCFG
 	{
 		[CmdletBinding(HelpURI = 'cmd')] param()
-		Chocolatize '7zip'
-		Chocolatize 'adobereader'
-		Chocolatize 'curl' # may be required for DownloadBootstrap
-		Chocolatize 'git'
-		#Chocolatize 'googlechrome'
-		Chocolatize 'greenshot'
-		Chocolatize 'k9s'
-		Chocolatize 'licecap' # live screen capture -> .gif utility
-		Chocolatize 'linqpad' # free version; can add license from LastPass
-		Chocolatize 'mRemoteNG'
-		Chocolatize 'nuget.commandline'
-		Chocolatize 'procexp'
-		Chocolatize 'procmon'
-		Chocolatize 'robo3t'
-		Chocolatize 'sharpkeys'
 
-		InstallBareTail
-		InstallGreenfish
-		InstallNotepadPP
+		if (!(HyperVInstalled))
+		{
+			Highlight '... Cannot disable CFG until Hyper-V is installed'
+			return
+		}
+
+		<#
+		Following is from online to troubleshoot startup errors:
+		1, Open "Window Security"
+		2, Open "App & Browser control"
+		3, Click "Exploit protection settings" at the bottom
+		4, Switch to "Program settings" tab
+		5, Locate "C:\WINDOWS\System32\vmcompute.exe" in the list and expand it
+		6, Click "Edit"
+		7, Scroll down to "Code flow guard (CFG)" and uncheck "Override system settings"
+		8, Start vmcompute from powershell "net start vmcompute"
+		#>
+
+		$0 = 'C:\WINDOWS\System32\vmcompute.exe'
+		if ((Get-ProcessMitigation -Name $0).CFG.Enable -eq 'ON')
+		{
+			# disable Code Flow Guard (CFG) for vmcompute service
+			Set-ProcessMitigation -Name $0 -Disable CFG
+			Set-ProcessMitigation -Name $0 -Disable StrictCFG
+			# restart service
+			net stop vmcompute
+			net start vmcompute
+		}
+	}
+
+	#==============================================================================================
+	# DEVELOPER
+
+	function InstallDotNetSDK
+	{
+		# .NET SDK
+		if ((dotnet --list-sdks | ? { $_ -match '^6.0.' }).Count -eq 0)
+		{
+			HighTitle '.NET 6.0 SDK'
+			choco install -y dotnet-sdk
+		}
+		else
+		{
+			WriteOK '.NET 6.0 SDK already installed'
+		}
+	}
+
+	function InstallNodeJs
+	{
+		[CmdletBinding(HelpURI = 'cmd')] param()
+		if ((Get-Command node -ErrorAction:SilentlyContinue) -eq $null)
+		{
+			HighTitle 'nodejs'
+			#choco install -y nodejs --version 12.16.3
+			choco install -y nodejs
+			# update session PATH so we can continue
+			$npmpath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split ';' | ? { $_ -match 'nodejs' }
+			$env:PATH = (($env:PATH -split ';') -join ';') + ";$npmpath"
+		}
+		else
+		{
+			WriteOK 'Nodejs already installed'
+		}
 	}
 
 
-	# Extras  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	function InstallAngular
+	{
+		[CmdletBinding(HelpURI = 'cmd')] param()
+		if ((Get-Command ng -ErrorAction:SilentlyContinue) -eq $null)
+		{
+			HighTitle 'angular'
+			npm install -g @angular/cli@latest
+			npm install -g npm-check-updates
+			npm install -g local-web-server
+		}
+		else
+		{
+			WriteOK 'Angular already installed'
+		}
+	}
+	
+	function TestAwsConfiguration
+	{
+		$ok = (Test-Path $home\.aws\config) -and (Test-Path $home\.aws\credentials)
+
+		if (!$ok)
+		{
+			Write-Host
+			Write-Host '... AWS credentials are required' -ForegroundColor Yellow
+			Write-Host '... Specify the -AccessKey and -SecretKey parameters' -ForegroundColor Yellow
+		}
+
+		return $ok
+	}
+
+
+	function ConfigureAws
+	{
+		param($access, $secret)
+
+		if (!(Test-Path $home\.aws))
+		{
+			New-Item $home\.aws -ItemType Directory -Force -Confirm:$false | Out-Null
+		}
+
+		'[default]', `
+			'region = us-east-1', `
+			'output = json' `
+			| Out-File $home\.aws\config -Encoding ascii -Force -Confirm:$false
+
+		'[default]', `
+			"aws_access_key_id = $access", `
+			"aws_secret_access_key = $secret" `
+			| Out-File $home\.aws\credentials -Encoding ascii -Force -Confirm:$false
+
+		Write-Verbose 'AWS configured; no need to specify access/secret keys from now on'
+	}
+
+
+	function InstallAWSCLI
+	{
+		[CmdletBinding(HelpURI = 'cmd')] param()
+
+		if ((Get-Command aws -ErrorAction:SilentlyContinue) -ne $null)
+		{
+			return
+		}
+
+		$0 = 'C:\Program Files\Amazon\AWSCLIV2'
+		if (!(Test-Path $0))
+		{
+			# ensure V2.x of awscli is available on chocolatey.org
+			if ((choco list awscli -limit-output | select-string 'awscli\|2' | measure).count -gt 0)
+			{
+				Chocolatize 'awscli'
+
+				# alternatively...
+				#msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
+			}
+			else
+			{
+				HighTitle 'awscli (direct)'
+
+				# download package directly and install
+				[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+				$msi = "$env:TEMP\awscliv2.msi"
+				$progressPreference = 'silentlyContinue'
+				Invoke-WebRequest 'https://awscli.amazonaws.com/AWSCLIV2.msi' -OutFile $msi
+				$progressPreference = 'Continue'
+				if (Test-Path $msi)
+				{
+					& $msi /quiet
+				}
+			}
+		}
+
+		# path will be added to Machine space when installed so
+		# fix Process path so we can continue to install add-ons
+		if ((Get-Command aws -ErrorAction:SilentlyContinue) -eq $null)
+		{
+			$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
+		}
+
+		if ((Get-Command aws -ErrorAction:SilentlyContinue) -ne $null)
+		{
+			Highlight 'aws command verified' 'Cyan'
+		}
+	}
+
+
+	function InstallDockerDesktop
+	{
+		[CmdletBinding(HelpURI = 'cmd')] param()
+
+		if (!(HyperVInstalled))
+		{
+			Highlight '... Hyper-V must be installed before Docker Desktop'
+			return
+		}
+
+		if (UnChocolatized 'docker-desktop')
+		{
+			Chocolatize 'docker-desktop'
+
+			$reminder = 'Docker Desktop', `
+				' 0. Restart console window to get updated PATH', `
+				' 1. Unsecure repos must be added manually'
+
+			$reminders += ,$reminder
+			Highlight $reminder 'Cyan'
+		}
+		else
+		{
+			WriteOK 'Docker Desktop already installed'
+		}
+	}
+
+
+	function InstallS3Browser
+	{
+		[CmdletBinding(HelpURI = 'cmd')] param()
+
+		if (UnChocolatized 's3browser')
+		{
+			Chocolatize 's3browser'
+		}
+		else
+		{
+			WriteOK 's3browser already installed'
+		}
+	}
+
+
+	#==============================================================================================
+	# EXTRAS
 
 	function InstallDateInTray
 	{
@@ -712,6 +681,31 @@ Begin
 		else
 		{
 			WriteOK 'DateInTray already installed'
+		}
+	}
+
+	
+	function InstallGreenfish
+	{
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		# http://greenfishsoftware.org/gfie.php
+
+		$0 = 'C:\Program Files (x86)\Greenfish Icon Editor Pro 3.6\gfie.exe'
+		if (!(Test-Path $0))
+		{
+			HighTitle 'Greenfish'
+
+			# download the installer
+			$name = 'greenfish_icon_editor_pro_setup_3.6'
+			DownloadBootstrap "$name`.zip" $env:TEMP
+
+			# run the installer
+			& "$($env:TEMP)\$name`.exe" /verysilent
+		}
+		else
+		{
+			WriteOK 'Greenfish already installed'
 		}
 	}
 
@@ -781,62 +775,77 @@ Process
 	InstallCurl
 	InstallGit
 
+	if ($command)
+	{
+		InvokeCommand $command
+		return
+	}
+
+	# BASE...
+
+	InstallDotNetRuntime
+	InstallDotNetFramework
+	InstallBareTail
+	InstallGreenshot
+	InstallMacrium
+	InstallNotepadPP
+	InstallSysInternals
+
+	if (!(IsWindows11)) {
+		InstallTerminal
+	}
+
+	DisableCFG
+
+	Chocolatize '7Zip'
+	Chocolatize 'adobereader'
+	Chocolatize 'dotnet'
+	Chocolatize 'greenshot'
+	Chocolatize 'mRemoteNG'
+	Chocolatize 'procexp'
+	Chocolatize 'procmon'
+	Chocolatize 'sharpkeys'
+
+	# DEVELOPER...
+
+	InstallDotNetSDK
+	InstallNodeJs
+	InstallAngular
+
 	if ($AccessKey -and $SecretKey)
 	{
 		# harmless to do this even before AWS is installed
 		ConfigureAws $AccessKey $SecretKey
 	}
 
-	<#
-	BASE
-		InstallBareTail
-		InstallDateInTry - win10
-		InstallGreenfish
-		InstallGreenshot
-		InstallMacrium
-		InstallNotepadPP
-		InstallSysInternals
-		InstallTerminal - win10
-		
-		Chocolatize '7Zip'
-		Chocolatize 'adobereader'
-		Chocolatize 'dotnet'
-		Chocolatize 'greenshot'
-		Chocolatize 'mRemoteNG'
-		Chocolatize 'procexp'
-		Chocolatize 'procmon'
-		Chocolatize 'sharpkeys'
+	InstallAWSCli
+	InstallDockerDesktop
+	InstallS3Browser
 
-	DEVELOPER
-		InstallAngular
-		InstallAWSCli
-		InstallDockerDesktop
-		InstallNodeJs
-		InstallS3Browser
+	Chocolatize 'dotnet-sdk'
+	Chocolatize 'k9s'
+	Chocolatize 'linqpad'
+	Chocolatize 'nuget.commandline'
+	Chocolatize 'robo3t'
 
-		Chocolatize 'dotnet-sdk'
-		Chocolatize 'k9s'
-		Chocolatize 'linqpad'
-		Chocolatize 'nuget.commandline'
-		Chocolatize 'robo3t'
+	# EXTRAS...
 
-	EXTRAS
-		InstallWilMa
-		InstallWmiExplorer
-
-		Chocolatize 'audacity'
-		Chocolatize 'dopamine'
-		Chocolatize 'licecap'
-		Chocolatize 'paint.net'
-		Chocolatize 'treesizefree'
-		Chocolatize 'vlc'
-	#>
-
-	if ($command)
-	{
-		InvokeCommand $command
-		return
+	if (!(IsWindows11)) {
+		InstallDateInTray
 	}
+
+	InstallGreenfish
+	InstallWilMa
+	InstallWmiExplorer
+
+	Chocolatize 'audacity'		# audio editor
+	Chocolatize 'dopamine'		# music player
+	Chocolatize 'licecap'
+	Chocolatize 'paint.net'
+	Chocolatize 'treesizefree'
+	Chocolatize 'vlc'
+
+
 
 	if (Test-Path $stagefile)
 	{
@@ -856,42 +865,6 @@ Process
 	}
 
 	DisableCFG
-
-	InstallThings
-
-	if (!(IsWindows11)) {
-		InstallTerminal
-	}
-
-	InstallMacrium
-
-	# Development...
-
-	InstallAWSCLI
-	InstallNodeJs
-	InstallAngular
-	InstallS3Browser
-	InstallSysInternals
-
-	InstallDockerDesktop
-
-	# Extras
-
-	if ($Extras)
-	{
-		Chocolatize 'audacity' # audio editor
-		Chocolatize 'dopamine' # music player
-		Chocolatize 'paint.net'
-		Chocolatize 'treesizefree'
-		Chocolatize 'vlc'
-
-		if (!(IsWindows11)) {
-			InstallDateInTray
-		}
-
-		InstallWiLMa
-		InstallWmiExplorer
-	}
 
 	if (Test-Path $stagefile)
 	{
