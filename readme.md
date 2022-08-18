@@ -294,7 +294,7 @@ if you have OneDrive enabled then the MyDocuments folder may differ from $home\D
 So before initializing, you can create a junction point to MyDocuments using this command:
 
    1. `cd $home\Documents` 
-   1. `cmd 'mklink /j WindowsPowerShell ([Environment]::GetFolderPath('MyDocuments'))`
+   1. `cmd /c "mklink /j WindowsPowerShell $([Environment]::GetFolderPath('MyDocuments'))"`
 
 Since this updates the PowerShell console colors, you can close and reopen the console to
 appreciate these fantastic new colors.
