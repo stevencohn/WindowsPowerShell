@@ -8,27 +8,11 @@ Invoke a single command from this script; default is to run all
 .PARAMETER ListCommands
 Show a list of all available commands
 
-.PARAMETER Chrome
-Install Google Chrome, default is no
-
-.PARAMETER Password
-The password of the new local admin account to create.
+.PARAMETER RemoveCortana
+Disable Cortana advanced search support which uses excessive CPU.
 
 .PARAMETER RemoveOneDrive
 Remove OneDrive support; default is to keep OneDrive.
-
-.PARAMETER Username
-The username of the new local admin account to create.
-
-.DESCRIPTION
-This script will run in multiple stages under different accounts so it's easiest to
-copy the script to $env:PROGRAMDATA and run from there in an administrative shell.
-
-If creating a secondary administrator, this script will create the account and then
-force a logout. After logging in as that secondary admin, continue running the script
-and it will pick up where it left off.
-
-If skipping the secondary admin then the script only runs once in a single stage.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -36,10 +20,6 @@ If skipping the secondary admin then the script only runs once in a single stage
 
 param (
 	[parameter(Position=0)] $command,
-
-	[string] $Username,
-	[securestring] $Password,
-	[switch] $chrome,
 	[switch] $RemoveOneDrive,
 	[switch] $RemoveCortana,
 	[switch] $ListCommands
@@ -47,60 +27,12 @@ param (
 
 Begin
 {
-	$stage = 0
+	. $PSScriptRoot\common.ps1
 
-	# needs to be in ProgramData because we're switching users between stages
-	$stagefile = (Join-Path $env:PROGRAMDATA 'initialize-machine.stage')
-
-	$proEdition = $null
-	function WindowsProEdition
-	{
-		if ($null -eq $proEdition) {
-			$proEdition = (Get-WindowsEdition -online).Edition -eq 'Professional'
-
-			#alternate:
-			# $proEdition = ((systeminfo | where { $_ -match '^OS Name' }) | `
-			# 	select -first 1 | select-string -pattern 'Pro$').Matches.Success
-		}
-
-		$proEdition
-	}
-
-	# Stage 0... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	function NewPrimaryUser ()
-	{
-		Set-Content $stagefile '1' -Force
-		$script:stage = 1
-
-		if ($Username -or ($env:USERNAME -eq 'Administrator'))
-		{
-			$go = Read-Host 'Create local administrator? (y/n) [y]'
-			if (($go -eq '') -or ($go.ToLower() -eq 'y'))
-			{
-				if (!$Username) { $Username = Read-Host 'Username' }
-				if (!$Password) { $Password = Read-Host 'Password' -AsSecureString }
-
-				# as initial user, create user layer1builder
-				#$Password = ConvertTo-SecureString $Password -AsPlainText -Force
-				New-LocalUser $Username -Password $Password -PasswordNeverExpires -Description "Build admin"
-				Add-LocalGroupMember -Group Administrators -Member $Username
-
-				Write-Host
-				$go = Read-Host "Logout to log back in as $Username`? (y/n) [y]"
-				if (($go -eq '') -or ($go.ToLower() -eq 'y'))
-				{
-					logoff; exit
-				}
-			}
-		}
-	}
-
-	# Stage 1... - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	function SetTimeZone
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'setting time zone'
 		tzutil /s 'Eastern Standard Time'
@@ -108,7 +40,7 @@ Begin
 
 	function SecurePagefile
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		# set to 1 to cause pagefile to be deleted upon shutdown
 		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management'
@@ -131,7 +63,7 @@ Begin
 
 	function SetExplorerProperties
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'setting explorer properties'
 
@@ -207,7 +139,7 @@ Begin
 			Rename-Item "HKLM:\SOFTWARE\WOW6432Node\$0\$k" -NewName ":$k"
 		}
 
-		# restore old traditional context menu (delete GUID key to revert to new style)
+		# restore traditional Win10 context menu (delete GUID key to revert to new style)
 		#reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
 
 		# restart explorer.exe
@@ -248,7 +180,7 @@ Begin
 
 	function EnablePhotoViewer
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd/extra')] param()
 
 		Write-Verbose 'associating the good old Photo Viewer'
 
@@ -283,10 +215,10 @@ Begin
 
 	function EnableRemoteDesktop
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
-		if (!WindowsProEdition) {
-			Write-Host 'Remote Desktop cannot be enabled on Windows Home edition' -ForegroundColor Yellow
+		if (IsWindowsHomeEdition) {
+			WriteWarn 'Remote Desktop cannot be enabled on Windows Home edition'
 			return
 		}
 
@@ -317,7 +249,7 @@ Begin
 
 	function SetExtras
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		# DisableAppSuggestions
 		Write-Verbose 'disabling application suggestions'
@@ -425,7 +357,7 @@ Begin
 
 	function DisableHomeGroups
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		# DisableHomeGroups
 		Write-Verbose 'stopping and disabling Home Groups services'
@@ -440,7 +372,7 @@ Begin
 
 	function RemoveCrapware
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'removing crapware (some exceptions may appear)'
 		$global:ProgressPreference = 'SilentlyContinue'
@@ -452,7 +384,7 @@ Begin
 		'CommsPhone', 'Messaging', 'Microsoft3DViewer', 'MicrosoftOfficeHub', 'MicrosoftPowerBIForWindows',
 		'MicrosoftSolitaireCollection', 'MicrosoftStickyNotes', 'MinecraftUWP', 'NetworkSpeedTest',
 		'Office.OneNote', 'Office.Sway', 'OneConnect', 'People', 'Print3D', 'Microsoft.ScreenSketch',
-		'SkypeApp', 'Wallet', 'Whiteboard', 'WindowsAlarms', 'WindowsCamera', 'WindowsCommunicationsapps',
+		'SkypeApp', 'Wallet', 'WindowsAlarms', 'WindowsCamera', 'WindowsCommunicationsapps',
 		'WindowsFeedbackHub', 'WindowsMaps', 'WindowsPhone', 'Windows.Photos', 'WindowsSoundRecorder',
 		'YourPhone', 'ZuneMusic', 'ZuneVideo') | % `
 		{
@@ -512,7 +444,7 @@ Begin
 
 	function RemoveOneDrive
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'disabling OneDrive...'
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive'
@@ -561,45 +493,23 @@ Begin
 
 	function InstallTools
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'installing helper tools'
 
-		# install chocolatey
-		if ((Get-Command choco -ErrorAction:SilentlyContinue) -eq $null)
-		{
-			Set-ExecutionPolicy Bypass -Scope Process -Force
-			Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-		}
-
-		# install Git
-		if ((Get-Command git -ErrorAction:SilentlyContinue) -eq $null)
-		{
-			choco install -y git
-			# Git adds its path to the Machine PATH but not the Process PATH; copy it so we don't need to restart the shell
-			$gitpath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) -split ';' | ? { $_ -match 'Git\\cmd' }
-			$env:Path = "${env:Path};$gitpath"
-		}
+		InstallChocolatey
+		InstallGit
 
 		# install 7-Zip
 		if ((Get-Command 7z -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			choco install -y 7zip
 		}
-
-		# install Chrome
-		if ($chrome)
-		{
-			if (!(Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe'))
-			{
-				choco install -y googlechrome
-			}
-		}
 	}
 
 	function DisableZipFolders
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'disabling default Windows Zip folder Explorer integration'
 
@@ -618,7 +528,7 @@ Begin
 
 	function GetPowerShellProfile
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'fetching WindowsPowerShell environment'
 
@@ -629,7 +539,7 @@ Begin
 
 	function GetYellowCursors
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'enabling yellow mouse cursors'
 
@@ -644,7 +554,7 @@ Begin
 
 	function SetConsoleProperties
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'setting console properties'
 
@@ -672,7 +582,7 @@ Begin
 
 	function CreateHeadlessPowerPlan()
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		# create a power plan, duplicate of Balanced, that adjusts the screen
 		# brightness to zero; used during backups and watching movies over HDMI :)
@@ -709,7 +619,7 @@ Begin
 
 	function GetCommandList
 	{
-		Get-ChildItem function:\ | Where HelpUri -eq 'manualcmd' | select -expand Name | sort
+		Get-ChildItem function:\ | Where HelpUri -match 'cmd' | select -expand Name | sort
 	}
 }
 Process
@@ -725,7 +635,7 @@ Process
 		$fn = Get-ChildItem function:\ | where Name -eq $command
 		if ($fn)
 		{
-			if ($fn.HelpUri -eq 'manualcmd')
+			if ($fn.HelpUri -match 'cmd')
 			{
 				Write-Host "... invoking command $($fn.Name)"
 				Invoke-Expression $fn.Name
@@ -738,68 +648,54 @@ Process
 		return
 	}
 
-	if (Test-Path $stagefile)
-	{
-		$stage = (Get-Content $stagefile) -as [int]
-		if ($stage -eq $null) { $stage = 0 }
+	# running Windows 11?
+	$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+	$script:Win11 = [int](get-itempropertyvalue -path $0 -name CurrentBuild) -ge 22000
+	
+	# choco, git, 7zip
+	InstallTools
+
+	# $home\Documents\WindowsPowerShell
+	GetPowerShellProfile
+
+	SetTimeZone
+	SetExplorerProperties
+	SetKeyboardProperties
+	SetExtras
+	DisableHomeGroups
+	EnablePhotoViewer
+	EnableRemoteDesktop
+	RemoveCrapware
+	SecurePagefile
+	ScheduleTempCleanup
+
+	if ($RemoveOneDrive) {
+		RemoveOneDrive
 	}
 
-	if ($stage -eq 0)
-	{
-		NewPrimaryUser
-	}
+	# requires powershell profile scripts
+	DisableZipFolders
 
-	if ($stage -eq 1)
-	{
-		# running Windows 11?
-		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
-		$script:Win11 = [int](get-itempropertyvalue -path $0 -name CurrentBuild) -ge 22000
-		
-		# choco, git, 7zip, chrome
-		InstallTools
+	GetYellowCursors
+	SetConsoleProperties
+	CreateHeadlessPowerPlan
+	FixAirpodConnectivity
 
-		# $home\Documents\WindowsPowerShell
-		GetPowerShellProfile
+	Remove-Item $stagefile -Force -Confirm:$false
 
-		SetTimeZone
-		SetExplorerProperties
-		SetKeyboardProperties
-		SetExtras
-		DisableHomeGroups
-		EnablePhotoViewer
-		EnableRemoteDesktop
-		RemoveCrapware
-		SecurePagefile
-		ScheduleTempCleanup
-
-		if ($RemoveOneDrive) {
-			RemoveOneDrive
-		}
-
-		# requires powershell profile scripts
-		DisableZipFolders
-
-		GetYellowCursors
-		SetConsoleProperties
-		CreateHeadlessPowerPlan
-		FixAirpodConnectivity
-
-		Remove-Item $stagefile -Force -Confirm:$false
-
-		$line = New-Object String('*',80)
-		Write-Host
-		Write-Host $line -ForegroundColor Cyan
-		Write-Host ' Reminders ...' -ForegroundColor Cyan
-		Write-Host $line -ForegroundColor Cyan
-		Write-Host
-		Write-Host @'
+	$line = New-Object String('*',80)
+	Write-Host
+	Write-Host $line -ForegroundColor Cyan
+	Write-Host ' Reminders ...' -ForegroundColor Cyan
+	Write-Host $line -ForegroundColor Cyan
+	Write-Host
+	Write-Host @'
 - Customize Startup items by looking in "shell:startup" and "shell:common startup"
 - Add an Explorer library folder "AppData" pointing to Local and Roaming
 - Clear entries from Explorer "Quick access" folder (can't automate)
 - Import dark theme ps1xml into PowerShell ISE
 '@ -ForegroundColor Cyan
 
-		Write-Host
-		Write-Host 'Initialization compelte' -ForegroundColor Yellow
-	}
+	Write-Host
+	Write-Host 'Initialization compelte' -ForegroundColor Yellow
 }

@@ -122,17 +122,17 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'manualcmd')] param()
 
-		# .NET Framework 3.5 is required by many apps
+		# .NET Framework is required by many apps
 		if ((Get-WindowsOptionalFeature -Online -FeatureName 'NetFx4' | ? { $_.State -eq 'Enabled'}).Count -eq 0)
 		{
-			HighTitle '.NET Framework 4.8'
+			HighTitle '.NET Framework NetFx4'
 
 			# don't restart but will after .NET (Core) is installed
 			Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx4' -NoRestart
 		}
 		else
 		{
-			Write-Host '.NET Framework 4.8 already installed' -ForegroundColor Green
+			WriteOK '.NET Framework NetFx4 already installed'
 		}
 
 		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
@@ -144,7 +144,7 @@ Begin
 		}
 		else
 		{
-			Write-Host '.NET 6.0 already installed' -ForegroundColor Green
+			WriteOK '.NET 6.0 already installed'
 		}
 	}
 
@@ -221,7 +221,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'Angular already installed' -ForegroundColor Green
+			WriteOK 'Angular already installed'
 		}
 	}
 
@@ -291,7 +291,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'BareTail already installed' -ForegroundColor Green
+			WriteOK 'BareTail already installed'
 		}
 	}
 
@@ -319,7 +319,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'Docker Desktop already installed' -ForegroundColor Green
+			WriteOK 'Docker Desktop already installed'
 		}
 	}
 
@@ -344,7 +344,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'Greenfish already installed' -ForegroundColor Green
+			WriteOK 'Greenfish already installed'
 		}
 	}
 
@@ -364,7 +364,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'Greenshot already installed' -ForegroundColor Green
+			WriteOK 'Greenshot already installed'
 		}
 	}
 
@@ -396,7 +396,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'Macrium installer already installed' -ForegroundColor Green
+			WriteOK 'Macrium installer already installed'
 		}
 	}
 
@@ -415,7 +415,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'Nodejs already installed' -ForegroundColor Green
+			WriteOK 'Nodejs already installed'
 		}
 	}
 
@@ -460,7 +460,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'Notepad++ already installed' -ForegroundColor Green
+			WriteOK 'Notepad++ already installed'
 		}
 	}
 
@@ -475,7 +475,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 's3browser already installed' -ForegroundColor Green
+			WriteOK 's3browser already installed'
 		}
 	}
 
@@ -492,7 +492,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'SysInternals already installed' -ForegroundColor Green
+			WriteOK 'SysInternals already installed'
 		}
 
 		$target = "$tools\volumouse"
@@ -511,7 +511,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'Volumouse already installed' -ForegroundColor Green
+			WriteOK 'Volumouse already installed'
 		}
 	}
 
@@ -576,7 +576,7 @@ Begin
 		$settings = (Get-Content $0) -replace '^\s*//.*' | ConvertFrom-Json
 
 		$settings.initialCols = 160
-		$settings.initialRows = 90
+		$settings.initialRows = 85
 		$settings.initialPosition = '200,25'
 
 		$scheme = New-Object -TypeName PsObject -Property @{
@@ -711,7 +711,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'DateInTray already installed' -ForegroundColor Green
+			WriteOK 'DateInTray already installed'
 		}
 	}
 
@@ -739,7 +739,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'WiLMa already installed' -ForegroundColor Green
+			WriteOK 'WiLMa already installed'
 		}
 	}
 
@@ -758,7 +758,7 @@ Begin
 		}
 		else
 		{
-			Write-Host 'WmiExplorer already installed' -ForegroundColor Green
+			WriteOK 'WmiExplorer already installed'
 		}
 	}
 }
@@ -873,6 +873,6 @@ Process
 
 	$script:reminders | % { $_ | % { Write-Host $_ -ForegroundColor Cyan }; Write-Host }
 
-	Write-Host '... Initialization compelete   ' -ForegroundColor Green
+	WriteOK '... Initialization compelete'
 	Read-Host '... Press Enter to finish'
 }

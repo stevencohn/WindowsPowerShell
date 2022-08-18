@@ -1,7 +1,6 @@
 <#
 .SYNOPSIS
-Standalone script to install Visual Studio and its extensions
-or VSCode and its extensions.
+Standalone script to install Visual Studio or VSCode and their extensions.
 
 All parameters are mutually exlusive!
 
@@ -132,14 +131,14 @@ Begin
 		InstallVsix $installer 'VSColorOutput'
 
 		Write-Host
-		Write-Host '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS' -Fore Yellow
+		WriteWarn '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS'
 	}
 
 
 	function InstallVsix
 	{
 		param($installer, $name)
-		Write-Host "... installing $name extension in the background" -ForegroundColor Yellow
+		WriteWarn "... installing $name extension in the background"
 		$vsix = "$($env:TEMP)\$name`.vsix"
 		& $installer /quiet /norepair $vsix
 	}

@@ -43,7 +43,7 @@ See also the [Install-Programs.ps1](#instprog) script below.
 ## Commands
 These scripts are located in the Modules\Scripts folder.
 
-#### `Clear-Events` [-Quiet]
+#### [`Clear-Events`](Modules/Scripts/Clear-Events.ps1) [-Quiet]
 Clear all events from the Windows Event Log.
 
 #### `Clear-Temp` [-Quiet]
@@ -177,6 +177,9 @@ Open a new command prompt in elevated mode. Aliased to `su`. Special command for
 #### `Invoke-VsDevCmd`
 Invoke the Visual Studio environment batch script. Aliased to `vs`
 
+#### `New-Administrator` -Username -Password
+Create a new local admin user.
+
 #### `New-CommandWrapper`
 Sepcial internal function from PowerShell Cookbook.
 
@@ -270,7 +273,7 @@ and update the content in $home\Documents\WindowsPowerShell.
 
 <a name="initmach"></a>
 
-# Initialize-Machine.ps1
+# [`Initialize-Machine.ps1`](Initialize-Machine.ps1) [-Command c] [-ListCommands] [-RemoveOneDrive] [-RemoveCortana]
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
 setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
@@ -284,37 +287,22 @@ So before initializing, you can create a junction point to MyDocuments using thi
    1. `cd $home\Documents` 
    1. `cmd 'mklink /j WindowsPowerShell ([Environment]::GetFolderPath('MyDocuments'))`
 
-This script can optionally create a new local administrator so it runs in two phases:
-
-   1. Log on as an administrator
-   1. Download [Initialize-Machine.ps1](https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/main/Initialize-Machine.ps1) to C:\Initialize-Machine.ps1
-   1. Open an administrative PowerShell window
-   1. PS> `Set-ExecutionPolicy RemoteSigned`
-   1. PS> `cd C:\`
-   1. PS> `.\Initialize-Machine.ps1 -User <new-admin-username>`
-   1. ... Create new local administrator (y/n) [y]: `y`
-   1. ... Password: *********
-   1. ... Logout to log back in as &lt;new-admin-username> (y/n) [y]: `y`
-   1. Log on as &lt;new-admin-username>
-   1. Open an administrative PowerShell window
-   1. PS> `cd C:\`
-   1. PS> `.\Initialize-Machine.ps1 -Verbose`
-
-Finally, since this updates the PowerShell console colors, you can close and reopen the console to appreciate these fantastic new colors.
+Since this updates the PowerShell console colors, you can close and reopen the console to
+appreciate these fantastic new colors.
 
 <a name="instprog"></a>
 
-# Install-HyperV.ps1
+# [`Install-HyperV.ps1`](Install-HyperV.ps1)
 Automates the installation of Hyper-V on Windows 11 for either Professional or
 Home editions. The script doesn't require any parameters but will prompt to reboot
 the computer to complete the configuration.
 
-# Install-Programs.ps1
+# [`Install-Programs.ps1`](Install-Programs.ps1)
 Automates the installation of applications, development tools, and other utilities.
 All applications, including Visual Studio, install unattended in about 25 minutes.
 It's also reentrant, skipping items already installed and installing items missing.
 
-`.\Install-Programs.ps1 [command] [-ListCommands] [-Extras] [-Verbose]`
+`.\Install-Programs.ps1 [-Command c] [-ListCommands] [-Extras] [-Verbose]`
  
    * _command_ - optional argument to run a single command, default is to run all commands
    * -AccessKey - optional, store your AWS access key in your private awscli config
@@ -376,7 +364,7 @@ Consider these manually installed apps:
 - ConEmu
 - OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)
 
-# Install-VS.ps1
+# [`Install-VS.ps1`](Install-VS.ps1)
 Standalone script to install Visual Studio and its extensions or VSCode and its extensions.
 The default is to install VS Professional.
 
