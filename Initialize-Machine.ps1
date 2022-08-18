@@ -144,9 +144,6 @@ Begin
 		# restore traditional Win10 context menu (delete GUID key to revert to new style)
 		#reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
 
-		# restart explorer.exe
-		Stop-Process -Name explorer
-
 		# set Dark mode
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize'
 		New-ItemProperty $0 -Name 'AppsUseLightTheme' -Value 0 -Type dword -Force | Out-Null
@@ -182,6 +179,9 @@ Begin
 			$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\TaskManager' 
 			Set-ItemProperty $0 -Name 'StartUpTab' -Type DWord -Value 5
 		}
+
+		# restart explorer.exe
+		Stop-Process -Name explorer
 	}
 
 	function EnablePhotoViewer
