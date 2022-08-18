@@ -105,169 +105,169 @@ Display the console colors for Command console, PowerShell console, and ConEmu c
 
 ![alt text](Images/get-colors.png "Get-Colors Example")
 
-#### `Get-CommandLine` [-Name n] [-Only] [-ReturnValue] [-ShowSystem]
+#### [`Get-CommandLine`](Modules/Scripts/Get-CommandLine.ps1) [-Name n] [-Only] [-ReturnValue] [-ShowSystem]
 Report processes with their command lines, highlighting an optional search string
 
-#### `Get-Commits` -Project p [-Branch b] [-Since yyyy-mm-dd] [-Last n] [-Raw] [-Graph]
+#### [`Get-Commits`](Modules/Scripts/Get-Commits.ps1) -Project p [-Branch b] [-Since yyyy-mm-dd] [-Last n] [-Raw] [-Graph]
 Reports all commits for the given git repo after a specified date or within the last n days.
 
-#### `Get-DirSize` -Dir d [-la]
+#### [`Get-DirSize`](Modules/Scripts/Get-DirSize.ps1) -Dir d [-la]
 Report the size of all items in the specified folder. Used as a sub-routine of Get-ChildItemColorized.
 
-#### `Get-DotNetVersion`
+#### [`Get-DotNetVersion`](Modules/Scripts/Get-DotNetVersion.ps1)
 Get the versions of.NET Framework installations on the local computer.
 
-#### `Get-Env` [-Name n] [-Value v]
+#### [`Get-Env`](Modules/Scripts/Get-Env.ps1) [-Name n] [-Value v]
 Report environment variables in colorized categoties with optional search highlighting.
 
 ![alt text](Images/get-env.png "Get-Env Example")
 
-#### `Get-Hosts`
+#### [`Get-Hosts`](Modules/Scripts/Get-Hosts.ps1)
 Display the /etc/hosts file, colorized.
 
-#### `Get-Installed` [-Outfile f]
+#### [`Get-Installed`](Modules/Scripts/Get-Installed.ps1) [-Outfile f]
 Report all installed applications registered on the local system.
 
-#### `Get-Network` [-Preferred] [-Addresses] [-Verbose]
+#### [`Get-Network`](Modules/Scripts/Get-Network.ps1) [-Preferred] [-Addresses] [-Verbose]
 Determines the most likely candidate for the active Internet-specific network adapter on this machine.  All other adpaters such as tunneling and loopbacks are ignored.  Only connected IP adapters are considered. Wifi aliases are shown.
 
 ![alt text](Images/get-network.png "Get-Network Example")
 
-#### `Get-ParentBranch`
+#### [`Get-ParentBranch`](Modules/Scripts/Get-ParentBranch.ps1)
 Determine the name of the nearest parent branch of the current branch in the local Git repo.
 
-#### `Get-Path` [-Search s] [-Sort] [-Verbose]
+#### [`Get-Path`](Modules/Scripts/Get-Path.ps1) [-Search s] [-Sort] [-Verbose]
 Display the PATH environment variable as a list of strings rather than a single string and displays the source of each value defined in the Registry: Machine, User, or Process. Verbose mode dumps the User and System Paths as
 stored in the Windows Registry.
 
 ![alt text](Images/get-path.png "Get-Path Example")
 
-#### `Get-Performance`
+#### [`Get-Performance`](Modules/Scripts/Get-Performance.ps1)
 Get and report performance metrics using the built-in WinSAT utility.
 
-#### `Get-Scripts`
+#### [`Get-Scripts`](Modules/Scripts/Get-Scripts.ps1)
 List all external scripts and their parameter names.
 
-#### `Get-Services` [-Name n] [-Running || -Stopped]
+#### [`Get-Services`](Modules/Scripts/Get-Services.ps1) [-Name n] [-Running || -Stopped]
 Get a list of services ordered by status and name. Aliased to `gs`
 
-#### `Get-SpecialFolder` [-Folder f] [-All]
+#### [`Get-SpecialFolder`](Modules/Scripts/Get-SpecialFolder.ps1) [-Folder f] [-All]
 Return the translation of a SpecialFolder by name or show all SpecialFolders with optional search highlighting.
 
-#### `Get-VMConfig` -Path p [-Json]
+#### [`Get-VMConfig`](Modules/Scripts/Get-VMConfig.ps1) -Path p [-Json]
 Returns a VM configuration object of the specified .vmcx VM configuration
 file even if the VM is not attached to a Hyper-V server.
 
-#### `Install-BuildTools` [-Force] [-Full] [-VsWhere]
+#### [`Install-BuildTools`](Modules/Scripts/Install-BuildTools.ps1) [-Force] [-Full] [-VsWhere]
 Install minimal Microsoft build and test tools required for CI/CD.
 
-#### `Install-Chocolatey` [-Upgrade]
+#### [`Install-Chocolatey`](Modules/Scripts/Install-Chocolatey.ps1) [-Upgrade]
 Can be used on new machines to install Chocolately. If already installed then checks if it is outdated and prompts to update.
 
-#### `Install-Docker`
+#### [`Install-Docker`](Modules/Scripts/Install-Docker.ps1)
 Installs Docker for Windows, enabling Hyper-V as a prerequisite if not already installed.
 
-#### `Invoke-NormalUser` -Command c
+#### [`Invoke-NormalUser`](Modules/Scripts/Invoke-NormalUser.ps1) -Command c
 Execute a given command as a non-evelated context. Aliased to `nu`. 
 Convenient when you need to run as a normal user from an elevated prompt.
 
-#### `Invoke-SuperUser`
+#### [`Invoke-SuperUser`](Modules/Scripts/Invoke-SuperUser.ps1)
 Open a new command prompt in elevated mode. Aliased to `su`. Special command for ConEmu emulator.
 
-#### `Invoke-VsDevCmd`
+#### [`Invoke-VsDevCmd`](Modules/Scripts/Invoke-VsDevCmd.ps1)
 Invoke the Visual Studio environment batch script. Aliased to `vs`
 
-#### `New-Administrator` -Username -Password
+#### [`New-Administrator`](Modules/Scripts/New-Administrator.ps1) -Username -Password
 Create a new local admin user.
 
-#### `New-CommandWrapper`
+#### [`New-CommandWrapper`](Modules/Scripts/New-CommandWrapper.ps1)
 Sepcial internal function from PowerShell Cookbook.
 
-#### `New-DriveMapping` -DriveLetter d -Path p [-SourceDriveLabel s] [-DriveLabel l] [-Reboot] [-Force]
+#### [`New-DriveMapping`](Modules/Scripts/New-DriveMapping.ps1) -DriveLetter d -Path p [-SourceDriveLabel s] [-DriveLabel l] [-Reboot] [-Force]
 Create a persistent mapping of a folder to a new drive letter. (persistent SUBST)
 
-#### `New-Host` -IP a -Name n
+#### [`New-Host`](Modules/Scripts/New-Host.ps1) -IP a -Name n
 Adds or updates an entry in the Windows hosts file
 
-#### `New-RunAsShortcut` -LinkPath l -TargetPath t [-Arguments a]
+#### [`New-RunAsShortcut`](Modules/Scripts/New-RunAsShortcut.ps1) -LinkPath l -TargetPath t [-Arguments a]
 Creates a new elevated shortcut (.lnk file) to a given target
 
-#### `New-VMClone` -Name n -Path p -Template t [-Checkpoint]
+#### [`New-VMClone`](Modules/Scripts/New-VMClone.ps1) -Name n -Path p -Template t [-Checkpoint]
 Create a new VM from a registered VM or an exported VM.
 
-#### `PrettyPrint-File` -Path p [-Dedent] [-Overwrite]
+#### [`PrettyPrint-File`](Modules/Scripts/PrettyPrint-File.ps1) -Path p [-Dedent] [-Overwrite]
 Format or pretty-pretty JSON and XML files.
 
-#### `Remove-DockerTrash` [-Volumes]
+#### [`Remove-DockerTrash`](Modules/Scripts/Remove-DockerTrash.ps1) [-Volumes]
 Prune unused docker containers and dangling images.
 
-#### `Remove-DriveMapping` -DriveLetter d [-SourceDriveLabel s] [-Reboot] [-Force]
+#### [`Remove-DriveMapping`](Modules/Scripts/Remove-DriveMapping.ps1) -DriveLetter d [-SourceDriveLabel s] [-Reboot] [-Force]
 Remove a persistent mapping of a folder created by New-DriveMapping.
 
-#### `Remove-Locked` -Name n
+#### [`Remove-Locked`](Modules/Scripts/Remove-Locked.ps1) -Name n
 Remove a System-owned file or directory. Attempts multiple approaches to remove stubborn items.
 
-#### `Repair-Path` [-Yes]
+#### [`Repair-Path`](Modules/Scripts/Repair-Path.ps1) [-Yes]
 Clean up the PATH environment variable, removing duplicates, empty values, invalid paths, repairs
 variable substitutions, and moves paths between User and System paths appropriately.
 Verbose mode dumps the User and System Paths as stored in the Windows Registry.
 
-#### `Restart-App` -Name [-Command [-Arguments]] [-Register] [-GetCommand]
+#### [`Restart-App`](Modules/Scripts/Restart-App.ps1) -Name [-Command [-Arguments]] [-Register] [-GetCommand]
 Restart the named process. This can be used to restart applications such as Outlook on a nightly
 basis. Apps such as this tend to have memory leaks or become unstable over time when dealing with
 huge amounts of data on a very active system. The -Register switch creates a nightly automation task.
 
-#### `Restart-Bluetooth` [-Show]
+#### [`Restart-Bluetooth`](Modules/Scripts/Restart-Bluetooth.ps1) [-Show]
 Restarts the Bluetooth radio device on the current machine. This is useful when the radio stops
 communicating with a device such as a mouse. The alternative would be to reboot the system.
 
-#### `Set-Colors` -Theme t | [-Name n -Color c [-Bgr] [-Background] [-Foreground]] [-Cmd] [-ConEmu] [-PS]
+#### [`Set-Colors`](Modules/Scripts/Set-Colors.ps1) -Theme t | [-Name n -Color c [-Bgr] [-Background] [-Foreground]] [-Cmd] [-ConEmu] [-PS]
 Set the color theme for command line consoles or set a specific named color.
 
-#### `Set-ItemOwner` -Path p [-Group g]
+#### [`Set-ItemOwner`](Modules/Scripts/Set-ItemOwner.ps1) -Path p [-Group g]
 Set the ownership of an item - folder or file - to the specified user group.
 
-#### `Set-OutDefaultOverride`
+#### [`Set-OutDefaultOverride`](Modules/Scripts/Set-OutDefaultOverride.ps1)
 (Internal) Helper function for Get-ChildItemColorized.
 
-#### `Set-PinTaskbar` -Target t [-Unpin]
+#### [`Set-PinTaskbar`](Modules/Scripts/Set-PinTaskbar.ps1) -Target t [-Unpin]
 Pins or unpins a target item to the Windows Taskbar (_currently broken!_)
 
-#### `Set-RegistryOwner` -Hive h -Key k [-Recurse]
+#### [`Set-RegistryOwner`](Modules/Scripts/Set-RegistryOwner.ps1) -Hive h -Key k [-Recurse]
 Set full-access ownership of a specified Registry key.
 
-#### `Set-SleepSchedule` (-SleepTime -WakeTime) | (-Clear [-ClearTimers])
+#### [`Set-SleepSchedule`](Modules/Scripts/Set-SleepSchedule.ps1) (-SleepTime -WakeTime) | (-Clear [-ClearTimers])
 Creates scheduled tasks to sleep and wake the computer at specified times.
 
-#### `Show-ColorizedContent` -Filename f [-ExcludeLineNumbers]
+#### [`Show-ColorizedContent`](Modules/Scripts/Show-ColorizedContent.ps1) -Filename f [-ExcludeLineNumbers]
 Type the contents of a PowerShell script with syntax highlighting.
 
 ![alt text](Images/show-colorizedcontent.png "Show-ColorizedContent Example")
 
-#### `Show-Docker` [-Ps] [-Containers] [-Images] [-Volumes]
+#### [`Show-Docker`](Modules/Scripts/Show-Docker.ps1) [-Ps] [-Containers] [-Images] [-Volumes]
 Show containers and images in a single command.
 
 ![alt text](Images/show-docker.png "Show-Docker Example")
 
-#### `Start-VMUntilReady` -Name n [-Restart] [-Restore]
+#### [`Start-VMUntilReady`](Modules/Scripts/Start-VMUntilReady.ps1) -Name n [-Restart] [-Restore]
 Start the named VM, optionally restoring the latest snapshot, and waiting
 until the OS provides a stable heartbeat.
 
-#### `Test-Elevated` [-Action a ] [-Warn]
+#### [`Test-Elevated`](Modules/Scripts/Test-Elevated.ps1) [-Action a ] [-Warn]
 Determine if the current session is elevated and displays a warning message if not.
 Can be run without the warning message and simply return a boolean result.
 
-#### `Test-RebootPending` [-Report]
+#### [`Test-RebootPending`](Modules/Scripts/Test-RebootPending.ps1) [-Report]
 Check the pending reboot status of the local computer.
 
-#### `Update-Environment`
+#### [`Update-Environment`](Modules/Scripts/Update-Environment.ps1)
 Refresh the current session environment variables from the Registry by harvesting
 from both the local machine and the current user hives.
 
-#### `Update-Gits` [-Branch b] [-Project p] [-Reset]
+#### [`Update-Gits`](Modules/Scripts/Update-Gits.ps1) [-Branch b] [-Project p] [-Reset]
 Scan all sub-folders looking for .git directories and fetch/pull each to get latest code.
 
-#### `Update-Profile`
+#### [`Update-Profile`](Modules/Scripts/Update-Profile.ps1)
 Quick command line to pull latest source of this WindowsPowerShell repo from Github
 and update the content in $home\Documents\WindowsPowerShell.
 
@@ -275,10 +275,17 @@ and update the content in $home\Documents\WindowsPowerShell.
 
 # Machine Setup and Configuration
 
-#### [`Initialize-Machine.ps1`](Initialize-Machine.ps1) [-Command c] [-ListCommands] [-RemoveOneDrive] [-RemoveCortana]
+#### [`Initialize-Machine.ps1`](Initialize-Machine.ps1)
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
 setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
+
+`Initialize-Machine.ps1 [-Command c] [-ListCommands] [-RemoveOneDrive] [-RemoveCortana]`
+
+   * _command_ - optional argument to run a single command, default is to run all commands
+   * -ListCommands - display all available commands supported by this script
+   * -RemoveOneDrive - disables OneDrive; useful for test machines that don't need personal profiles
+   * -RemoveCortana - disable Cortana advanced search UI which often consumes high CPU
 
 Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use of PowerShell.
 
@@ -307,7 +314,7 @@ It's also reentrant, skipping items already installed and installing items missi
    * _command_ - optional argument to run a single command, default is to run all commands
    * -AccessKey - optional, store your AWS access key in your private awscli config
    * -SecretKey - optional, store your AWS secret key in your private awscli config
-   * -ListCommands - this argument displays all available commands
+   * -ListCommands - display all available commands supported by this script
    * -Extras - this argument causes extra applications to be installed
    * -Vebose - print extra information for each command
 
