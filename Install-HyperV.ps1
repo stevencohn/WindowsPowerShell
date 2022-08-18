@@ -71,16 +71,6 @@ Begin
 }
 Process
 {
-	if (!(CheckPrerequisites))
-	{
-		return
-	}
-
-	if (IsWindowsHomeEdition)
-	{
-   		AddFeaturePackages
-	}
-
 	if ($Continuation)
 	{
 		# customize Hyper-V host file locations
@@ -91,6 +81,16 @@ Process
 		WriteOK '... Hyper-V configuration is complete'
 		Read-Host
 		return
+	}
+
+	if (!(CheckPrerequisites))
+	{
+		return
+	}
+
+	if (IsWindowsHomeEdition)
+	{
+   		AddFeaturePackages
 	}
 
 	EnableHyperV
