@@ -132,6 +132,7 @@ Begin
 
 		Write-Host
 		WriteWarn '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS'
+		WriteWarn '... These can be monitored in Task Manager; wait until they disappear'
 	}
 
 
