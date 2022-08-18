@@ -8,11 +8,17 @@ Note that when new versions are released then the lookup table needs to be updat
 https://support.microsoft.com/en-us/help/318785/how-to-determine-which-versions-and-service-pack-levels-of-the-microso
 #>
 
-$m = (dotnet --list-runtimes) | select -last 1 | select-string -pattern '^(.*) \['
-if ($m.Matches.Success) { $netrun = $m.Matches.Groups[1].Value} else { $netrun = '-' }
+$netrun = '-'
+$netsdk = '-'
 
-$m = (dotnet --list-sdks) | select -last 1 | select-string -pattern '^(.*) \['
-if ($m.Matches.Success) { $netsdk = $m.Matches.Groups[1].Value} else { $netsdk = '-' }
+if ((Get-Command dotnet -ErrorAction:SilentlyContinue) -ne $null)
+{
+	$m = (dotnet --list-runtimes) | select -last 1 | select-string -pattern '^(.*) \['
+	if ($m.Matches.Success) { $netrun = $m.Matches.Groups[1].Value}
+
+	$m = (dotnet --list-sdks) | select -last 1 | select-string -pattern '^(.*) \['
+	if ($m.Matches.Success) { $netsdk = $m.Matches.Groups[1].Value}
+}
 
 Write-Host "Latest .NET Runtime: $netrun"
 Write-Host "Latest .NET SDK....: $netsdk"
