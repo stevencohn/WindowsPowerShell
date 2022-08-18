@@ -68,18 +68,23 @@ Begin
 
 		Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
 	}
+
+
+	function CustomizeConfiguration
+	{
+		# set custom Hyper-V host file locations
+		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
+
+		Write-Host
+		WriteOK '... Hyper-V configuration is complete'
+		Read-Host
+	}
 }
 Process
 {
 	if ($Continuation)
 	{
-		# customize Hyper-V host file locations
-		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
-
-		Write-Host
-		Write-Host "Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'" -ForegroundColor DarkGray
-		WriteOK '... Hyper-V configuration is complete'
-		Read-Host
+		CustomizeConfiguration
 		return
 	}
 
