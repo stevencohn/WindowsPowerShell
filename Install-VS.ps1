@@ -61,11 +61,11 @@ Begin
 			code --install-extension ms-azuretools.vscode-docker
 			code --install-extension ms-python.python
 			code --install-extension ms-vscode-remote.remote-wsl
-			code --install-extension ms-vscode.csharp
+			code --install-extension ms-dotnettools.csharp
 			code --install-extension ms-vscode.powershell
 			#code --install-extension msjsdiag.debugger-for-chrome
 			code --install-extension jebbs.plantuml
-			code --install-extension sonarlint
+			code --install-extension sonarsource.sonarlint-vscode
 			code --install-extension vscode-icons-team.vscode-icons
 			# Vuln Cost - Security Scanner for VS Code
 			code --install-extension snyk-security.vscode-vuln-cost	
