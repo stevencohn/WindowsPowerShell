@@ -273,7 +273,7 @@ and update the content in $home\Documents\WindowsPowerShell.
 
 <a name="setup"></a>
 
-# Setup
+# Machine Setup and Configuration
 
 #### [`Initialize-Machine.ps1`](Initialize-Machine.ps1) [-Command c] [-ListCommands] [-RemoveOneDrive] [-RemoveCortana]
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
@@ -364,7 +364,7 @@ Consider these manually installed apps:
 - ConEmu
 - OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)
 
-# [`Install-VS.ps1`](Install-VS.ps1)
+#### [`Install-VS.ps1`](Install-VS.ps1)
 Standalone script to install Visual Studio and its extensions or VSCode and its extensions.
 The default is to install VS Professional.
 
