@@ -33,7 +33,6 @@ Begin
 	. $PSScriptRoot\common.ps1
 
 	$tools = 'C:\tools'
-	$FxReady = $false
 	$script:reminders = @(@())
 
 
@@ -99,7 +98,6 @@ Begin
 		else
 		{
 			WriteOK '.NET Framework NetFx4 already installed'
-			$script:FxReady = $true
 		}
 	}
 
@@ -720,7 +718,7 @@ Process
 	InstallDotNetRuntime
 	InstallDotNetFramework
 
-	if ($Continuation -or $FxReady)
+	if ($Continuation)
 	{
 		CleanupContinuation
 
