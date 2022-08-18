@@ -31,14 +31,14 @@ Or to download the repo as a Zip file then you'll need to unblock all files:
 Get-ChildItem -Path "${env:USERPROFILE}\Documents\WindowsPowerShell" -Recurse | Unblock-File
 ```
 
-Or to download just the [Initialize-Machine.ps1](#initmach) script:
+Or to download just the [Initialize-Machine.ps1](#setup) script:
 
 ```powershell
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
 Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/main/Initialize-Machine.ps1' -OutFile C:\Initialize-Machine.ps1
 ```
 
-See also the [Install-Programs.ps1](#instprog) script below.
+See also the [Install-Programs.ps1](#setup) script below.
 
 ## Commands
 These scripts are located in the Modules\Scripts folder.
@@ -271,7 +271,7 @@ Scan all sub-folders looking for .git directories and fetch/pull each to get lat
 Quick command line to pull latest source of this WindowsPowerShell repo from Github
 and update the content in $home\Documents\WindowsPowerShell.
 
-<a name="initmach"></a>
+<a name="setup"></a>
 
 # Setup
 
@@ -291,8 +291,6 @@ So before initializing, you can create a junction point to MyDocuments using thi
 
 Since this updates the PowerShell console colors, you can close and reopen the console to
 appreciate these fantastic new colors.
-
-<a name="instprog"></a>
 
 #### [`Install-HyperV.ps1`](Install-HyperV.ps1)
 Automates the installation of Hyper-V on Windows 11 for either Professional or
