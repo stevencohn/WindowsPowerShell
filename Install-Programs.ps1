@@ -784,7 +784,6 @@ Process
 	# done...
 
 	$reminder = 'Consider these manually installed apps:', `
-		' - AVG Antivirus', `
 		' - BeyondCompare (there is a choco package but not for 4.0)', `
 		' - OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)'
 
