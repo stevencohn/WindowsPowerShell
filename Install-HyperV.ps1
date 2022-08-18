@@ -77,7 +77,7 @@ Begin
 
 		Write-Host
 		WriteOK '... Hyper-V configuration is complete'
-		Read-Host
+		Read-Host '... Press Enter to continue'
 	}
 }
 Process
