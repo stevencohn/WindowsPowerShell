@@ -81,9 +81,10 @@ Begin
 	function InstallVisualStudio
 	{
 		$0 = "C:\Program Files\Microsoft Visual Studio\$Year"
+		$cmn = Test-Path (Join-Path $0 'Community\Common7\IDE\devenv.exe')
 		$pro = Test-Path (Join-Path $0 'Professional\Common7\IDE\devenv.exe')
 		$ent = Test-Path (Join-Path $0 'Enterprise\Common7\IDE\devenv.exe')
-		if ($pro -or $ent)
+		if ($cmn -or $pro -or $ent)
 		{
 			WriteOK "Visual Studio $Year is already installed"
 			return
@@ -156,7 +157,6 @@ Process
 	}
 	else
 	{
-		Write-Host '*** This installer will require a system reboot'
 		Write-Host '*** It is highly recommend that you close Visual Studio, VSCode, and Office apps'
 		Read-Host '*** Press Enter to continue'
 
