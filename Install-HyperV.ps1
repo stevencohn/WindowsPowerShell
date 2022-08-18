@@ -9,7 +9,9 @@ complete the configuration.
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
 [CmdletBinding(SupportsShouldProcess = $true)]
-param ()
+param (
+	[switch] $Continue
+)
 
 Begin
 {
@@ -57,7 +59,7 @@ Begin
 
     function EnableHyperV
 	{
-		Highlight '... Enabling Hyper-V; computer will reboot automatically'
+		Highlight '... Enabling Hyper-V; will prompt to reboot to complete configuration'
 
 		if (IsWindowsProEdition)
 		{
@@ -65,9 +67,6 @@ Begin
 		}
 
 		Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
-
-		# customize Hyper-V host file locations
-		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
 	}
 }
 Process
@@ -82,9 +81,17 @@ Process
    		AddFeaturePackages
 	}
 
-    EnableHyperV
+	if ($Continue)
+	{
+		# customize Hyper-V host file locations
+		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
 
-	Write-Host
-	Read-Host '... Press Enter for required reboot'
-	Restart-Computer -Force
+		Write-Host
+		WriteOK '... Hyper-V configuration is complete'
+		return
+	}
+
+	EnableHyperV
+
+	ForceStagedReboot
 }
