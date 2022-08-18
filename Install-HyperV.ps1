@@ -10,7 +10,7 @@ complete the configuration.
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
 [CmdletBinding(SupportsShouldProcess = $true)]
 param (
-	[switch] $Continue
+	[switch] $Continuation
 )
 
 Begin

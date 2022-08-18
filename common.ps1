@@ -213,7 +213,7 @@ function ForceStagedReboot
     # prep a logon continuation task
     $trigger = New-ScheduledTaskTrigger -AtLogOn;
     # note here that the -Command arg string must be wrapped with double-quotes
-    $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-Command ""$($MyInvocation.ScriptName) -Continue $cargs"""
+    $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-Command ""$($MyInvocation.ScriptName) -Continuation $cargs"""
     $principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest
     Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $stagetask -Principal $principal | Out-Null
 
