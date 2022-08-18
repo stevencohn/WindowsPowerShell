@@ -701,11 +701,6 @@ Process
 		return
 	}
 
-	if ($Continuation)
-	{
-		CleanupContinuation
-	}
-
 	# prerequisites... should have been installed by Initialize-Machine
 
 	InstallChocolatey
@@ -722,58 +717,70 @@ Process
 
 	InstallDotNetRuntime
 	InstallDotNetFramework
-	InstallBareTail
-	InstallGreenshot
-	InstallMacrium
-	InstallNotepadPP
-	InstallSysInternals
 
-	if (!(IsWindows11)) {
-		InstallTerminal
+	if ($Continuation)
+	{
+		CleanupContinuation
+
+		InstallBareTail
+		InstallGreenshot
+		InstallMacrium
+		InstallNotepadPP
+		InstallSysInternals
+
+		if (!(IsWindows11)) {
+			InstallTerminal
+		}
+
+		DisableCFG
+
+		Chocolatize '7Zip'
+		Chocolatize 'adobereader'
+		Chocolatize 'dotnet'
+		Chocolatize 'greenshot'
+		Chocolatize 'mRemoteNG'
+		Chocolatize 'procexp'
+		Chocolatize 'procmon'
+		Chocolatize 'sharpkeys'
 	}
-
-	DisableCFG
-
-	Chocolatize '7Zip'
-	Chocolatize 'adobereader'
-	Chocolatize 'dotnet'
-	Chocolatize 'greenshot'
-	Chocolatize 'mRemoteNG'
-	Chocolatize 'procexp'
-	Chocolatize 'procmon'
-	Chocolatize 'sharpkeys'
 
 	# DEVELOPER...
 
-	InstallDotNetSDK
-	InstallNodeJs
-	InstallAngular
-	InstallAWSCli
-	InstallDockerDesktop
-	InstallS3Browser
+	if ($DeveloperTools)
+	{
+		InstallDotNetSDK
+		InstallNodeJs
+		InstallAngular
+		InstallAWSCli
+		InstallDockerDesktop
+		InstallS3Browser
 
-	Chocolatize 'dotnet-sdk'
-	Chocolatize 'k9s'
-	Chocolatize 'linqpad'
-	Chocolatize 'nuget.commandline'
-	Chocolatize 'robo3t'
+		Chocolatize 'dotnet-sdk'
+		Chocolatize 'k9s'
+		Chocolatize 'linqpad'
+		Chocolatize 'nuget.commandline'
+		Chocolatize 'robo3t'
+	}
 
 	# EXTRAS...
 
-	if (!(IsWindows11)) {
-		InstallDateInTray
+	if ($Extras)
+	{
+		if (!(IsWindows11)) {
+			InstallDateInTray
+		}
+
+		InstallGreenfish
+		InstallWilMa
+		InstallWmiExplorer
+
+		Chocolatize 'audacity'  # audio editor
+		Chocolatize 'dopamine'  # music player
+		Chocolatize 'licecap'
+		Chocolatize 'paint.net'
+		Chocolatize 'treesizefree'
+		Chocolatize 'vlc'
 	}
-
-	InstallGreenfish
-	InstallWilMa
-	InstallWmiExplorer
-
-	Chocolatize 'audacity'		# audio editor
-	Chocolatize 'dopamine'		# music player
-	Chocolatize 'licecap'
-	Chocolatize 'paint.net'
-	Chocolatize 'treesizefree'
-	Chocolatize 'vlc'
 
 	# done...
 
