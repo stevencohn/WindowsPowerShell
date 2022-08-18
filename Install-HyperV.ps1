@@ -81,7 +81,7 @@ Process
    		AddFeaturePackages
 	}
 
-	if ($Continue)
+	if ($Continuation)
 	{
 		# customize Hyper-V host file locations
 		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
