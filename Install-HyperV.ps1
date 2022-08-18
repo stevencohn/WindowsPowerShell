@@ -93,5 +93,6 @@ Process
 
 	EnableHyperV
 
+	SetupStaging
 	ForceStagedReboot
 }
