@@ -145,7 +145,11 @@ Begin
 }
 Process
 {
-	if ($Extensions)
+	if ($Code)
+	{
+		InstallVSCode
+	}
+	elseif ($Extensions)
 	{
 		InstallVSExtensions
 	}
