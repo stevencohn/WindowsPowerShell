@@ -87,7 +87,9 @@ Process
 		Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'
 
 		Write-Host
+		Write-Host "Set-VMHost -VirtualMachinePath 'C:\VMs' -VirtualHardDiskPath 'C:\VMs\Disks'" -ForegroundColor DarkGray
 		WriteOK '... Hyper-V configuration is complete'
+		Read-Host
 		return
 	}
 
