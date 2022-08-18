@@ -210,6 +210,8 @@ function ForceStagedReboot
 {
     param([string] $cargs)
 
+    if ($stagetask -eq $null) { SetupStaging }
+
     # prep a logon continuation task
     $trigger = New-ScheduledTaskTrigger -AtLogOn;
     # note here that the -Command arg string must be wrapped with double-quotes
