@@ -8,11 +8,17 @@ Note that when new versions are released then the lookup table needs to be updat
 https://support.microsoft.com/en-us/help/318785/how-to-determine-which-versions-and-service-pack-levels-of-the-microso
 #>
 
-$core = (dotnet --list-sdks) | select -last 1
-Write-Host "Latest .NET Core version: $core"
+$m = (dotnet --list-runtimes) | select -last 1 | select-string -pattern '^(.*) \['
+if ($m.Matches.Success) { $netrun = $m.Matches.Groups[1].Value} else { $netrun = '-' }
+
+$m = (dotnet --list-sdks) | select -last 1 | select-string -pattern '^(.*) \['
+if ($m.Matches.Success) { $netsdk = $m.Matches.Groups[1].Value} else { $netsdk = '-' }
+
+Write-Host "Latest .NET Runtime: $netrun"
+Write-Host "Latest .NET SDK....: $netsdk"
 Write-Host
 
-Write-Host "Currently executing Framework version: $([Environment]::Version)" -NoNewline
+Write-Host "Framework: $([Environment]::Version)" -NoNewline
 
 Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -Recurse |
 Get-ItemProperty -name Version,Release,Install,PSChildName,SP -EA 0 |

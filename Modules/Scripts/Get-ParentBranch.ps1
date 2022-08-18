@@ -23,8 +23,8 @@ try {
             where { -not $_.contains($name) } | `
             select -first 1 | select-string -pattern '.*\[(.*)(?:\^\d+)\].*'
             
-        if ($m.Success) {
-            $m.matches.groups[1].value
+        if ($m.Matches.Success) {
+            $m.Matches.Groups[1].Value
         } else {
             Write-Host "parent branch not found; current branch is $name"
         }

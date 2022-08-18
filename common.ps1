@@ -72,6 +72,18 @@ function HighTitle
     Highlight '', "---- $action $title ---------------------------"
 }
 
+function InstallChocolatey
+{
+    # Modules/Scripts contains a better version but this is a stand-alone copy for the
+    # top-level Install scripts so they can remain independent of the Module scripts
+    if ((Get-Command choco -ErrorAction:SilentlyContinue) -eq $null)
+    {
+        HighTitle 'Chocolatey'
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    }
+}
+
 function InstallCurl
 {
     if ((Get-Alias curl -ErrorAction:SilentlyContinue) -ne $null) {
@@ -95,18 +107,6 @@ function InstallCurl
 
     HighTitle 'Curl'
     choco install -y curl
-}
-
-function InstallChocolatey
-{
-    # Modules/Scripts contains a better version but this is a stand-alone copy for the
-    # top-level Install scripts so they can remain independent of the Module scripts
-    if ((Get-Command choco -ErrorAction:SilentlyContinue) -eq $null)
-    {
-        HighTitle 'Chocolatey'
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-    }
 }
 
 function InstallGit

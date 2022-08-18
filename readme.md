@@ -372,6 +372,7 @@ Other applications included when -Extras is specified
    * TreeSize Free
    * VLC
    * WiLMa (_installed to C:\tools_)
+   * WmiExplorer
 
 During the installation, hints and tips are shown highlighted in yellow and
 instructions are highlighted in cyan. Some are import, such as how to continue

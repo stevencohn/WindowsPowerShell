@@ -51,7 +51,7 @@ Begin
 
 	function GetCommandList
 	{
-		Get-ChildItem function:\ | Where HelpUri -eq 'manualcmd' | select -expand Name | sort
+		Get-ChildItem function:\ | Where HelpUri -match 'cmd' | select -expand Name | sort
 	}
 
 
@@ -59,7 +59,7 @@ Begin
 	{
 		param($command)
 		$fn = Get-ChildItem function:\ | where Name -eq $command
-		if ($fn -and ($fn.HelpUri -eq 'manualcmd'))
+		if ($fn -and ($fn.HelpUri -eq 'cmd'))
 		{
 			Highlight "... invoking command $($fn.Name)"
 			Invoke-Expression $fn.Name
@@ -120,7 +120,7 @@ Begin
 
 	function InstallNetFx
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		# .NET Framework is required by many apps
 		if ((Get-WindowsOptionalFeature -Online -FeatureName 'NetFx4' | ? { $_.State -eq 'Enabled'}).Count -eq 0)
@@ -136,7 +136,7 @@ Begin
 		}
 
 		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
-			((dotnet --list-sdks | ? { $_ -match '^6.0.' }).Count -eq 0))
+			((dotnet --list-runtimes | ? { $_ -match '^6.0.' }).Count -eq 0))
 		{
 			# currently required for our apps, may change
 			HighTitle '.NET 6.0'
@@ -173,7 +173,7 @@ Begin
 
 	function DisableCFG
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if (!(HyperVInstalled))
 		{
@@ -211,7 +211,7 @@ Begin
 
 	function InstallAngular
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 		if ((Get-Command ng -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			HighTitle 'angular'
@@ -228,7 +228,7 @@ Begin
 
 	function InstallAWSCLI
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if ((Get-Command aws -ErrorAction:SilentlyContinue) -ne $null)
 		{
@@ -279,7 +279,7 @@ Begin
 
 	function InstallBareTail
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		$target = "$tools\BareTail"
 		if (!(Test-Path $target))
@@ -298,7 +298,7 @@ Begin
 
 	function InstallDockerDesktop
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if (!(HyperVInstalled))
 		{
@@ -326,7 +326,7 @@ Begin
 
 	function InstallGreenfish
 	{
-		[CmdletBinding(HelpURI='manualcmd')] param()
+		[CmdletBinding(HelpURI='cmd')] param()
 
 		# http://greenfishsoftware.org/gfie.php
 
@@ -351,7 +351,7 @@ Begin
 
 	function InstallGreenshot
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 		if (UnChocolatized 'greenshot')
 		{
 			# Get-AppxPackage *Microsoft.ScreenSketch* -AllUsers | Remove-AppxPackage -AllUsers
@@ -371,7 +371,7 @@ Begin
 
 	function InstallMacrium
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if (!(Test-Path "$env:ProgramFiles\Macrium\Reflect"))
 		{
@@ -403,7 +403,7 @@ Begin
 
 	function InstallNodeJs
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 		if ((Get-Command node -ErrorAction:SilentlyContinue) -eq $null)
 		{
 			HighTitle 'nodejs'
@@ -422,7 +422,7 @@ Begin
 
 	function InstallNotepadPP
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 		if (UnChocolatized 'notepadplusplus')
 		{
 			Chocolatize 'notepadplusplus'
@@ -467,7 +467,7 @@ Begin
 
 	function InstallS3Browser
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if (UnChocolatized 's3browser')
 		{
@@ -481,7 +481,7 @@ Begin
 
 	function InstallSysInternals
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		$target = "$tools\SysInternals"
 		if (!(Test-Path $target))
@@ -518,7 +518,7 @@ Begin
 
 	function InstallTerminal
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		<#
 		UPGRADE NOTE - Can upgrade with these steps:
@@ -556,7 +556,7 @@ Begin
 
 	function ConfigureTerminalSettings
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		# customize settings... for Terminal 1.8.1444.0, 1.9.1942.0
 
@@ -649,7 +649,7 @@ Begin
 
 	function ConfigureTerminalShortcut
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		# Create shortcut wt.lnk file; this then needs to be manually pinned to taskbar
 		$appName = 'Microsoft.WindowsTerminal'
@@ -661,7 +661,7 @@ Begin
 
 	function InstallThings
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 		Chocolatize '7zip'
 		Chocolatize 'adobereader'
 		Chocolatize 'curl' # may be required for DownloadBootstrap
@@ -688,7 +688,7 @@ Begin
 
 	function InstallDateInTray
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		$target = "$tools\DateInTray"
 		if (!(Test-Path $target))
@@ -718,7 +718,7 @@ Begin
 
 	function InstallWiLMa
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd|extra')] param()
 
 		$target = "$tools\WiLMa"
 		if (!(Test-Path $target))
@@ -746,7 +746,7 @@ Begin
 
 	function InstallWmiExplorer
 	{
-		[CmdletBinding(HelpURI = 'manualcmd')] param()
+		[CmdletBinding(HelpURI = 'cmd|extra')] param()
 
 		$target = "$tools\WmiExplorer"
 		if (!(Test-Path $target))
@@ -767,31 +767,70 @@ Process
 	if ($ListCommands)
 	{
 		GetCommandList
-		$ok = IsElevated
 		return
 	}
-	elseif (!(IsElevated))
+
+	if (!(IsElevated))
 	{
 		return
 	}
+
+	# prerequisites... should have been installed by Initialize-Machine
+
+	InstallChocolatey
+	InstallCurl
+	InstallGit
 
 	if ($AccessKey -and $SecretKey)
 	{
 		# harmless to do this even before AWS is installed
 		ConfigureAws $AccessKey $SecretKey
 	}
-	<#
-	elseif (!(TestAwsConfiguration))
-	{
-		return
-	}
-	#>
 
-	# install chocolatey
-	if ((Get-Command choco -ErrorAction:SilentlyContinue) -eq $null)
-	{
-		Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-	}
+	<#
+	BASE
+		InstallBareTail
+		InstallDateInTry - win10
+		InstallGreenfish
+		InstallGreenshot
+		InstallMacrium
+		InstallNotepadPP
+		InstallSysInternals
+		InstallTerminal - win10
+		
+		Chocolatize '7Zip'
+		Chocolatize 'adobereader'
+		Chocolatize 'dotnet'
+		Chocolatize 'greenshot'
+		Chocolatize 'mRemoteNG'
+		Chocolatize 'procexp'
+		Chocolatize 'procmon'
+		Chocolatize 'sharpkeys'
+
+	DEVELOPER
+		InstallAngular
+		InstallAWSCli
+		InstallDockerDesktop
+		InstallNodeJs
+		InstallS3Browser
+
+		Chocolatize 'dotnet-sdk'
+		Chocolatize 'k9s'
+		Chocolatize 'linqpad'
+		Chocolatize 'nuget.commandline'
+		Chocolatize 'robo3t'
+
+	EXTRAS
+		InstallWilMa
+		InstallWmiExplorer
+
+		Chocolatize 'audacity'
+		Chocolatize 'dopamine'
+		Chocolatize 'licecap'
+		Chocolatize 'paint.net'
+		Chocolatize 'treesizefree'
+		Chocolatize 'vlc'
+	#>
 
 	if ($command)
 	{
