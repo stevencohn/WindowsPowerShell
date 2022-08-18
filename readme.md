@@ -1,7 +1,8 @@
 # PowerShell Scripts
 
-These scripts are my custom profile scripts for PS command windows and for ISE including
-a custom "Dark Selenitic" theme for ISE.
+This repo contains my custom PowerShell profile scripts.
+It also contains scripts to automate the configuration of a new machine
+and installation of common apps and tools that I frequently use.
 
 ## How to install
 
@@ -16,29 +17,38 @@ Set-Executionpolicy -Scope CurrentUser -ExecutionPolicy UnRestricted -Force -Con
 
 Future: _I'll consider signing the scripts and setting the execution policy to AllSigned._
 
-#### Installation options:
-
-This is the best option for keeping up to date using the update-profile command:
-
-```powershell
-Set-Location $env:USERPROFILE\Documents;
-git clone https://github.com/stevencohn/WindowsPowerShell.git
-```
-
-Or to download the repo as a Zip file then you'll need to unblock all files:
-
-```powershell
-Get-ChildItem -Path "${env:USERPROFILE}\Documents\WindowsPowerShell" -Recurse | Unblock-File
-```
-
-Or to download just the [Initialize-Machine.ps1](#setup) script:
+If starting from scratch on a fresh machine:
 
 ```powershell
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
-Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/main/Initialize-Machine.ps1' -OutFile C:\Initialize-Machine.ps1
+$0 = 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/main'
+Invoke-WebRequest -Uri "$0/common.ps1" -OutFile C:\common.ps1;
+Invoke-WebRequest -Uri "$0/Initialize-Machine.ps1" -OutFile C:\Initialize-Machine.ps1
 ```
 
-See also the [Install-Programs.ps1](#setup) script below.
+Then execute Initialize-Machine:
+
+```powershell
+.\Initialize-Machine.ps1 -Verbose;
+```
+
+You can then delete C:\common.ps1 and C:\Initialize-Machine.ps1 since they exist in the
+Documents\WindowsPowerShell folder too.
+
+If you already have Git installed, you can download the repo directly to Documents\WindowsPowerShell:
+
+```powershell
+Set-Location $home\Documents;
+git clone https://github.com/stevencohn/WindowsPowerShell.git
+```
+
+If you download the repo as a Zip file, you'll need to unblock all files after unzipping:
+
+```powershell
+Get-ChildItem -Path "$home\Documents\WindowsPowerShell" -Recurse | Unblock-File
+```
+
+See also the [other configuration scripts below](#setup).
 
 ## Commands
 These scripts are located in the Modules\Scripts folder.
