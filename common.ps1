@@ -162,14 +162,12 @@ function RebootWithContinuation
 {
     param([string] $cargs)
 
-    $name = ([System.IO.Path]::GetFileNameWithoutExtension(($MyInvocation.ScriptName | split-path -leaf)))
-    $name = "$name-continuation"
-
     # prep a logon continuation task
     $trigger = New-ScheduledTaskTrigger -AtLogOn;
     # note here that the -Command arg string must be wrapped with double-quotes
     $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-Command ""$($MyInvocation.ScriptName) -Continuation $cargs"""
     $principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest
+    $name = "$([System.IO.Path]::GetFileNameWithoutExtension(($MyInvocation.ScriptName | split-path -leaf)))-continuation"
     Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $name -Principal $principal | Out-Null
 
     Write-Host
@@ -181,12 +179,9 @@ function RebootWithContinuation
 
 function CleanupContinuation
 {
-    if (Test-Path $stagefile) {
-		Remove-Item $stagefile -Force -Confirm:$false
-	}
-
-	if (Get-ScheduledTask -TaskName $ContinuationName -ErrorAction:silentlycontinue) {
-		Unregister-ScheduledTask -TaskName $ContinuationName -Confirm:$false
+    $name = "$([System.IO.Path]::GetFileNameWithoutExtension(($MyInvocation.ScriptName | split-path -leaf)))-continuation"
+    if (Get-ScheduledTask -TaskName $name -ErrorAction:silentlycontinue) {
+		Unregister-ScheduledTask -TaskName $name -Confirm:$false
 	}
 }
 
