@@ -32,6 +32,8 @@ Then execute Initialize-Machine:
 . C:\Initialize-Machine.ps1 -Verbose
 ```
 
+The script is re-entrant so can be run multiple times without a problem.
+
 You can then delete C:\common.ps1 and C:\Initialize-Machine.ps1 since they exist in the
 Documents\WindowsPowerShell folder too.
 
