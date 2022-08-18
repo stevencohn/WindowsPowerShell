@@ -314,18 +314,17 @@ Automates the installation of applications, development tools, and other utiliti
 All applications, including Visual Studio, install unattended in about 25 minutes.
 It's also reentrant, skipping items already installed and installing items missing.
 
-`.\Install-Programs.ps1 [command] [-ListCommands] [-Extras] [-Enterprise] [-Verbose]`
+`.\Install-Programs.ps1 [command] [-ListCommands] [-Extras] [-Verbose]`
  
    * _command_ - optional argument to run a single command, default is to run all commands
    * -AccessKey - optional, store your AWS access key in your private awscli config
    * -SecretKey - optional, store your AWS secret key in your private awscli config
    * -ListCommands - this argument displays all available commands
    * -Extras - this argument causes extra applications to be installed
-   * -Enterprise - install VS Enterprise; default is Professional
    * -Vebose - print extra information for each command
 
-Hyper-V and the AWSCli are installed first. Hyper-V requires a reboot which is done
-automatically and the script picks up where it left off immediately after you log in again.
+Hyper-V is required for a couple of command and warning will be displayed if it is not yet
+available. Use Install-HyperV to enable Hyper-V prior to running Install-Programs.
 
 Default applications:
 
@@ -348,8 +347,6 @@ Default applications:
    * S3Browser
    * SharpKeys
    * SysInternals procexp and procmon
-   * Visual Studio 2019 _and extensions_ (_professional or enterpise_)
-   * VSCode _and extensions_
    * Windows Terminal
 
 Other applications included when -Extras is specified
@@ -373,24 +370,23 @@ Macrium Reflect
    1. Double-click the Macrium Installer icon on the desktop after VS is installed
    1. Choose Free on first screen, then Home version, and no registration is necessary
 
-SourceTree configuration
-
-   1. Log into choose "BitBucket" option and logon Atlassian online
-   1. Enabled Advanced/"Configure automatic line endings"
-   1. Do not create an SSH key
-
-Visual Studio
-
-   1. When installation is complete, rerun this script using the InstallVSExtensions command
-
-`.\Install-Programs.ps1 InstallVSExtensions`
-
 Consider these manually installed apps:
 - AVG Antivirus
 - BeyondCompare (there is a choco package but not for 4.0)
 - ConEmu
 - OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)
 
+# Install-VS.ps1
+Standalone script to install Visual Studio and its extensions or VSCode and its extensions.
+The default is to install VS Professional.
+
+`.\Install-VS.ps1 [-Community|Professional|Enterprise|Extensions] [-Verbose]`
+
+   * Visual Studio 2019 _and extensions_ (_professional or enterpise_)
+   * VSCode _and extensions_
+
+When installing VS, let it complete and then rerun this script with the -Extensions parameter
+to install common extensions.
 
 # Profiles
 
