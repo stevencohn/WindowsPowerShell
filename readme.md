@@ -29,7 +29,7 @@ Invoke-WebRequest -Uri "$0/Initialize-Machine.ps1" -OutFile C:\Initialize-Machin
 Then execute Initialize-Machine:
 
 ```powershell
-.\Initialize-Machine.ps1 -Verbose;
+. C:\Initialize-Machine.ps1 -Verbose
 ```
 
 You can then delete C:\common.ps1 and C:\Initialize-Machine.ps1 since they exist in the
