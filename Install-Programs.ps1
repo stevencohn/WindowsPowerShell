@@ -68,7 +68,7 @@ Begin
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
-			((dotnet --list-runtimes | where { $_ -match '^6.0.' }).Count -eq 0))
+			((dotnet --list-runtimes | where { $_ -match '6\.0\.' }).Count -eq 0))
 		{
 			HighTitle '.NET 6.0 Runtime'
 			choco install -y dotnet
@@ -445,7 +445,7 @@ Begin
 	function InstallDotNetSDK
 	{
 		# .NET SDK
-		if ((dotnet --list-sdks | ? { $_ -match '^6.0.' }).Count -eq 0)
+		if ((dotnet --list-sdks | where { $_ -match '6\.0\.' }).Count -eq 0)
 		{
 			HighTitle '.NET 6.0 SDK'
 			choco install -y dotnet-sdk
