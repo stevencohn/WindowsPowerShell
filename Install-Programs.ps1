@@ -72,7 +72,7 @@ Begin
 			HighTitle '.NET 6.0 Runtime'
 			choco install -y dotnet
 
-			# patch Process path with dotnet install
+			# patch Process path until shell is restarted
 			$env:PATH = (($env:PATH -split ';') -join ';') + ";C:\Program Files\dotnet"
 		}
 		else
@@ -485,7 +485,7 @@ Begin
 			npm install -g local-web-server
 
 			# patch Process path until shell is restarted
-			$env:PATH = (($env:PATH -split ';') -join ';') + "$($env:APPDATA)\npm"
+			$env:PATH = (($env:PATH -split ';') -join ';') + ";$($env:APPDATA)\npm"
 		}
 		else
 		{
@@ -778,7 +778,7 @@ Process
 		InstallWmiExplorer
 
 		Chocolatize 'audacity'  # audio editor
-		Chocolatize 'dopamine'  # music player
+		#Chocolatize 'dopamine'  # music player
 		Chocolatize 'licecap'
 		Chocolatize 'paint.net'
 		Chocolatize 'treesizefree'
