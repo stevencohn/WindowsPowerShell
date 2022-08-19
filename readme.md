@@ -296,6 +296,16 @@ and update the content in $home\Documents\WindowsPowerShell.
 Using the scripts below, a new machine can be configured and apps installed in under
 30 minutes.
 
+The recommended sequence to run:
+
+1. Initialize-Machine.ps1
+1. Install-HyperV.ps1 (_will reboot_)
+1. Install-Programs.ps1 (_might reboot_)
+1. Install-Programs.ps1 -Developer -Extras
+1. Install-VS.ps1
+1. Install-VS.ps1 -Extensions
+1. Install-VS.ps1 -Code
+
 #### [`Initialize-Machine.ps1`](Initialize-Machine.ps1)
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
 initialize new machines. This script will download this repo to the current user's Document folder,
