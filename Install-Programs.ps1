@@ -8,9 +8,6 @@ Usage:
 .PARAMETER Command
 Invoke a single command from this script; default is to run all.
 
-.PARAMETER Base
-Install base utilities; this should be specified as the default
-
 .PARAMETER Developer
 Installs development tools specific to my needs.
 
@@ -29,7 +26,6 @@ Initialize-Machine.ps1 before running this script.
 param (
 	[string] $command,
 	[switch] $ListCommands,
-	[switch] $Base,
 	[switch] $Developer,
 	[switch] $Extras,
 	[switch] $Continuation
@@ -729,7 +725,7 @@ Process
 	InstallDotNetRuntime
 	InstallDotNetFramework
 
-	if ($Base -or $Continuation)
+	if ($Continuation -or !($Developer -or $Extras))
 	{
 		CleanupContinuation
 
