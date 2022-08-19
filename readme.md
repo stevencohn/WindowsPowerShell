@@ -409,13 +409,15 @@ Consider these manually installed apps:
 Standalone script to install Visual Studio and its extensions or VSCode and its extensions.
 The default is to install VS Professional.
 
-`.\Install-VS.ps1 [-Community|Professional|Enterprise|Extensions] [-Verbose]`
+`.\Install-VS.ps1 [-Code|Community|Professional|Enterprise|Extensions] [-Verbose]`
 
    * Visual Studio 2019 _and extensions_ (_professional or enterpise_)
    * VSCode _and extensions_
 
 When installing VS, let it complete and then rerun this script with the -Extensions parameter
 to install common extensions.
+
+When installing VSCode (-Code), it will include extensions; there is no second step to do this.
 
 # Profiles
 
