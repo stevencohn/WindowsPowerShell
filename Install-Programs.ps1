@@ -653,8 +653,9 @@ Begin
 	{
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
-		if ((Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -Recurse | `
-			Get-ItemProperty -name PSChildName,SP -EA 0 | Where { $_.PSChildName -eq 'v3.0' }) -eq $null)
+		# installState 1=enabled, 2=disabled, 3=absent, 4=unknown
+		if ((Get-WmiObject Win32_OptionalFeature | `
+			where { $_.Name -eq 'NetFx3' -and $_.InstallState -eq 1 }) -eq $null)
 		{
 			HighTitle 'NetFx3 (please wait)'
 
@@ -676,9 +677,6 @@ Begin
 		if (!(Test-Path $target))
 		{
 			HighTitle 'WiLMa'
-
-			# needs .NET Framework 3.5
-			InstallNetFx3
 
 			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
