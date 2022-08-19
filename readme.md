@@ -293,6 +293,8 @@ and update the content in $home\Documents\WindowsPowerShell.
 <a name="setup"></a>
 
 # Machine Setup and Configuration
+Using the scripts below, a new machine can be configured and apps installed in under
+30 minutes.
 
 #### [`Initialize-Machine.ps1`](Initialize-Machine.ps1)
 This is a top-level script meant to be downloaded independently from this repo and run to configure and
@@ -325,54 +327,58 @@ the computer to complete the configuration.
 
 #### [`Install-Programs.ps1`](Install-Programs.ps1)
 Automates the installation of applications, development tools, and other utilities.
-All applications, including Visual Studio, install unattended in about 25 minutes.
-It's also reentrant, skipping items already installed and installing items missing.
+It's reentrant, skipping items already installed and installing items missing.
 
-`.\Install-Programs.ps1 [-Command c] [-ListCommands] [-Extras] [-Verbose]`
+`.\Install-Programs.ps1 [-Command c] [-ListCommands] [-Developer] [-Extras] [-Verbose]`
  
    * _command_ - optional argument to run a single command, default is to run all commands
-   * -AccessKey - optional, store your AWS access key in your private awscli config
-   * -SecretKey - optional, store your AWS secret key in your private awscli config
    * -ListCommands - display all available commands supported by this script
-   * -Extras - this argument causes extra applications to be installed
+   * -Developer - install developer-specific tools and apps
+   * -Extras - install extra utilities and apps
    * -Vebose - print extra information for each command
 
 Hyper-V is required for a couple of command and warning will be displayed if it is not yet
-available. Use Install-HyperV to enable Hyper-V prior to running Install-Programs.
+available. Use Install-HyperV.ps1 to enable Hyper-V prior to running Install-Programs.
 
-Default applications:
+For Visual Studio and VSCode, use Install-VS.ps1.
 
-   * 7Zip
+Base applications:
+
+   * Adobe Reader
+   * BareTail Free (_installed to C:\tools_)
+   * Greenshot
+   * Macrium Reflect Free (_downloads installer to be run manually_)
+   * mRemoteNG
+   * Notepad++
+   * SharpKeys
+   * SysInternals procexp and procmon
+   * Windows Terminal (_for Win10 machines_)
+
+Developer applications:
+
+   * .NET 6 SDK
+   * Node.js (_specific version_)
    * Angular (_specific version_)
    * AWSCli
-   * BareTail Free (_installed to C:\tools_)
-   * Curl
    * Docker Desktop
-   * Git
-   * Greenfish Icon Editor Pro
-   * Greenshot
+   * k9s
    * LINQPad
-   * Macrium Reflect Free (_installer_)
-   * mRemoteNG
-   * Node.js (_specific version_)
-   * Notepad++
    * Nuget command line
    * Robot3T
    * S3Browser
-   * SharpKeys
-   * SysInternals procexp and procmon
-   * Windows Terminal
 
-Other applications included when -Extras is specified
+Extra applications:
 
    * Audacity audio editor
    * DateInTray (_installed to C:\tools_; Win10 only)
    * Dopamine music player
+   * Greenfish Icon Editor Pro
+   * licecap
    * Paint.net
    * TreeSize Free
    * VLC
    * WiLMa (_installed to C:\tools_)
-   * WmiExplorer
+   * WmiExplorer (_installed to C:\tools_)
 
 During the installation, hints and tips are shown highlighted in yellow and
 instructions are highlighted in cyan. Some are import, such as how to continue
@@ -386,9 +392,7 @@ Macrium Reflect
    1. Choose Free on first screen, then Home version, and no registration is necessary
 
 Consider these manually installed apps:
-- AVG Antivirus
 - BeyondCompare (there is a choco package but not for 4.0)
-- ConEmu
 - OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)
 
 #### [`Install-VS.ps1`](Install-VS.ps1)

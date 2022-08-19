@@ -767,7 +767,6 @@ Process
 
 		Chocolatize 'adobereader'
 		Chocolatize 'dotnet'
-		Chocolatize 'greenshot'
 		Chocolatize 'mRemoteNG'
 		Chocolatize 'procexp'
 		Chocolatize 'procmon'
