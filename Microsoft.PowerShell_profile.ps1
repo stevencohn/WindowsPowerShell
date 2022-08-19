@@ -20,17 +20,17 @@ function prompt {
 # Aliases
 
 New-Alias ep Edit-PSProfile
-New-Alias nu Invoke-NormalUser
-New-Alias su Invoke-SuperUser
 New-Alias vs Invoke-VsDevCmd
 New-Alias push Push-Location
 New-Alias pop Pop-Location
 
+function Push-PSRoot { Push-Location $PSScriptRoot }
+New-Alias pushp Push-PSRoot
+
 . $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
 Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
 
-# curl.exe is installed as a choco package to \system32
-# so need to remove Invoke-WebRequest alias
+# curl.exe is installed as a choco package to \system32; ensure no alias
 Remove-Item alias:curl
 
 function Start-Wilma { & 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe' }
@@ -54,17 +54,17 @@ if (Test-Path($ChocolateyProfile)) {
 	Import-Module "$ChocolateyProfile"
 }
 
-# Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively
-# instead set location to a reasonable place so we force it to somewhere predictable.
-# However we only want to do this when we open a new interactive shell window such
-# as when opened from ConEmu, otherwise it will interfer with command-lines like Flat.bat
-# modifying the current working directory when we don't want it to!
+# Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively.
+# Instead, force location to somewhere predictable. But only do this when we open a new
+# interactive shell, otherwise it will interfere with command-lines like Flat.bat and modifying
+# the current working directory when we don't want it to!
 
 $cmd = (gwmi win32_process -filter ("ProcessID={0}" -f (gwmi win32_process -filter "ProcessID=$PID").ParentProcessID)).CommandLine
 if ($cmd -notmatch 'cmd\.exe')
 {
-	if (Test-Path 'C:\Github') { Set-Location 'C:\Github'; }
-	elseif (Test-Path 'D:\scp') { Set-Location 'D:\scp'; }
+	if (Test-Path 'D:\scp') { Set-Location 'D:\scp'; }
+	elseif (Test-Path 'D:\Github') { Set-Location 'D:\Github'; }
+	elseif (Test-Path 'C:\Github') { Set-Location 'C:\Github'; }
 	elseif (Test-Path 'C:\Code') { Set-Location 'C:\Code'; }
 	elseif (Test-Path 'C:\River') { Set-Location 'C:\River'; }
 	else { Set-Location '\'; }
