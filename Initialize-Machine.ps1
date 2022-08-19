@@ -32,6 +32,8 @@ Begin
 
 	function SetTimeZone
 	{
+		[System.ComponentModel.Description(
+			'Set the Clock time zone to EST, good for new installs and VMs')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'setting time zone'
@@ -40,6 +42,8 @@ Begin
 
 	function SecurePagefile
 	{
+		[System.ComponentModel.Description(
+			'Configure Windows to delete pagefile when Windows is shut down')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		# set to 1 to cause pagefile to be deleted upon shutdown
@@ -49,6 +53,8 @@ Begin
 
 	function ScheduleTempCleanup
 	{
+		[System.ComponentModel.Description(
+			'Create a scheduled task to clean TEMP folders nightly')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		# purge the current user's TEMP folder every morning at 5am
@@ -65,6 +71,8 @@ Begin
 
 	function SetExplorerProperties
 	{
+		[System.ComponentModel.Description(
+			'Customize Explorer visualizations and behaviors')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'setting explorer properties'
@@ -186,6 +194,8 @@ Begin
 
 	function EnablePhotoViewer
 	{
+		[System.ComponentModel.Description(
+			'Restore traditional Windows Photo Viewer and set as default viewer')]
 		[CmdletBinding(HelpURI='cmd/extra')] param()
 
 		Write-Verbose 'associating the good old Photo Viewer'
@@ -221,6 +231,8 @@ Begin
 
 	function EnableRemoteDesktop
 	{
+		[System.ComponentModel.Description(
+			'Enable Remote Desktop hosting, for Windows Pro editions only')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		if (IsWindowsHomeEdition) {
@@ -238,6 +250,9 @@ Begin
 
 	function FixAirpodConnectivity
 	{
+		[System.ComponentModel.Description('Fixes airpod connectivity and pairing issues')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
 		# If airpods will pair but then continually lose connection after manually connecting...
 		# this disables power management on the Intel(R) Wireless Bluetooth(R) device
 		$0 = 'HKLM:\SYSTEM\ControlSet001\Control\Class\{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}\0000'
@@ -255,6 +270,8 @@ Begin
 
 	function SetExtras
 	{
+		[System.ComponentModel.Description(
+			'Configure Windows, disabling all tracking and useless performance sinks')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		# DisableAppSuggestions
@@ -363,6 +380,7 @@ Begin
 
 	function DisableHomeGroups
 	{
+		[System.ComponentModel.Description('Disable the useless Home Groups feature')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		# DisableHomeGroups
@@ -378,6 +396,7 @@ Begin
 
 	function RemoveCrapware
 	{
+		[System.ComponentModel.Description('The name says it all')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'removing crapware (some exceptions may appear)'
@@ -450,6 +469,7 @@ Begin
 
 	function DisableOneDrive
 	{
+		[System.ComponentModel.Description('Disable OneDrive, useful for test machines and VMs')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'disabling OneDrive...'
@@ -499,6 +519,7 @@ Begin
 
 	function InstallTools
 	{
+		[System.ComponentModel.Description('Install chocolatey, Git, and 7Zip')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'installing helper tools'
@@ -515,6 +536,8 @@ Begin
 
 	function DisableZipFolders
 	{
+		[System.ComponentModel.Description(
+			'Disable default Zip folder integration in Windows Explorer, increasing performance')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'disabling default Windows Zip folder Explorer integration'
@@ -534,6 +557,7 @@ Begin
 
 	function GetPowerShellProfile
 	{
+		[System.ComponentModel.Description('Install the WindowsPowerShell profile')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'fetching WindowsPowerShell environment'
@@ -545,6 +569,8 @@ Begin
 
 	function GetYellowCursors
 	{
+		[System.ComponentModel.Description(
+			'Install yellow mouse cursors making it easier to find the cursor on the screen')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'enabling yellow mouse cursors'
@@ -560,6 +586,8 @@ Begin
 
 	function SetConsoleProperties
 	{
+		[System.ComponentModel.Description(
+			'Set Windows Console properties, colors, font, and buffer size')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		Write-Verbose 'setting console properties'
@@ -578,6 +606,10 @@ Begin
 
 	function SetKeyboardProperties
 	{
+		[System.ComponentModel.Description(
+			'Adjust keyboard settings to fix slow delays and repeat rates')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
 		# Some vendors configure keyboards with a slow delay and repeat rate. This customizes those
 		# values to be more responsive. Can be done manually via Keyboard Properties control panel
 		$0 = 'HKCU:\Control Panel\Keyboard'
@@ -588,6 +620,8 @@ Begin
 
 	function CreateHeadlessPowerPlan()
 	{
+		[System.ComponentModel.Description(
+			'Create a power plan suitable for long-running backup or watching movies over HDMI')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		# create a power plan, duplicate of Balanced, that adjusts the screen
@@ -617,7 +651,10 @@ Begin
 
 	function GetCommandList
 	{
-		Get-ChildItem function:\ | Where HelpUri -match 'cmd' | select -expand Name | sort
+		Get-ChildItem function:\ | `
+			where HelpUri -match 'cmd' | `
+			sort-object -property @{expression={ $_.Name } } | `
+			foreach { [PsCustomObject]@{Name=$_.Name; Description=$_.scriptblock.attributes[0].description } }
 	}
 }
 Process
