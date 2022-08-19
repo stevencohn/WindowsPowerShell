@@ -49,7 +49,7 @@ Begin
 	{
 		param($command)
 		$fn = Get-ChildItem function:\ | where Name -eq $command
-		if ($fn -and ($fn.HelpUri -eq 'cmd'))
+		if ($fn -and ($fn.HelpUri -match 'cmd'))
 		{
 			Highlight "... invoking command $($fn.Name)"
 			Invoke-Expression $fn.Name
