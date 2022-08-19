@@ -2,10 +2,16 @@
 .SYNOPSIS
 Automates the installation of applications, development tools, and other utilities.
 
+Usage:
+  .\Install-Programs.ps1 -Base
+
 .PARAMETER Command
 Invoke a single command from this script; default is to run all.
 
-.PARAMETER DeveloperTools
+.PARAMETER Base
+Install base utilities; this should be specified as the default
+
+.PARAMETER Developer
 Installs development tools specific to my needs.
 
 .PARAMETER Extras
@@ -23,7 +29,8 @@ Initialize-Machine.ps1 before running this script.
 param (
 	[string] $command,
 	[switch] $ListCommands,
-	[switch] $DeveloperTools,
+	[switch] $Base,
+	[switch] $Developer,
 	[switch] $Extras,
 	[switch] $Continuation
 )
@@ -722,7 +729,7 @@ Process
 	InstallDotNetRuntime
 	InstallDotNetFramework
 
-	if ($Continuation)
+	if ($Base -or $Continuation)
 	{
 		CleanupContinuation
 
@@ -750,7 +757,7 @@ Process
 
 	# DEVELOPER...
 
-	if ($DeveloperTools)
+	if ($Developer)
 	{
 		InstallDotNetSDK
 		InstallNodeJs
