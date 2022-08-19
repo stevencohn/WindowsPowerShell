@@ -354,7 +354,7 @@ Begin
 			$settings.schemes[$index] = $scheme
 		}
 
-		$profile = $settings.profiles.list | ? { $_.commandline -and (Split-Path $_.commandline -Leaf) -eq 'powershell.exe' }
+		$profile = $settings.profiles.list | where { $_.commandline -and (Split-Path $_.commandline -Leaf) -eq 'powershell.exe' }
 		if ($profile)
 		{
 			$profile.antialiasingMode = 'aliased'
@@ -467,7 +467,7 @@ Begin
 			#choco install -y nodejs --version 12.16.3
 			choco install -y nodejs
 			# update session PATH so we can continue
-			$npmpath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split ';' | ? { $_ -match 'nodejs' }
+			$npmpath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split ';' | where { $_ -match 'nodejs' }
 			$env:PATH = (($env:PATH -split ';') -join ';') + ";$npmpath"
 		}
 		else
@@ -803,7 +803,7 @@ Process
 	Write-Host $line -ForegroundColor Cyan
 	Write-Host
 
-	$script:reminders | % { $_ | % { Write-Host $_ -ForegroundColor Cyan }; Write-Host }
+	$script:reminders | foreach { $_ | foreach { Write-Host $_ -ForegroundColor Cyan }; Write-Host }
 
 	WriteOK '... Initialization compelete'
 	Read-Host '... Press Enter to finish'
