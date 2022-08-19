@@ -649,6 +649,25 @@ Begin
 	}
 
 
+	function InstallNetFx3
+	{
+		[CmdletBinding(HelpURI = 'cmd')] param()
+
+		if ((Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -Recurse | `
+			Get-ItemProperty -name PSChildName,SP -EA 0 | Where { $_.PSChildName -eq 'v3.0' }) -eq $null)
+		{
+			HighTitle 'NetFx3 (please wait)'
+
+			# install .NET 3.5 without causing a reboot
+			dism /online /norestart /enable-feature /featurename:"NetFx3"			
+		}
+		else
+		{
+			WriteOK 'NetFx3 already installed'
+		}
+	}
+
+
 	function InstallWiLMa
 	{
 		[CmdletBinding(HelpURI = 'cmd|extra')] param()
@@ -657,6 +676,10 @@ Begin
 		if (!(Test-Path $target))
 		{
 			HighTitle 'WiLMa'
+
+			# needs .NET Framework 3.5
+			InstallNetFx3
+
 			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
 			# http://www.stefandidak.com/wilma/winlayoutmanager.zip
