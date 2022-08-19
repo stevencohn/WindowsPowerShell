@@ -84,7 +84,26 @@ Begin
 		}
 	}
 
-	function InstallDotNetFramework
+	function InstallNetFx3
+	{
+		[CmdletBinding(HelpURI = 'cmd')] param()
+
+		# installState 1=enabled, 2=disabled, 3=absent, 4=unknown
+		if ((Get-WmiObject Win32_OptionalFeature | `
+			where { $_.Name -eq 'NetFx3' -and $_.InstallState -eq 1 }) -eq $null)
+		{
+			HighTitle 'NetFx3 (please wait)'
+
+			# install .NET 3.5 without causing a reboot
+			dism /online /norestart /enable-feature /featurename:"NetFx3"			
+		}
+		else
+		{
+			WriteOK 'NetFx3 already installed'
+		}
+	}
+
+	function InstallNetFx4
 	{
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
@@ -633,6 +652,9 @@ Begin
 		$0 = 'C:\Program Files (x86)\Greenfish Icon Editor Pro 3.6\gfie.exe'
 		if (!(Test-Path $0))
 		{
+			# preprequisite
+			InstallNetFx3
+
 			HighTitle 'Greenfish'
 
 			# download the installer
@@ -645,26 +667,6 @@ Begin
 		else
 		{
 			WriteOK 'Greenfish already installed'
-		}
-	}
-
-
-	function InstallNetFx3
-	{
-		[CmdletBinding(HelpURI = 'cmd')] param()
-
-		# installState 1=enabled, 2=disabled, 3=absent, 4=unknown
-		if ((Get-WmiObject Win32_OptionalFeature | `
-			where { $_.Name -eq 'NetFx3' -and $_.InstallState -eq 1 }) -eq $null)
-		{
-			HighTitle 'NetFx3 (please wait)'
-
-			# install .NET 3.5 without causing a reboot
-			dism /online /norestart /enable-feature /featurename:"NetFx3"			
-		}
-		else
-		{
-			WriteOK 'NetFx3 already installed'
 		}
 	}
 
@@ -744,7 +746,7 @@ Process
 	# BASE...
 
 	InstallDotNetRuntime
-	InstallDotNetFramework
+	InstallNetFx4
 
 	if ($Continuation -or !($Developer -or $Extras))
 	{
