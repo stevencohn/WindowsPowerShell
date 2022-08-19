@@ -683,6 +683,7 @@ Begin
 			New-Item $target -ItemType Directory -Force -Confirm:$false | Out-Null
 
 			# http://www.stefandidak.com/wilma/winlayoutmanager.zip
+			# but this is my custom NetFx4.8 build of WilMa
 			DownloadBootstrap 'winlayoutmanager.zip' $target
 
 			# Register WindowsLayoutManager sheduled task to run as admin
