@@ -741,7 +741,6 @@ Process
 
 		DisableCFG
 
-		Chocolatize '7Zip'
 		Chocolatize 'adobereader'
 		Chocolatize 'dotnet'
 		Chocolatize 'greenshot'
