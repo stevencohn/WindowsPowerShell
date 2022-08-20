@@ -30,26 +30,345 @@ Begin
 	. $PSScriptRoot\common.ps1
 
 
-	function SetTimeZone
+	function CreateHeadlessPowerPlan()
 	{
 		[System.ComponentModel.Description(
-			'Set the Clock time zone to EST, good for new installs and VMs')]
+			'Create a power plan suitable for long-running backup or watching movies over HDMI')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
-		Write-Verbose 'setting time zone'
-		tzutil /s 'Eastern Standard Time'
+		# create a power plan, duplicate of Balanced, that adjusts the screen
+		# brightness to zero; used during backups and watching movies over HDMI :)
+
+		# unique ID generated just for our custom power plan
+		$headlessGuid = '1015f01d-73d6-47dd-906b-dc8af8cd7711'
+
+		if (powercfg /list | ? { $_.Contains($headlessGuid) })
+		{
+			Write-Verbose 'Headless power scheme already exists'
+			return
+		}
+
+		# these are well-known hard-coded values in Windows 10 21H1
+		# I do not know the first version in which they appeared
+		$balancedGuid = '381b4222-f694-41f0-9685-ff5bb260df2e'
+		$displayGuid = '7516b95f-f776-4464-8c53-06167f40cc99'
+		$brightnessGuid = 'aded5e82-b909-4619-9949-f5d71dac0bcb'
+
+		powercfg /duplicatescheme $balancedGuid $headlessGuid | Out-Null
+		powercfg /changename $headlessGuid 'Headless' 'Run backups or watch movies'
+		powercfg /setacvalueindex $headlessGuid $displayGuid $brightnessGuid 0
+		powercfg /setdcvalueindex $headlessGuid $displayGuid $brightnessGuid 0
 	}
 
-	function SecurePagefile
+
+	function DisableHomeGroups
+	{
+		[System.ComponentModel.Description('Disable the useless Home Groups feature')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		# DisableHomeGroups
+		Write-Verbose 'stopping and disabling Home Groups services'
+		if (Get-Service HomeGroupListener -ErrorAction:SilentlyContinue)
+		{
+			Stop-Service 'HomeGroupListener' -WarningAction SilentlyContinue
+			Set-Service 'HomeGroupListener' -StartupType Disabled
+			Stop-Service 'HomeGroupProvider' -WarningAction SilentlyContinue
+			Set-Service 'HomeGroupProvider' -StartupType Disabled
+		}
+	}
+
+
+	function DisableOneDrive
+	{
+		[System.ComponentModel.Description('Disable OneDrive, useful for test machines and VMs')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		Write-Verbose 'disabling OneDrive...'
+		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive'
+		If (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
+		Set-ItemProperty $0 -Name 'DisableFileSyncNGSC' -Type DWord -Value 1
+
+		if ($PSVersionTable.PSEdition -ne 'Desktop') {
+			return
+		}
+
+		Write-Verbose 'attempting to uninstall OneDrive'
+
+		Write-Output "Uninstalling OneDrive..."
+		Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue
+		Start-Sleep -s 2
+		$onedrive = "$env:SYSTEMROOT\SysWOW64\OneDriveSetup.exe"
+		if (!(Test-Path $onedrive)) {
+			$onedrive = "$env:SYSTEMROOT\System32\OneDriveSetup.exe"
+		}
+
+		if (Test-Path $onedrive)
+		{
+			try
+			{
+				Start-Process $onedrive "/uninstall" -NoNewWindow -Wait -ErrorAction Stop
+				Start-Sleep -s 2
+				Stop-Process -Name "explorer" -Force -ErrorAction SilentlyContinue
+				Start-Sleep -s 2
+				Remove-Item -Path "$env:USERPROFILE\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+				Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+				Remove-Item -Path "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+				Remove-Item -Path "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse -ErrorAction SilentlyContinue
+
+				EnsureHKCRDrive
+				Remove-Item -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
+				Remove-Item -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
+			}
+			catch
+			{
+				$log = "${env:PROGRAMDATA}\Initialize-Machine-Exception.log"
+				ConvertTo-Json $_.Exception | Out-File $log
+				Write-Verbose "EXCEPTION written to $log"
+			}
+		}
+	}
+
+
+	function DisableZipFolders
 	{
 		[System.ComponentModel.Description(
-			'Configure Windows to delete pagefile when Windows is shut down')]
+			'Disable default Zip folder integration in Windows Explorer, increasing performance')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
-		# set to 1 to cause pagefile to be deleted upon shutdown
-		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management'
-		Set-ItemProperty $0 -Name 'ClearPageFileAtShutdown' -value 1 -Type DWord
+		Write-Verbose 'disabling default Windows Zip folder Explorer integration'
+
+		# take ownership of all Compressed Folders keys (e.g. replacing with 7-Zip)
+		Set-RegistryOwner 'HKCR' 'CLSID\{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}';
+		Set-RegistryOwner 'HKCR' 'CLSID\{0CD7A5C0-9F37-11CE-AE65-08002B2E1262}';
+		Set-RegistryOwner 'HKLM' 'SOFTWARE\WOW6432Node\Classes\CLSID\{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}';
+		Set-RegistryOwner 'HKLM' 'SOFTWARE\WOW6432Node\Classes\CLSID\{0CD7A5C0-9F37-11CE-AE65-08002B2E1262}';
+
+		# remove all Compressed Folders keys; back-ticks required to escape curly braces
+		Remove-Item -Path Registry::HKEY_CLASSES_ROOT\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -Force -Recurse -ErrorAction SilentlyContinue;
+		Remove-Item -Path Registry::HKEY_CLASSES_ROOT\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -Force -Recurse -ErrorAction SilentlyContinue;
+		Remove-Item -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -Force -Recurse -ErrorAction SilentlyContinue;
+		Remove-Item -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -Force -Recurse -ErrorAction SilentlyContinue;
 	}
+
+
+	function EnableHyperVEnhancedMode
+	{
+		[System.ComponentModel.Description(
+			'Disable Windows Hello to allow Enhanced mode sessions for Hyper-V VMs')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		# fixes the problem where you can't log on when connecting to a VM in enhanced mode due
+		# to a conflict in how Windows Hello works, so must disable it to allow enhanced mode
+
+		# are we running in a Hyper-V VM?
+		if ((gwmi Win32_BaseBoard).Manufacturer -eq 'Microsoft Corporation')
+		{
+			Write-Verbose 'disabling Windows Hello for this VM'
+			# 0=disabled, 2=enabled
+			$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
+			Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0	
+		}
+	}
+
+
+	function EnablePhotoViewer
+	{
+		[System.ComponentModel.Description(
+			'Restore traditional Windows Photo Viewer and set as default viewer')]
+		[CmdletBinding(HelpURI='cmd/extra')] param()
+
+		Write-Verbose 'associating the good old Photo Viewer'
+
+		# global preferences for all users
+		$pvcmd = '%SystemRoot%\System32\rundll32.exe "%ProgramFiles%\Windows Photo Viewer\PhotoViewer.dll", ImageView_Fullscreen %1'
+
+		EnsureHKCRDrive
+		@('Paint.Picture', 'giffile', 'jpegfile', 'icofile', 'pngfile') | % `
+		{
+			$0 = "HKCR:\$_\shell\open"
+			New-Item -Path $0 -Force | Out-Null
+			New-Item -Path "$0\command" | Out-Null
+			Set-ItemProperty $0 -Name 'MuiVerb' -Type ExpandString -Value '@%ProgramFiles%\Windows Photo Viewer\photoviewer.dll,-3043'
+			Set-ItemProperty "$0\command" -Name '(Default)' -Type ExpandString -Value $pvcmd
+		}
+
+		Write-Verbose 'adding Photo Viewer to "Open with..."'
+		$0 = 'HKCR:\Applications\photoviewer.dll\shell\open'
+		New-Item -Path "$0\command" -Force | Out-Null
+		New-Item -Path "$0\DropTarget" -Force | Out-Null
+		Set-ItemProperty $0 -Name 'MuiVerb' -Type String -Value '@photoviewer.dll,-3043'
+		Set-ItemProperty "$0\command" -Name '(Default)' -Type ExpandString -Value $pvcmd
+		Set-ItemProperty "$0\DropTarget" -Name 'Clsid' -Type String -Value '{FFE2A43C-56B9-4bf5-9A79-CC6D4285608A}'
+
+		# current user preferences
+		$0 = 'HKCU:\Software\Classes'
+		@('jpg', 'jpeg', 'gif', 'png', 'bmp', 'tiff', 'ico') | % `
+		{
+			Set-ItemProperty "$0\.$_" -Name '(Default)' -Type String -Value 'PhotoViewer.FileAssoc.Tiff'
+		}
+	}
+
+	function EnableRemoteDesktop
+	{
+		[System.ComponentModel.Description(
+			'Enable Remote Desktop hosting, for Windows Pro editions only')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		if (IsWindowsHomeEdition) {
+			WriteWarn 'Remote Desktop cannot be enabled on Windows Home edition'
+			return
+		}
+
+		Write-Verbose 'enabling Remote Desktop w/o Network Level Authentication...'
+		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
+		Set-ItemProperty $0 -Name 'fDenyTSConnections' -Type DWord -Value 0
+		Set-ItemProperty "$0\WinStations\RDP-Tcp" -Name 'UserAuthentication' -Type DWord -Value 0
+		Enable-NetFirewallRule -Name 'RemoteDesktop*'
+	}
+
+
+	function FixAirpodConnectivity
+	{
+		[System.ComponentModel.Description('Fixes airpod connectivity and pairing issues')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		# If airpods will pair but then continually lose connection after manually connecting...
+		# this disables power management on the Intel(R) Wireless Bluetooth(R) device
+		$0 = 'HKLM:\SYSTEM\ControlSet001\Control\Class\{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}\0000'
+		if (Test-Path $0)
+		{
+			Set-ItemProperty $0 -Name 'PnPCapabilities' -Type String -Value '24'
+		}
+
+		# enabled Device Manager >> HID >> Power Management tab 
+		# used to disable power management of Bluetooth Low Energy devices, like Airpods
+		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power'
+		Set-ItemProperty $0 -Name 'CsEnabled' -Type DWord -Value 0
+	}
+
+
+	function GetPowerShellProfile
+	{
+		[System.ComponentModel.Description('Install the WindowsPowerShell profile')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		Write-Verbose 'fetching WindowsPowerShell environment'
+
+		Push-Location ([Environment]::GetFolderPath('MyDocuments'))
+		git clone https://github.com/stevencohn/WindowsPowerShell.git
+		Pop-Location
+	}
+
+
+	function GetYellowCursors
+	{
+		[System.ComponentModel.Description(
+			'Install yellow mouse cursors making it easier to find the cursor on the screen')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		Write-Verbose 'enabling yellow mouse cursors'
+
+		Push-Location ([Environment]::GetFolderPath('MyDocuments'))
+		git clone https://github.com/stevencohn/YellowCursors.git
+		Push-Location YellowCursors
+		.\Install.ps1
+		Pop-Location
+		Remove-Item YellowCursors -Recurse -Force
+		Pop-Location
+	}
+
+
+	function InstallTools
+	{
+		[System.ComponentModel.Description('Install chocolatey, Git, and 7Zip')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		Write-Verbose 'installing helper tools'
+
+		InstallChocolatey
+		InstallGit
+
+		# install 7-Zip
+		if ((Get-Command 7z -ErrorAction:SilentlyContinue) -eq $null)
+		{
+			choco install -y 7zip
+		}
+	}
+
+
+	function RemoveCrapware
+	{
+		[System.ComponentModel.Description('The name says it all')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		Write-Verbose 'removing crapware (some exceptions may appear)'
+		$global:ProgressPreference = 'SilentlyContinue'
+
+		# Microsoft crapware
+		Get-AppxPackage *contactsupport* | Remove-AppxPackage
+
+		@('3DBuilder', 'BingFinance', 'BingNews', 'BingSports', 'BingTranslator', 'BingWeather',
+		'CommsPhone', 'Messaging', 'Microsoft3DViewer', 'MicrosoftOfficeHub', 'MicrosoftPowerBIForWindows',
+		'MicrosoftSolitaireCollection', 'MicrosoftStickyNotes', 'MinecraftUWP', 'NetworkSpeedTest',
+		'Office.OneNote', 'Office.Sway', 'OneConnect', 'People', 'Print3D', 'Microsoft.ScreenSketch',
+		'SkypeApp', 'Wallet', 'WindowsAlarms', 'WindowsCamera', 'WindowsCommunicationsapps',
+		'WindowsFeedbackHub', 'WindowsMaps', 'WindowsPhone', 'Windows.Photos', 'WindowsSoundRecorder',
+		'YourPhone', 'ZuneMusic', 'ZuneVideo') | % `
+		{
+			Get-AppxPackage "Microsoft.$_" | Remove-AppxPackage
+		}
+
+		# Paint 3D
+		Get-AppxPackage Microsoft.MSPaint | Remove-AppxPackage
+		$0 = 'Registry::HKEY_CLASSES_ROOT\SystemFileAssociations'
+		@('3mf', 'bmp', 'fbx', 'gif', 'jfif', 'jpe', 'jpeg', 'jpg', 'png', 'tif', 'tiff') | % `
+		{
+			$keypath = "$0\.$_\Shell\3D Edit"
+			if (Test-Path $keypath)
+			{
+				Remove-Item $keypath -Force -Recurse -Confirm:$false
+			}
+		}
+
+		# third party crap
+		@('2414FC7A.Viber', '41038Axilesoft.ACGMediaPlayer', '46928bounde.EclipseManager', '4DF9E0F8.Netflix',
+		'64885BlueEdge.OneCalendar', '7EE7776C.LinkedInforWindows', '828B5831.HiddenCityMysteryofShadows',
+		'89006A2E.AutodeskSketchBook', '828B5831.HiddenCityMysteryofShadows', '9E2F88E3.Twitter', 'A278AB0D.DisneyMagicKingdoms',
+		'A278AB0D.DragonManiaLegends', 'A278AB0D.MarchofEmpires', 'ActiproSoftwareLLC.562882FEEB491',
+		'AdobeSystemsIncorporated.AdobePhotoshopExpress', 'CAF9E577.Plex', 'D52A8D61.FarmVille2CountryEscape',
+		'D5EA27B7.Duolingo-LearnLanguagesforFree', 'DB6EA5DB.CyberLinkMediaSuiteEssentials',
+		'DolbyLaboratories.DolbyAccess', 'Drawboard.DrawboardPDF', 'E046963F.LenovoCompanion', 'Facebook.Facebook',
+		'flaregamesGmbH.RoyalRevolt2', 'GAMELOFTSA.Asphalt8Airborne', 'KeeperSecurityInc.Keeper', 'king.com.BubbleWitch3Saga',
+		'king.com.CandyCrushSaga', 'king.com.CandyCrushSodaSaga', 'LenovoCorporation.LenovoID', 'LenovoCorporation.LenovoSettings',
+		'Nordcurrent.CookingFever', 'PandoraMediaInc.29680B314EFC2', 'SpotifyAB.SpotifyMusic', 'WinZipComputing.WinZipUniversal',
+		'XINGAG.XING') | % `
+		{
+			Get-AppxPackage $_ | Remove-AppxPackage
+		}
+
+		# Xbox
+		@('XboxApp', 'XboxIdentityProvider', 'XboxSpeechToTextOverlay', 'XboxGamingOverlay', 'Xbox.TCUI') | % `
+		{
+			Get-AppxPackage "Microsoft.$_" | Remove-AppxPackage
+		}
+		Set-ItemProperty 'HKCU:\System\GameConfigStore' -Name 'GameDVR_Enabled' -Type DWord -Value 0
+		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR'
+		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
+		Set-ItemProperty $0 -Name 'AllowGameDVR' -Type DWord -Value 0
+
+		$global:ProgressPreference = 'Continue'
+
+		# unpin Microsoft Store game links
+		<#
+		# Unfortunately, new accounts come with Start Menu tiles that are links to Store games
+		# and those aren't included in the list of items below, so the investigation continues...
+		#
+		https://drive.google.com/file/d/0B9oZLqAezog6TFRPRmlkSjhLMUk/view?usp=sharing
+		$items = (New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items()
+		$items | % { $x=$_; $_.Verbs() } | ? { $_.Name -match 'Un.*pin from Start' } | % { $x.Name  }
+		#>
+	}
+
 
 	function ScheduleTempCleanup
 	{
@@ -68,6 +387,27 @@ Begin
 			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Purge TEMP" -RunLevel Highest
 		}
 	}
+
+
+	function SetConsoleProperties
+	{
+		[System.ComponentModel.Description(
+			'Set Windows Console properties, colors, font, and buffer size')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		Write-Verbose 'setting console properties'
+
+		Set-Colors -Theme ubuntu
+
+		# font
+		Set-ItemProperty HKCU:\Console -Name 'FaceName' -Value 'Lucida Console' -Force
+		Set-ItemProperty HKCU:\Console -Name 'FontSize' -Value 0x000c0000 -Force
+
+		# history=100, rows=9999
+		Set-ItemProperty HKCU:\Console -Name 'HistoryBufferSize' -Value 0x64 -Force
+		Set-ItemProperty HKCU:\Console -Name 'ScreenBufferSize' -Value 0x2329008c -Force
+	}
+
 
 	function SetExplorerProperties
 	{
@@ -192,81 +532,6 @@ Begin
 		Stop-Process -Name explorer
 	}
 
-	function EnablePhotoViewer
-	{
-		[System.ComponentModel.Description(
-			'Restore traditional Windows Photo Viewer and set as default viewer')]
-		[CmdletBinding(HelpURI='cmd/extra')] param()
-
-		Write-Verbose 'associating the good old Photo Viewer'
-
-		# global preferences for all users
-		$pvcmd = '%SystemRoot%\System32\rundll32.exe "%ProgramFiles%\Windows Photo Viewer\PhotoViewer.dll", ImageView_Fullscreen %1'
-
-		EnsureHKCRDrive
-		@('Paint.Picture', 'giffile', 'jpegfile', 'icofile', 'pngfile') | % `
-		{
-			$0 = "HKCR:\$_\shell\open"
-			New-Item -Path $0 -Force | Out-Null
-			New-Item -Path "$0\command" | Out-Null
-			Set-ItemProperty $0 -Name 'MuiVerb' -Type ExpandString -Value '@%ProgramFiles%\Windows Photo Viewer\photoviewer.dll,-3043'
-			Set-ItemProperty "$0\command" -Name '(Default)' -Type ExpandString -Value $pvcmd
-		}
-
-		Write-Verbose 'adding Photo Viewer to "Open with..."'
-		$0 = 'HKCR:\Applications\photoviewer.dll\shell\open'
-		New-Item -Path "$0\command" -Force | Out-Null
-		New-Item -Path "$0\DropTarget" -Force | Out-Null
-		Set-ItemProperty $0 -Name 'MuiVerb' -Type String -Value '@photoviewer.dll,-3043'
-		Set-ItemProperty "$0\command" -Name '(Default)' -Type ExpandString -Value $pvcmd
-		Set-ItemProperty "$0\DropTarget" -Name 'Clsid' -Type String -Value '{FFE2A43C-56B9-4bf5-9A79-CC6D4285608A}'
-
-		# current user preferences
-		$0 = 'HKCU:\Software\Classes'
-		@('jpg', 'jpeg', 'gif', 'png', 'bmp', 'tiff', 'ico') | % `
-		{
-			Set-ItemProperty "$0\.$_" -Name '(Default)' -Type String -Value 'PhotoViewer.FileAssoc.Tiff'
-		}
-	}
-
-	function EnableRemoteDesktop
-	{
-		[System.ComponentModel.Description(
-			'Enable Remote Desktop hosting, for Windows Pro editions only')]
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		if (IsWindowsHomeEdition) {
-			WriteWarn 'Remote Desktop cannot be enabled on Windows Home edition'
-			return
-		}
-
-		Write-Verbose 'enabling Remote Desktop w/o Network Level Authentication...'
-		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
-		Set-ItemProperty $0 -Name 'fDenyTSConnections' -Type DWord -Value 0
-		Set-ItemProperty "$0\WinStations\RDP-Tcp" -Name 'UserAuthentication' -Type DWord -Value 0
-		Enable-NetFirewallRule -Name 'RemoteDesktop*'
-	}
-
-
-	function FixAirpodConnectivity
-	{
-		[System.ComponentModel.Description('Fixes airpod connectivity and pairing issues')]
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		# If airpods will pair but then continually lose connection after manually connecting...
-		# this disables power management on the Intel(R) Wireless Bluetooth(R) device
-		$0 = 'HKLM:\SYSTEM\ControlSet001\Control\Class\{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}\0000'
-		if (Test-Path $0)
-		{
-			Set-ItemProperty $0 -Name 'PnPCapabilities' -Type String -Value '24'
-		}
-
-		# enabled Device Manager >> HID >> Power Management tab 
-		# used to disable power management of Bluetooth Low Energy devices, like Airpods
-		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power'
-		Set-ItemProperty $0 -Name 'CsEnabled' -Type DWord -Value 0
-	}
-
 
 	function SetExtras
 	{
@@ -378,231 +643,6 @@ Begin
 		powercfg /h on
 	}
 
-	function DisableHomeGroups
-	{
-		[System.ComponentModel.Description('Disable the useless Home Groups feature')]
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		# DisableHomeGroups
-		Write-Verbose 'stopping and disabling Home Groups services'
-		if (Get-Service HomeGroupListener -ErrorAction:SilentlyContinue)
-		{
-			Stop-Service 'HomeGroupListener' -WarningAction SilentlyContinue
-			Set-Service 'HomeGroupListener' -StartupType Disabled
-			Stop-Service 'HomeGroupProvider' -WarningAction SilentlyContinue
-			Set-Service 'HomeGroupProvider' -StartupType Disabled
-		}
-	}
-
-	function RemoveCrapware
-	{
-		[System.ComponentModel.Description('The name says it all')]
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		Write-Verbose 'removing crapware (some exceptions may appear)'
-		$global:ProgressPreference = 'SilentlyContinue'
-
-		# Microsoft crapware
-		Get-AppxPackage *contactsupport* | Remove-AppxPackage
-
-		@('3DBuilder', 'BingFinance', 'BingNews', 'BingSports', 'BingTranslator', 'BingWeather',
-		'CommsPhone', 'Messaging', 'Microsoft3DViewer', 'MicrosoftOfficeHub', 'MicrosoftPowerBIForWindows',
-		'MicrosoftSolitaireCollection', 'MicrosoftStickyNotes', 'MinecraftUWP', 'NetworkSpeedTest',
-		'Office.OneNote', 'Office.Sway', 'OneConnect', 'People', 'Print3D', 'Microsoft.ScreenSketch',
-		'SkypeApp', 'Wallet', 'WindowsAlarms', 'WindowsCamera', 'WindowsCommunicationsapps',
-		'WindowsFeedbackHub', 'WindowsMaps', 'WindowsPhone', 'Windows.Photos', 'WindowsSoundRecorder',
-		'YourPhone', 'ZuneMusic', 'ZuneVideo') | % `
-		{
-			Get-AppxPackage "Microsoft.$_" | Remove-AppxPackage
-		}
-
-		# Paint 3D
-		Get-AppxPackage Microsoft.MSPaint | Remove-AppxPackage
-		$0 = 'Registry::HKEY_CLASSES_ROOT\SystemFileAssociations'
-		@('3mf', 'bmp', 'fbx', 'gif', 'jfif', 'jpe', 'jpeg', 'jpg', 'png', 'tif', 'tiff') | % `
-		{
-			$keypath = "$0\.$_\Shell\3D Edit"
-			if (Test-Path $keypath)
-			{
-				Remove-Item $keypath -Force -Recurse -Confirm:$false
-			}
-		}
-
-		# third party crap
-		@('2414FC7A.Viber', '41038Axilesoft.ACGMediaPlayer', '46928bounde.EclipseManager', '4DF9E0F8.Netflix',
-		'64885BlueEdge.OneCalendar', '7EE7776C.LinkedInforWindows', '828B5831.HiddenCityMysteryofShadows',
-		'89006A2E.AutodeskSketchBook', '828B5831.HiddenCityMysteryofShadows', '9E2F88E3.Twitter', 'A278AB0D.DisneyMagicKingdoms',
-		'A278AB0D.DragonManiaLegends', 'A278AB0D.MarchofEmpires', 'ActiproSoftwareLLC.562882FEEB491',
-		'AdobeSystemsIncorporated.AdobePhotoshopExpress', 'CAF9E577.Plex', 'D52A8D61.FarmVille2CountryEscape',
-		'D5EA27B7.Duolingo-LearnLanguagesforFree', 'DB6EA5DB.CyberLinkMediaSuiteEssentials',
-		'DolbyLaboratories.DolbyAccess', 'Drawboard.DrawboardPDF', 'E046963F.LenovoCompanion', 'Facebook.Facebook',
-		'flaregamesGmbH.RoyalRevolt2', 'GAMELOFTSA.Asphalt8Airborne', 'KeeperSecurityInc.Keeper', 'king.com.BubbleWitch3Saga',
-		'king.com.CandyCrushSaga', 'king.com.CandyCrushSodaSaga', 'LenovoCorporation.LenovoID', 'LenovoCorporation.LenovoSettings',
-		'Nordcurrent.CookingFever', 'PandoraMediaInc.29680B314EFC2', 'SpotifyAB.SpotifyMusic', 'WinZipComputing.WinZipUniversal',
-		'XINGAG.XING') | % `
-		{
-			Get-AppxPackage $_ | Remove-AppxPackage
-		}
-
-		# Xbox
-		@('XboxApp', 'XboxIdentityProvider', 'XboxSpeechToTextOverlay', 'XboxGamingOverlay', 'Xbox.TCUI') | % `
-		{
-			Get-AppxPackage "Microsoft.$_" | Remove-AppxPackage
-		}
-		Set-ItemProperty 'HKCU:\System\GameConfigStore' -Name 'GameDVR_Enabled' -Type DWord -Value 0
-		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR'
-		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
-		Set-ItemProperty $0 -Name 'AllowGameDVR' -Type DWord -Value 0
-
-		$global:ProgressPreference = 'Continue'
-
-		# unpin Microsoft Store game links
-		<#
-		# Unfortunately, new accounts come with Start Menu tiles that are links to Store games
-		# and those aren't included in the list of items below, so the investigation continues...
-		#
-		https://drive.google.com/file/d/0B9oZLqAezog6TFRPRmlkSjhLMUk/view?usp=sharing
-		$items = (New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items()
-		$items | % { $x=$_; $_.Verbs() } | ? { $_.Name -match 'Un.*pin from Start' } | % { $x.Name  }
-		#>
-	}
-
-	function DisableOneDrive
-	{
-		[System.ComponentModel.Description('Disable OneDrive, useful for test machines and VMs')]
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		Write-Verbose 'disabling OneDrive...'
-		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive'
-		If (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
-		Set-ItemProperty $0 -Name 'DisableFileSyncNGSC' -Type DWord -Value 1
-
-		if ($PSVersionTable.PSEdition -ne 'Desktop') {
-			return
-		}
-
-		Write-Verbose 'attempting to uninstall OneDrive'
-
-		Write-Output "Uninstalling OneDrive..."
-		Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue
-		Start-Sleep -s 2
-		$onedrive = "$env:SYSTEMROOT\SysWOW64\OneDriveSetup.exe"
-		if (!(Test-Path $onedrive)) {
-			$onedrive = "$env:SYSTEMROOT\System32\OneDriveSetup.exe"
-		}
-
-		if (Test-Path $onedrive)
-		{
-			try
-			{
-				Start-Process $onedrive "/uninstall" -NoNewWindow -Wait -ErrorAction Stop
-				Start-Sleep -s 2
-				Stop-Process -Name "explorer" -Force -ErrorAction SilentlyContinue
-				Start-Sleep -s 2
-				Remove-Item -Path "$env:USERPROFILE\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
-				Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
-				Remove-Item -Path "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
-				Remove-Item -Path "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse -ErrorAction SilentlyContinue
-
-				EnsureHKCRDrive
-				Remove-Item -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
-				Remove-Item -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
-			}
-			catch
-			{
-				$log = "${env:PROGRAMDATA}\Initialize-Machine-Exception.log"
-				ConvertTo-Json $_.Exception | Out-File $log
-				Write-Verbose "EXCEPTION written to $log"
-			}
-		}
-	}
-
-	function InstallTools
-	{
-		[System.ComponentModel.Description('Install chocolatey, Git, and 7Zip')]
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		Write-Verbose 'installing helper tools'
-
-		InstallChocolatey
-		InstallGit
-
-		# install 7-Zip
-		if ((Get-Command 7z -ErrorAction:SilentlyContinue) -eq $null)
-		{
-			choco install -y 7zip
-		}
-	}
-
-	function DisableZipFolders
-	{
-		[System.ComponentModel.Description(
-			'Disable default Zip folder integration in Windows Explorer, increasing performance')]
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		Write-Verbose 'disabling default Windows Zip folder Explorer integration'
-
-		# take ownership of all Compressed Folders keys (e.g. replacing with 7-Zip)
-		Set-RegistryOwner 'HKCR' 'CLSID\{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}';
-		Set-RegistryOwner 'HKCR' 'CLSID\{0CD7A5C0-9F37-11CE-AE65-08002B2E1262}';
-		Set-RegistryOwner 'HKLM' 'SOFTWARE\WOW6432Node\Classes\CLSID\{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}';
-		Set-RegistryOwner 'HKLM' 'SOFTWARE\WOW6432Node\Classes\CLSID\{0CD7A5C0-9F37-11CE-AE65-08002B2E1262}';
-
-		# remove all Compressed Folders keys; back-ticks required to escape curly braces
-		Remove-Item -Path Registry::HKEY_CLASSES_ROOT\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -Force -Recurse -ErrorAction SilentlyContinue;
-		Remove-Item -Path Registry::HKEY_CLASSES_ROOT\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -Force -Recurse -ErrorAction SilentlyContinue;
-		Remove-Item -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31`} -Force -Recurse -ErrorAction SilentlyContinue;
-		Remove-Item -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\`{0CD7A5C0-9F37-11CE-AE65-08002B2E1262`} -Force -Recurse -ErrorAction SilentlyContinue;
-	}
-
-	function GetPowerShellProfile
-	{
-		[System.ComponentModel.Description('Install the WindowsPowerShell profile')]
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		Write-Verbose 'fetching WindowsPowerShell environment'
-
-		Push-Location ([Environment]::GetFolderPath('MyDocuments'))
-		git clone https://github.com/stevencohn/WindowsPowerShell.git
-		Pop-Location
-	}
-
-	function GetYellowCursors
-	{
-		[System.ComponentModel.Description(
-			'Install yellow mouse cursors making it easier to find the cursor on the screen')]
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		Write-Verbose 'enabling yellow mouse cursors'
-
-		Push-Location ([Environment]::GetFolderPath('MyDocuments'))
-		git clone https://github.com/stevencohn/YellowCursors.git
-		Push-Location YellowCursors
-		.\Install.ps1
-		Pop-Location
-		Remove-Item YellowCursors -Recurse -Force
-		Pop-Location
-	}
-
-	function SetConsoleProperties
-	{
-		[System.ComponentModel.Description(
-			'Set Windows Console properties, colors, font, and buffer size')]
-		[CmdletBinding(HelpURI='cmd')] param()
-
-		Write-Verbose 'setting console properties'
-
-		Set-Colors -Theme ubuntu
-
-		# font
-		Set-ItemProperty HKCU:\Console -Name 'FaceName' -Value 'Lucida Console' -Force
-		Set-ItemProperty HKCU:\Console -Name 'FontSize' -Value 0x000c0000 -Force
-
-		# history=100, rows=9999
-		Set-ItemProperty HKCU:\Console -Name 'HistoryBufferSize' -Value 0x64 -Force
-		Set-ItemProperty HKCU:\Console -Name 'ScreenBufferSize' -Value 0x2329008c -Force
-	}
-
 
 	function SetKeyboardProperties
 	{
@@ -618,51 +658,26 @@ Begin
 	}
 
 
-	function CreateHeadlessPowerPlan()
+	function SecurePagefile
 	{
 		[System.ComponentModel.Description(
-			'Create a power plan suitable for long-running backup or watching movies over HDMI')]
+			'Configure Windows to delete pagefile when Windows is shut down')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
-		# create a power plan, duplicate of Balanced, that adjusts the screen
-		# brightness to zero; used during backups and watching movies over HDMI :)
-
-		# unique ID generated just for our custom power plan
-		$headlessGuid = '1015f01d-73d6-47dd-906b-dc8af8cd7711'
-
-		if (powercfg /list | ? { $_.Contains($headlessGuid) })
-		{
-			Write-Verbose 'Headless power scheme already exists'
-			return
-		}
-
-		# these are well-known hard-coded values in Windows 10 21H1
-		# I do not know the first version in which they appeared
-		$balancedGuid = '381b4222-f694-41f0-9685-ff5bb260df2e'
-		$displayGuid = '7516b95f-f776-4464-8c53-06167f40cc99'
-		$brightnessGuid = 'aded5e82-b909-4619-9949-f5d71dac0bcb'
-
-		powercfg /duplicatescheme $balancedGuid $headlessGuid | Out-Null
-		powercfg /changename $headlessGuid 'Headless' 'Run backups or watch movies'
-		powercfg /setacvalueindex $headlessGuid $displayGuid $brightnessGuid 0
-		powercfg /setdcvalueindex $headlessGuid $displayGuid $brightnessGuid 0
+		# set to 1 to cause pagefile to be deleted upon shutdown
+		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management'
+		Set-ItemProperty $0 -Name 'ClearPageFileAtShutdown' -value 1 -Type DWord
 	}
 
 
-	function EnableHyperVEnhancedMode
+	function SetTimeZone
 	{
 		[System.ComponentModel.Description(
-			'Disable Windows Hello to allow Enhanced mode sessions for Hyper-V VMs')]
+			'Set the Clock time zone to EST, good for new installs and VMs')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
-		# are we running in a Hyper-V VM?
-		if ((gwmi Win32_BaseBoard).Manufacturer -eq 'Microsoft Corporation')
-		{
-			Write-Verbose 'disabling Windows Hello for this VM'
-			# 0=disabled, 2=enabled
-			$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
-			Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0	
-		}
+		Write-Verbose 'setting time zone'
+		tzutil /s 'Eastern Standard Time'
 	}
 
 
