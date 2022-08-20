@@ -649,6 +649,23 @@ Begin
 	}
 
 
+	function EnableHyperVEnhancedMode
+	{
+		[System.ComponentModel.Description(
+			'Disable Windows Hello to allow Enhanced mode sessions for Hyper-V VMs')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		# are we running in a Hyper-V VM?
+		if ((gwmi Win32_BaseBoard).Manufacturer -eq 'Microsoft Corporation')
+		{
+			Write-Verbose 'disabling Windows Hello for this VM'
+			# 0=disabled, 2=enabled
+			$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
+			Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0	
+		}
+	}
+
+
 	function GetCommandList
 	{
 		Get-ChildItem function:\ | `
@@ -693,6 +710,7 @@ Process
 	SetExplorerProperties
 	SetKeyboardProperties
 	SetExtras
+	EnableHyperVEnhancedMode
 	DisableHomeGroups
 	EnablePhotoViewer
 	EnableRemoteDesktop
