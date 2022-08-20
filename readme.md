@@ -268,10 +268,6 @@ Show containers and images in a single command.
 
 ![alt text](Images/show-docker.png "Show-Docker Example")
 
-#### [`Start-VMUntilReady`](Modules/Scripts/Start-VMUntilReady.ps1) -Name n [-Restart] [-Restore]
-Start the named VM, optionally restoring the latest snapshot, and waiting
-until the OS provides a stable heartbeat.
-
 #### [`Test-Elevated`](Modules/Scripts/Test-Elevated.ps1) [-Action a ] [-Warn]
 Determine if the current session is elevated and displays a warning message if not.
 Can be run without the warning message and simply return a boolean result.
@@ -289,6 +285,10 @@ Scan all sub-folders looking for .git directories and fetch/pull each to get lat
 #### [`Update-Profile`](Modules/Scripts/Update-Profile.ps1)
 Quick command line to pull latest source of this WindowsPowerShell repo from Github
 and update the content in $home\Documents\WindowsPowerShell.
+
+#### [`WaitFor-VM`](Modules/Scripts/WaitFor-VM.ps1) -Name n [-Restore]
+Start the named VM, optionally restoring the latest snapshot, and waiting
+until the OS provides a stable heartbeat.
 
 <a name="setup"></a>
 

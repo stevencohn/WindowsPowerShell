@@ -5,7 +5,7 @@ Standalone script to install Visual Studio or VSCode and their extensions.
 All parameters are mutually exlusive!
 
 .PARAMETER Code
-Install VSCode; default is to install Visual Studio
+Install VSCode; default is to install Visual Studio Professional
 
 .PARAMETER Community
 Install Visual Studio Community; default is to install Professional
@@ -15,13 +15,17 @@ Install Visual Studio Enterprise; default is to install Professional
 
 .PARAMETER Extensions
 Install general VSIX extenions
+
+.PARAMETER Professional
+Install Visual Studio Professional
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
-[CmdletBinding(SupportsShouldProcess = $true)]
+[CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName='pr')]
 
 param (
 	[Parameter(ParameterSetName='cd', Mandatory=$false)] [switch] $Code,
+	[Parameter(ParameterSetName='pr', Mandatory=$false)] [switch] $Professional,
 	[Parameter(ParameterSetName='en', Mandatory=$false)] [switch] $Enterprise,
 	[Parameter(ParameterSetName='cm', Mandatory=$false)] [switch] $Community,
 	[Parameter(ParameterSetName='ex', Mandatory=$false)] [switch] $Extensions
