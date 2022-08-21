@@ -27,7 +27,7 @@ Begin
         $available = choco outdated | where { $_ -match $mswinterm }
         if ($available)
         {
-            Write-Host '... upgrade is available; this windows will close' -ForegroundColor Cyan
+            Write-Host '... upgrade is available; this window will close' -ForegroundColor Cyan
             $ans = Read-Host '... Upgrade now? (Y/N) [Y]'
             if ($ans -eq '' -or $ans -eq 'Y')
             {
@@ -35,6 +35,9 @@ Begin
                     -FilePath "$env:ComSpec" `
                     -ArgumentList '/c', 'start', "powershell.exe -f `"$PSCommandPath`" -WinTermPID $PID"
             }
+        }
+        else {
+            Write-Host '... Windows Terminal is up to date'
         }
     }
 
