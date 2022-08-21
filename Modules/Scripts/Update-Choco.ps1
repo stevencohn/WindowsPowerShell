@@ -42,7 +42,10 @@ Begin
     function UpgradeWindowsTerminal
     {
         Write-Host '... upgrading Microsoft Windows Terminal'
+        # stop the PowerShell process running within the calling Terminal window
+        # Note this only stops the process from the calling window, not other Terminal windows
         Stop-Process $WinTermPID -Force
+        # stop all Terminal windows!
         Stop-Process -Name 'WindowsTerminal' -Force
         choco upgrade -y $mswinterm
 
