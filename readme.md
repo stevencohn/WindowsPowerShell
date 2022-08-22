@@ -275,6 +275,9 @@ Can be run without the warning message and simply return a boolean result.
 #### [`Test-RebootPending`](Modules/Scripts/Test-RebootPending.ps1) [-Report]
 Check the pending reboot status of the local computer.
 
+#### [`Update-Choco`](Modules/Scripts/Update-Choco.ps1) [-All]
+Upgrades all outdated chocolatey packages, including Windows Terminal from a Windows Terminal.
+
 #### [`Update-Environment`](Modules/Scripts/Update-Environment.ps1)
 Refresh the current session environment variables from the Registry by harvesting
 from both the local machine and the current user hives.
