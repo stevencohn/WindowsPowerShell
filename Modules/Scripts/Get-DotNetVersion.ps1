@@ -13,15 +13,16 @@ $netsdk = '-'
 
 if ((Get-Command dotnet -ErrorAction:SilentlyContinue) -ne $null)
 {
-	$m = (dotnet --list-runtimes) | select -last 1 | select-string -pattern '^(.*) \['
+	$m = (dotnet --list-runtimes) | where { $_ -match '\.NETCore' } | select -last 1 | select-string -pattern '^(.*) \['
 	if ($m.Matches.Success) { $netrun = $m.Matches.Groups[1].Value}
 
 	$m = (dotnet --list-sdks) | select -last 1 | select-string -pattern '^(.*) \['
 	if ($m.Matches.Success) { $netsdk = $m.Matches.Groups[1].Value}
 }
 
-Write-Host "Latest .NET Runtime: $netrun"
-Write-Host "Latest .NET SDK....: $netsdk"
+Write-Host
+Write-Host ".NET Runtime: $netrun"
+Write-Host ".NET SDK....: $netsdk"
 Write-Host
 
 Write-Host "Framework: $([Environment]::Version)" -NoNewline
