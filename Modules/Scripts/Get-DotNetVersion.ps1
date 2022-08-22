@@ -25,7 +25,7 @@ Write-Host ".NET Runtime: $netrun"
 Write-Host ".NET SDK....: $netsdk"
 Write-Host
 
-Write-Host "Framework: $([Environment]::Version)" -NoNewline
+Write-Host "Framework...: $([Environment]::Version)" -NoNewline
 
 Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -Recurse |
 Get-ItemProperty -name Version,Release,Install,PSChildName,SP -EA 0 |
@@ -33,7 +33,9 @@ Where { $_.PSChildName -match '^(?!S)\p{L}'} |
 Select PSChildName, Version, Release, @{
 	name='Product'
 	expression={
-		if ($_.Release -ge 461809) { '4.7.2 or later' }
+		if ($_.Release -ge 528449) { '4.8 Windows 11 or Windows Server 2022' }
+		elseif ($_.Release -ge 528372) { '4.8 Windows 10 May 2020, Oct 2020, May 2021' }
+		elseif ($_.Release -ge 528040) { '4.8 Windows 10 May 2019, Nov 2019' }
 		elseif ($_.Release -ge 461808) { '4.7.2' }
 		elseif ($_.Release -ge 461308) { '4.7.1' }
 		elseif ($_.Release -ge 460798) { '4.7 Original Release' }
