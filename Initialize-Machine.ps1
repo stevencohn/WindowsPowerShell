@@ -7,12 +7,6 @@ Invoke a single command from this script; default is to run all
 
 .PARAMETER ListCommands
 Show a list of all available commands
-
-.PARAMETER DisableCortana
-Disable Cortana advanced search support which uses excessive CPU.
-
-.PARAMETER DisableOneDrive
-Remove OneDrive support; default is to keep OneDrive.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -20,8 +14,6 @@ Remove OneDrive support; default is to keep OneDrive.
 
 param (
 	[parameter(Position=0)] $command,
-	[switch] $DisableOneDrive,
-	[switch] $DisableCortana,
 	[switch] $ListCommands
 )
 
@@ -610,8 +602,8 @@ Begin
 			if (Test-Path $0) { Set-ItemProperty $0 -Name 'TaskbarDa' -Type DWord -Value 0 }
 		}
 
-		# DisableCortana
-		Write-Verbose "Disabling Cortana..."
+		# Limit Cortana
+		Write-Verbose "Limiting Cortana..."
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Personalization\Settings'
 		If (!(Test-Path $0)) { New-Item -Path $0 -Force | Out-Null }
 		Set-ItemProperty $0 -Name 'AcceptedPrivacyPolicy' -Type DWord -Value 0
@@ -622,25 +614,31 @@ Begin
 		$0 = 'HKCU:\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore'
 		if (!(Test-Path $0)) { New-Item -Path $0 -Force | Out-Null }
 		Set-ItemProperty $0 -Name 'HarvestContacts' -Type DWord -Value 0
+
+		# enable Hibernate option
+		Write-Verbose 'enabling hibernate option'
+		powercfg /h on
+	}
+
+
+	function DisableCortana
+	{
+		[System.ComponentModel.Description('Disable Cortana search preserving excessive CPU')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		Write-Verbose "Disabling Cortana..."
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
 		if (!(Test-Path $0)) { New-Item -Path $0 -Force | Out-Null }
 		Set-ItemProperty $0 -Name 'AllowCortana' -Type DWord -Value 0
 
 		# Block Cortana SearchUI (uses excessive CPU)
-		if ($DisableCortana)
+		$0 = 'C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy'
+		if (Test-Path "$0\SearchUI.exe")
 		{
-			$0 = 'C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy'
-			if (Test-Path "$0\SearchUI.exe")
-			{
-				Stop-Process -Name 'SearchUI';
-				Set-ItemOwner "$0\SearchUI.exe"
-				Rename-Item "$0\SearchUI.exe" "$0\SearchUI.exe_BLOCK"
-			}
+			Stop-Process -Name 'SearchUI';
+			Set-ItemOwner "$0\SearchUI.exe"
+			Rename-Item "$0\SearchUI.exe" "$0\SearchUI.exe_BLOCK"
 		}
-
-		# enable Hibernate option
-		Write-Verbose 'enabling hibernate option'
-		powercfg /h on
 	}
 
 
@@ -732,10 +730,6 @@ Process
 	RemoveCrapware
 	SecurePagefile
 	ScheduleTempCleanup
-
-	if ($DisableOneDrive) {
-		DisableOneDrive
-	}
 
 	# requires powershell profile scripts
 	DisableZipFolders

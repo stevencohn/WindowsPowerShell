@@ -299,6 +299,8 @@ until the OS provides a stable heartbeat.
 Using the scripts below, a new machine can be configured and apps installed in under
 30 minutes.
 
+Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use of PowerShell.
+
 The recommended sequence to run:
 
 1. Initialize-Machine.ps1
@@ -314,14 +316,10 @@ This is a top-level script meant to be downloaded independently from this repo a
 initialize new machines. This script will download this repo to the current user's Document folder,
 setting it up as the default PowerShell profile. Best to download it to and run from the root of C.
 
-`Initialize-Machine.ps1 [-Command c] [-ListCommands] [-RemoveOneDrive] [-RemoveCortana]`
+`Initialize-Machine.ps1 [-Command c] [-ListCommands]
 
    * _command_ - optional argument to run a single command, default is to run all commands
    * -ListCommands - display all available commands supported by this script
-   * -RemoveOneDrive - disables OneDrive; useful for test machines that don't need personal profiles
-   * -RemoveCortana - disable Cortana advanced search UI which often consumes high CPU
-
-Run `Set-ExecutionPolicy RemoteSigned` prior to running if this is the first use of PowerShell.
 
 The Initialize-Machine script will download this repo into the MyDocuments folder, but
 if you have OneDrive enabled then the MyDocuments folder may differ from $home\Documents.
@@ -330,7 +328,12 @@ So before initializing, you can create a junction point to MyDocuments using thi
    1. `cd $home\Documents` 
    1. `cmd /c "mklink /j WindowsPowerShell $([Environment]::GetFolderPath('MyDocuments'))\WindowsPowerShell"`
 
-Since this updates the PowerShell console colors, you can close and reopen the console to
+Note there are two Initialie-Machine commands that are not run by default: DisableCortana and
+DisableOneDrive. To disable either of these, use the -Command argument, e.g.
+
+   `.\Initialize-Machine.ps1 -Command DisableCortana`
+
+And since this updates the PowerShell console colors, you can close and reopen the console to
 appreciate these fantastic new colors.
 
 #### [`Install-HyperV.ps1`](Install-HyperV.ps1)
