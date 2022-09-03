@@ -39,34 +39,12 @@ Begin
 	$script:reminders = @(@())
 
 
-	function GetCommandList
-	{
-		Get-ChildItem function:\ | Where HelpUri -match 'cmd' | select -expand Name | sort
-	}
-
-
-	function InvokeCommand
-	{
-		param($command)
-		$fn = Get-ChildItem function:\ | where Name -eq $command
-		if ($fn -and ($fn.HelpUri -match 'cmd'))
-		{
-			Highlight "... invoking command $($fn.Name)"
-			Invoke-Expression $fn.Name
-		}
-		else
-		{
-			Write-Host "$command is not a recognized command" -ForegroundColor Yellow
-			Write-Host 'Use -List argument to see all commands' -ForegroundColor DarkYellow
-		}
-	}
-
-
 	#==============================================================================================
 	# BASE
 
 	function InstallDotNetRuntime
 	{
+		[System.ComponentModel.Description('Install .NET 6 runtime')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if (((Get-Command dotnet -ErrorAction:SilentlyContinue) -eq $null) -or `
@@ -86,6 +64,7 @@ Begin
 
 	function InstallNetFx3
 	{
+		[System.ComponentModel.Description('Install .NET 3.5 Framework')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		# installState 1=enabled, 2=disabled, 3=absent, 4=unknown
@@ -105,6 +84,7 @@ Begin
 
 	function InstallNetFx4
 	{
+		[System.ComponentModel.Description('Install .NET 4.8 Framework')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		# .NET Framework is required by many apps
@@ -127,6 +107,7 @@ Begin
 
 	function InstallBareTail
 	{
+		[System.ComponentModel.Description('Install BareTail pro with custom profile')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		$target = "$tools\BareTail"
@@ -146,6 +127,7 @@ Begin
 
 	function InstallGreenshot
 	{
+		[System.ComponentModel.Description('choco Greenshot')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 		if (UnChocolatized 'greenshot')
 		{
@@ -166,6 +148,7 @@ Begin
 
 	function InstallMacrium
 	{
+		[System.ComponentModel.Description('Download Macrium installer bootstrap')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if (!(Test-Path "$env:ProgramFiles\Macrium\Reflect"))
@@ -198,6 +181,7 @@ Begin
 
 	function InstallNotepadPP
 	{
+		[System.ComponentModel.Description('choco Notepadplusplus, pluginmanager, and custom configs')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 		if (UnChocolatized 'notepadplusplus')
 		{
@@ -243,6 +227,7 @@ Begin
 
 	function InstallSysInternals
 	{
+		[System.ComponentModel.Description('Download custom collection of sysinternals')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		$target = "$tools\SysInternals"
@@ -280,6 +265,7 @@ Begin
 
 	function InstallTerminal
 	{
+		[System.ComponentModel.Description('choco Windows Terminal')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		<#
@@ -318,6 +304,7 @@ Begin
 
 	function ConfigureTerminalSettings
 	{
+		[System.ComponentModel.Description('Download Windows Terminal custom configs')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		# customize settings... for Terminal 1.8.1444.0, 1.9.1942.0
@@ -411,6 +398,7 @@ Begin
 
 	function ConfigureTerminalShortcut
 	{
+		[System.ComponentModel.Description('create shortcut for Windows Terminal (PoC)')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		# Create shortcut wt.lnk file; this then needs to be manually pinned to taskbar
@@ -428,6 +416,7 @@ Begin
 
 	function DisableCFG
 	{
+		[System.ComponentModel.Description('Disable Code Flow Guard for vmcomputer service')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if (!(HyperVInstalled))
@@ -465,6 +454,9 @@ Begin
 
 	function InstallDotNetSDK
 	{
+		[System.ComponentModel.Description('Install .NET 6 SDK')]
+		[CmdletBinding(HelpURI = 'cmd')] param()
+
 		# .NET SDK
 		if ((dotnet --list-sdks | where { $_ -match '6\.0\.' }).Count -eq 0)
 		{
@@ -479,6 +471,7 @@ Begin
 
 	function InstallNodeJs
 	{
+		[System.ComponentModel.Description('choco nodejs')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 		if ((Get-Command node -ErrorAction:SilentlyContinue) -eq $null)
 		{
@@ -498,6 +491,7 @@ Begin
 
 	function InstallAngular
 	{
+		[System.ComponentModel.Description('npm install latest Angular and helper packages')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 		if ((Get-Command ng -ErrorAction:SilentlyContinue) -eq $null)
 		{
@@ -518,6 +512,7 @@ Begin
 
 	function InstallAWSCLI
 	{
+		[System.ComponentModel.Description('choco awscli')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if ((Get-Command aws -ErrorAction:SilentlyContinue) -ne $null)
@@ -569,6 +564,7 @@ Begin
 
 	function InstallDockerDesktop
 	{
+		[System.ComponentModel.Description('choco Docker Desktop')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if (!(HyperVInstalled))
@@ -597,6 +593,7 @@ Begin
 
 	function InstallS3Browser
 	{
+		[System.ComponentModel.Description('choco S3Browser')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		if (UnChocolatized 's3browser')
@@ -615,6 +612,7 @@ Begin
 
 	function InstallDateInTray
 	{
+		[System.ComponentModel.Description('Download DateInTray (for Windows 10)')]
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		$target = "$tools\DateInTray"
@@ -645,6 +643,7 @@ Begin
 	
 	function InstallGreenfish
 	{
+		[System.ComponentModel.Description('Download Greenfish icon editor')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		# http://greenfishsoftware.org/gfie.php
@@ -673,6 +672,7 @@ Begin
 
 	function InstallWiLMa
 	{
+		[System.ComponentModel.Description('Download Windows Layout Manager')]
 		[CmdletBinding(HelpURI = 'cmd|extra')] param()
 
 		$target = "$tools\WiLMa"
@@ -703,6 +703,7 @@ Begin
 
 	function InstallWmiExplorer
 	{
+		[System.ComponentModel.Description('Download WMI Explorer')]
 		[CmdletBinding(HelpURI = 'cmd|extra')] param()
 
 		$target = "$tools\WmiExplorer"

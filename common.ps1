@@ -60,6 +60,14 @@ function EnsureHKCRDrive
     }
 }
 
+function GetCommandList
+{
+    Get-ChildItem function:\ | `
+        where HelpUri -match 'cmd' | `
+        sort-object -property @{expression={ $_.Name } } | `
+        foreach { [PsCustomObject]@{Name=$_.Name; Description=$_.scriptblock.attributes[0].description } }
+}
+
 function Highlight
 {
     param($text = '', $color = 'Yellow')
@@ -121,6 +129,21 @@ function InstallGit
     }
 }
 
+function InvokeCommand
+{
+    param($command)
+    $fn = Get-ChildItem function:\ | where Name -eq $command
+    if ($fn -and ($fn.HelpUri -match 'cmd'))
+    {
+        Highlight "... invoking command $($fn.Name)"
+        Invoke-Expression $fn.Name
+    }
+    else
+    {
+        Write-Host "$command is not a recognized command" -ForegroundColor Yellow
+        Write-Host 'Use -List argument to see all commands' -ForegroundColor DarkYellow
+    }
+}
 function IsElevated
 {
     # Modules/Scripts contains a better/alt version but this is a stand-alone copy for the

@@ -677,15 +677,6 @@ Begin
 		Write-Verbose 'setting time zone'
 		tzutil /s 'Eastern Standard Time'
 	}
-
-
-	function GetCommandList
-	{
-		Get-ChildItem function:\ | `
-			where HelpUri -match 'cmd' | `
-			sort-object -property @{expression={ $_.Name } } | `
-			foreach { [PsCustomObject]@{Name=$_.Name; Description=$_.scriptblock.attributes[0].description } }
-	}
 }
 Process
 {
@@ -695,21 +686,14 @@ Process
 		return
 	}
 
+	if (!(IsElevated))
+	{
+		return
+	}
+
 	if ($command)
 	{
-		$fn = Get-ChildItem function:\ | where Name -eq $command
-		if ($fn)
-		{
-			if ($fn.HelpUri -match 'cmd')
-			{
-				Write-Host "... invoking command $($fn.Name)"
-				Invoke-Expression $fn.Name
-				return
-			}
-		}
-
-		Write-Host "$command is not a recognized command" -ForegroundColor Yellow
-		Write-Host 'Use -List argument to see all commands' -ForegroundColor DarkYellow
+		InvokeCommand $command
 		return
 	}
 
