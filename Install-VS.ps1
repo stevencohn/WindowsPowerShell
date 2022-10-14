@@ -61,6 +61,7 @@ Begin
 			code --install-extension anseki.vscode-color
 			code --install-extension eg2.tslint
 			code --install-extension ionutvmi.reg
+			code --install-extension AykutSarac.jsoncrack-vscode
 			code --install-extension mikeburgh.xml-format
 			code --install-extension ms-azuretools.vscode-docker
 			code --install-extension ms-python.python
