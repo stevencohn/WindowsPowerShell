@@ -38,7 +38,7 @@ Process
                     # use 'Get-Colors -all' command to fine DOS [esc color numbers
                     switch ($_.EventId)
                     {
-                        41 { $color = '31'; break } # dark red
+                        #41 { $color = '31'; break } # dark red
                         #1074 { $color = '33'; break } # dark yellow
                         #1076 { $color = '33'; break } # dark yellow
                         6005 { $color = '32'; break } # dark green
