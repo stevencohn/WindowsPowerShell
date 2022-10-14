@@ -1,0 +1,89 @@
+<#
+.SYNOPSIS
+List events related to system reboots.
+
+.PARAMETER Uptime
+Include uptime events in report; default is to hide these
+#>
+
+# CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
+[CmdletBinding(SupportsShouldProcess=$true)]
+
+param([switch] $Uptime)
+
+Begin
+{
+}
+Process
+{
+    $ids = (41,1074,1076,6005,6006,6008,6009)
+
+    if ($Uptime) {
+        $ids += (6013)
+    }
+
+    $esc = [char]27
+    $color = ''
+
+    Get-EventLog System -Newest 10000 | `
+        Where EventId -in $ids | `
+        Format-Table `
+            @{
+                Label = 'Time'
+                Expression = { $_.TimeGenerated }
+            },
+            EventId,
+            UserName,
+            @{
+                Label = 'Message'
+                Expression =
+                {
+                    # use 'Get-Colors -all' command to fine DOS esc color numbers
+                    switch ($_.EventId)
+                    {
+                        1076 { $color = '35'; break } # dark magenta
+                        6005 { $color = '32'; break } # dark green
+                        6006 { $color = '31'; break } # dark red
+                        6009 { $color = '90'; break } # dark gray
+                        6013 { $color = '90'; break } # dark gray
+                        default { $color = '37' } # normal white
+                    }
+                    "$esc[$color`m$($_.Message)$esc[0m"
+                }
+             }`
+            -AutoSize -Wrap
+}
+
+<#
+Search for events here: https://kb.eventtracker.com/
+
+41
+The time service has been configured to use one or more input providers. However, none of the
+input providers is still running. The time service has no source of accurate time. 
+
+1074
+The process %1 has initiated the %5 of computer %2 on behalf of user %7 for the following reason: %3 
+
+1076
+The reason supplied by user %6 for the last unexpected shutdown of this computer
+is: %1 Reason Code: %2 Bug ID: %3 Bugcheck String: %4 Comment: %5
+
+6005, 6006, 6008, 6009
+Windows NT 4.0 SP 4 records the system startup and shutdown times and logs them in the event
+log; event IDs are logged for informational purposes only
+
+6005
+The Event log service was started.
+
+6006
+The Event log service was stopped.
+
+6008
+The previous system shutdown at %1 on %2 was unexpected.
+
+6009
+Microsoft (R) Windows 2000 (R) <version> Service Pack <number> Uniprocessor Free.
+
+6013
+The system uptime is <number> seconds. 
+#>
