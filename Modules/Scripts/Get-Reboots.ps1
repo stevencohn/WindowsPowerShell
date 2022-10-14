@@ -44,6 +44,7 @@ Process
                         1076 { $color = '35'; break } # dark magenta
                         6005 { $color = '32'; break } # dark green
                         6006 { $color = '31'; break } # dark red
+                        6008 { $color = '91'; break } # red
                         6009 { $color = '90'; break } # dark gray
                         6013 { $color = '90'; break } # dark gray
                         default { $color = '37' } # normal white
