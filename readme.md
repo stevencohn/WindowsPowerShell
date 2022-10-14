@@ -164,6 +164,9 @@ stored in the Windows Registry.
 #### [`Get-Performance`](Modules/Scripts/Get-Performance.ps1)
 Get and report performance metrics using the built-in WinSAT utility.
 
+#### [`Get-Reboots`](Modules/Scripts/Get-Reboots.ps1) [-Uptime]
+List Windows Event Log events related to system reboots.
+
 #### [`Get-Scripts`](Modules/Scripts/Get-Scripts.ps1)
 List all external scripts and their parameter names.
 

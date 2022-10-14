@@ -28,24 +28,23 @@ Process
     Get-EventLog System -Newest 10000 | `
         Where EventId -in $ids | `
         Format-Table `
-            @{
-                Label = 'Time'
-                Expression = { $_.TimeGenerated }
-            },
+            TimeGenerated,
             EventId,
             UserName,
             @{
                 Label = 'Message'
                 Expression =
                 {
-                    # use 'Get-Colors -all' command to fine DOS esc color numbers
+                    # use 'Get-Colors -all' command to fine DOS [esc color numbers
                     switch ($_.EventId)
                     {
-                        1076 { $color = '35'; break } # dark magenta
+                        41 { $color = '31'; break } # dark red
+                        #1074 { $color = '33'; break } # dark yellow
+                        #1076 { $color = '33'; break } # dark yellow
                         6005 { $color = '32'; break } # dark green
                         6006 { $color = '31'; break } # dark red
                         6008 { $color = '91'; break } # red
-                        6009 { $color = '90'; break } # dark gray
+                        6009 { $color = '34'; break } # dark blue
                         6013 { $color = '90'; break } # dark gray
                         default { $color = '37' } # normal white
                     }
@@ -68,10 +67,6 @@ The process %1 has initiated the %5 of computer %2 on behalf of user %7 for the 
 1076
 The reason supplied by user %6 for the last unexpected shutdown of this computer
 is: %1 Reason Code: %2 Bug ID: %3 Bugcheck String: %4 Comment: %5
-
-6005, 6006, 6008, 6009
-Windows NT 4.0 SP 4 records the system startup and shutdown times and logs them in the event
-log; event IDs are logged for informational purposes only
 
 6005
 The Event log service was started.
