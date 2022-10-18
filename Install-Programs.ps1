@@ -200,6 +200,14 @@ Begin
 			# includes a dark-selenitic Markdown lang theme
 			DownloadBootstrap 'npp-userDefineLangs.zip' $0
 
+			$0 = "$($env:APPDATA)\Notepad++\config.xml"
+			# ... TODO: update config.xml with custom DarkMode settings ...
+			#<GUIConfig name="DarkMode" enable="yes" colorTone="32" customColorTop="1844006"
+			#	customColorMenuHotTrack="16512" customColorActive="4210752" customColorMain="1844006"
+			#	customColorError="176" customColorText="14737632" customColorDarkText="12632256"
+			#	customColorDisabledText="8421504" customColorLinkText="65535" customColorEdge="5395026"
+			#	customColorHotEdge="10197915" customColorDisabledEdge="4737096" />
+
 			<# To do this manually, in elevated CMD prompt:
 			reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\notepad.exe" `
 			  /v "Debugger" /t REG_SZ /d "\"%ProgramFiles%\Notepad++\notepad++.exe\" -notepadStyleCmdline -z" /f
