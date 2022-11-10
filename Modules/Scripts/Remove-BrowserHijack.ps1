@@ -43,6 +43,30 @@ Begin
     {
         Unregister-ScheduledTask $taskName
     }
+
+    function RemoveHijack
+    {
+        param($0, $p)
+        if (Test-Path $0)
+        {
+            $p | foreach { 
+                if ((Get-ItemProperty $0).$_ -ne $null) {
+                    Write-Host "removing $0 " -NoNewline -ForegroundColor DarkGray
+                    Write-Host $_
+                    Remove-ItemProperty $0 $_
+                }
+            }
+        }    
+    }
+
+    function RemoveHijackKey
+    {
+        param($0)
+        if (Test-Path $0) {
+            Write-Host "removing $0"
+            Remove-Item -Force -Recurse $0
+        }
+    }
 }
 Process
 {
@@ -60,37 +84,37 @@ Process
 
     # fix it now!
 
-    # Chrome
-    $0 = 'HKCU:\SOFTWARE\Policies\Google\Chrome'
-    $p = @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
-    $p | foreach { if ((Get-ItemProperty $0).$_ -ne $null) { Remove-ItemProperty $0 $_ } }
-    $0 = 'HKCU:\SOFTWARE\Policies\Google\Chrome\Recommended'
-    $p | foreach { if ((Get-ItemProperty $0).$_ -ne $null) { Remove-ItemProperty $0 $_ } }
 
-    $0 = 'HKCU:\SOFTWARE\Policies\Google\Chrome\RestoreOnStartupURLs'
-    $p = $('HomepageLocation')
-    $p | foreach { if ((Get-ItemProperty $0).$_ -ne $null) { Remove-ItemProperty $0 $_ } }
-    $0 = 'HKCU:\SOFTWARE\Policies\Google\Chrome\Recommended\RestoreOnStartupURLs'
-    $p | foreach { if ((Get-ItemProperty $0).$_ -ne $null) { Remove-ItemProperty $0 $_ } }
+    #HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\MDM\AppDB
+
+    # Chrome
+    RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
+    RemoveHijack 'HKLM:\SOFTWARE\Policies\Google\Chrome' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
+    RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome\Recommended' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
+    RemoveHijack 'HKLM:\SOFTWARE\Policies\Google\Chrome\Recommended' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
+    RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome\RestoreOnStartupURLs' @('HomepageLocation')
+    RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome\Recommended\RestoreOnStartupURLs' @('HomepageLocation')
+
+    RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Chrome~Policy~googlechrome~Startup'
+    RemoveHijackKey 'HKLM:\SOFTWARE\Policies\Google\Chrome\RestoreOnStartupURLs'
+    RemoveHijackKey 'HKLM:\SOFTWARE\WOW6432Node\Policies\Google\Chrome\RestoreOnStartupURLs'
+    RemoveHijackKey 'HKLM:\SOFTWARE\WOW6432Node\Policies\Google\Chrome\Recommended\RestoreOnStartupURLs'
+    RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\Chrome~Policy~googlechrome_recommended~Startup_recommended'
+    RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\Chrome~Policy~googlechrome~Startup'
+    RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\Providers\89FA9032-04AF-4BA8-BD43-936A846F7EFE\default\Device\Chrome~Policy~googlechrome~Startup'
 
     # Edge
-    $0 = 'HKCU:\SOFTWARE\Policies\Microsoft\Edge\Recommended'
-    $p = @('HomepageLocation', 'RestoreOnStartup', 'ShowHomeButton', 'InternetExplorerIntegrationSiteList')
-    $p | foreach { if ((Get-ItemProperty $0).$_ -ne $null) { Remove-ItemProperty $0 $_ } }
+    RemoveHijack 'HKCU:\SOFTWARE\Policies\Microsoft\Edge\Recommended' @('HomepageLocation', 'RestoreOnStartup', 'ShowHomeButton', 'InternetExplorerIntegrationSiteList')
+    RemoveHijack 'HKCU:\SOFTWARE\Policies\Microsoft\Edge\Internet Settings' @('ProvisionedHomePages')
+    RemoveHijack 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' @('HomepageLocation', 'RestoreOnStartup', 'ShowHomeButton', 'InternetExplorerIntegrationSiteList')
 
-    $0 = 'HKCU:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Internet Settings'
-    $p = 'ProvisionedHomePages'
-    if ((Get-ItemProperty $0).$p -ne $null) { Remove-ItemProperty $0 $p }
-
-    $0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge'
-    $p = 'HomepageLocation'
-    if ((Get-ItemProperty $0).$p -ne $null) { Remove-ItemProperty $0 $p }
-
-    $0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge'
-    $p = 'InternetExplorerIntegrationSiteList'
-    if ((Get-ItemProperty $0).$p -ne $null) { Remove-ItemProperty $0 $p }
+    RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\microsoft_edge~Policy~microsoft_edge~Startup'
+    RemoveHijackKey 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\RestoreOnStartupURLs'
+    RemoveHijackKey 'HKLM:\SOFTWARE\WOW6432Node\Policies\Microsoft\Policies\Microsoft\Edge\RestoreOnStartupURLs'
+    RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\microsoft_edge~Policy~microsoft_edge_recommended~Startup_recommended'
+    RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\microsoft_edge~Policy~microsoft_edge~Startup'
+    RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\Providers\89FA9032-04AF-4BA8-BD43-936A846F7EFE\default\Device\microsoft_edge~Policy~microsoft_edge~Startup'
 
     # Firefox
-    $0 = 'HKCU:\SOFTWARE\Policies\Mozilla\Firefox\Homepage'
-    if (Test-Path $0) { Remove-Item $0 }
+    RemoveHijackKey 'HKCU:\SOFTWARE\Policies\Mozilla\Firefox\Homepage'
 }
