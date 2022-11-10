@@ -84,9 +84,6 @@ Process
 
     # fix it now!
 
-
-    #HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\MDM\AppDB
-
     # Chrome
     RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
     RemoveHijack 'HKLM:\SOFTWARE\Policies\Google\Chrome' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
