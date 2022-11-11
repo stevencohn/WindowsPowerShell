@@ -36,7 +36,7 @@ Begin
 	. $PSScriptRoot\common.ps1
 
 	$Year = '2022'
-	$Version = '17.3'
+	$Version = '17.4'
 
 
 	function InstallVSCode
