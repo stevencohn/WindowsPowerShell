@@ -4,7 +4,7 @@
 Removes corporate browser hijacking (default home page, broken Restore Pages feature, etc)
 
 .DESCRIPTION
-Removes group policy registry keys that are created by Waters IT in an attempt to waste
+Removes group policy registry keys that are created by IT in an attempt to waste
 time by constantly directing users to a site they are not trying to visit.
 
 .PARAMETER Install
