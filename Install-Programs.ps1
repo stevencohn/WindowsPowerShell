@@ -787,12 +787,12 @@ Process
 		InstallAngular
 		InstallAWSCli
 		InstallDockerDesktop
-		InstallS3Browser
+		#InstallS3Browser
 
 		Chocolatize 'k9s'
 		Chocolatize 'linqpad'
 		Chocolatize 'nuget.commandline'
-		Chocolatize 'robo3t'
+		#Chocolatize 'robo3t'
 	}
 
 	# EXTRAS...
