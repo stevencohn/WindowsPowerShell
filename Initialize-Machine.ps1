@@ -469,14 +469,7 @@ Begin
 		# disable "-shortcut" suffix to newly created shortcuts, first byte must be 0
 		Set-ItemProperty $0 -Name 'link' -Type Binary -Value ([byte[]](0,0,0,0))
 
-		# unpin all items from Quick access
-		$shapp = New-Object -ComObject shell.application
-		$shapp.Namespace("shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}").Items() | % { $_.InvokeVerb("unpinfromhome") }
-		# hide Quick access (delete HubMode value to reenable)
-		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
-		Set-ItemProperty $0 -Name 'HubMode' -Type DWord -Value 1 -Force | Out-Null
-		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace_36354489\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}'
-		Rename-Item $0 ':{f874310e-b6b7-47dc-bc84-b9e6b38f5903}'
+		HideExplorerNavPaneItems
 
 		# hide 3D Objects folder
 		$k = '{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}'
@@ -528,6 +521,42 @@ Begin
 
 		# restart explorer.exe
 		Stop-Process -Name explorer
+	}
+
+
+	function HideExplorerNavPaneItems
+	{
+		[System.ComponentModel.Description(
+			'Hide duplicate items from Explorer navigation pane')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		# unpin all items from Quick access
+		$shapp = New-Object -ComObject shell.application
+		$shapp.Namespace("shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}").Items() | % { $_.InvokeVerb("unpinfromhome") }
+
+		# hide Quick Access/Home (to reenable, delete the HubMode value)
+		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
+		Set-ItemProperty $0 -Name 'HubMode' -Type DWord -Value 1 -Force | Out-Null
+
+		$items = @(
+			'{3ADD1653-EB32-4cb0-BBD7-DFA0ABB5ACCA}', # CLSID_ThisPCMyPicturesRegFolder
+			'{A0953C92-50DC-43bf-BE83-3742FED03C9C}', # CLSID_ThisPCMyVideosRegFolder
+		   	'{A8CDFF1C-4878-43be-B5FD-F8091C1C60D0}', # CLSID_ThisPCDocumentsRegFolder
+		    '{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}', # CLSID_ThisPCDesktopRegFolder
+			'{f86fa3ab-70d2-4fc7-9c99-fcbf05467f3a}'  # CLSID_ThisPCLocalVideosRegFolder
+		)
+
+		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace'
+		$items | foreach { if (Test-Path "$0\$_") { Rename-Item "$0\$_" -NewName ":$_" } }
+
+		$0 = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace'
+		$items | foreach { if (Test-Path "$0\$_") { Rename-Item "$0\$_" -NewName ":$_" } }
+
+		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace_36354489'
+		$items | foreach { if (Test-Path "$0\$_") { Rename-Item "$0\$_" -NewName ":$_" } }
+
+		$0 = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace_36354489'
+		$items | foreach { if (Test-Path "$0\$_") { Rename-Item "$0\$_" -NewName ":$_" } }
 	}
 
 
