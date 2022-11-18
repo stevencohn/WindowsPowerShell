@@ -16,8 +16,7 @@ param(
 
 begin
 {
-
-	Add-Type -TypeDef @"
+	$csharp = @"
 using System;
 using System.IO;
 using System.Text;
@@ -25,7 +24,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace Huddled.Interop
+namespace InteropHelper
 {
    [Flags()] // SHELL_LINK_DATA_FLAGS
    public enum ShellLinkFlags : uint {
@@ -509,14 +508,30 @@ namespace Huddled.Interop
       }
    }
 }
-"@ -ReferencedAssemblies System.Drawing
+"@
+
+   if ($psversiontable.psversion.major -eq 5)
+   {
+      Add-Type -TypeDef $csharp -Language CSharp -ReferencedAssemblies System.Drawing
+   }
+   else
+   {
+      $refs = @(
+         'System',
+         'System.Drawing.Primitives',
+         'System.IO',
+         'System.Runtime',
+         'System.Runtime.InteropServices'
+      )
+      Add-Type -TypeDef $csharp -Language CSharp -ReferencedAssemblies $refs
+   }
 
 	function global:Get-Link
 	{ 
 		param([Parameter(ValueFromPipelineByPropertyName = $true)][Alias("PSPath")][string]$Path) 
 		process
 		{
-			New-Object Huddled.Interop.ShellLink (Convert-Path $Path)
+			New-Object InteropHelper.ShellLink (Convert-Path $Path)
 		}
 	}
 }
