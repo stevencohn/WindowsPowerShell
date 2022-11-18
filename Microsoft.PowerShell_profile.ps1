@@ -31,7 +31,7 @@ New-Alias pushp Push-PSRoot
 Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
 
 # curl.exe is installed as a choco package to \system32; ensure no alias
-Remove-Item alias:curl
+Remove-Item alias:curl -ErrorAction SilentlyContinue
 
 function Start-Wilma { & 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe' }
 New-Alias wilma Start-Wilma 
@@ -59,7 +59,9 @@ if (Test-Path($ChocolateyProfile)) {
 # interactive shell, otherwise it will interfere with command-lines like Flat.bat and modifying
 # the current working directory when we don't want it to!
 
-$cmd = (gwmi win32_process -filter ("ProcessID={0}" -f (gwmi win32_process -filter "ProcessID=$PID").ParentProcessID)).CommandLine
+$cmd = (Get-WmiObject win32_process -filter ("ProcessID={0}" -f `
+	(Get-WmiObject win32_process -filter "ProcessID=$PID").ParentProcessID)).CommandLine
+
 if ($cmd -notmatch 'cmd\.exe')
 {
 	if (Test-Path 'D:\scp') { Set-Location 'D:\scp'; }

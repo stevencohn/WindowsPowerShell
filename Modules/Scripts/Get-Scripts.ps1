@@ -21,11 +21,14 @@ Get-Command -CommandType ExternalScript | % `
 	Write-Host "$name " -NoNewline
 
 	$parameters = $_.Parameters
-	$parameters.Keys | ? { $sysparams -notcontains $_ } | % `
+	if ($parameters -ne $null)
 	{
-		$p = $parameters[$_]
-		$c = if ($p.ParameterType -like 'Switch') { 'DarkGray' } else { 'DarkCyan' }
-		Write-Host "-$_ " -NoNewline -ForegroundColor $c
+		$parameters.Keys | ? { $sysparams -notcontains $_ } | % `
+		{
+			$p = $parameters[$_]
+			$c = if ($p.ParameterType -like 'Switch') { 'DarkGray' } else { 'DarkCyan' }
+			Write-Host "-$_ " -NoNewline -ForegroundColor $c
+		}
 	}
 
 	$alias = $aliases[$name]
