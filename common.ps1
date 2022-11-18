@@ -126,6 +126,9 @@ function InstallGit
         # Git adds its path to the Machine PATH but not the Process PATH; copy it so we don't need to restart the shell
         $gitpath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) -split ';' | ? { $_ -match 'Git\\cmd' }
         $env:Path = "${env:Path};$gitpath"
+
+        Write-Host "git installed; consider running the command" -ForegroundColor Yellow
+        Write-Host '>> git config --global --add safe.directory *' -ForegroundColor DarkYellow
     }
 
     if ((Get-Command gpg -ErrorAction:SilentlyContinue) -eq $null)
