@@ -425,15 +425,15 @@ Begin
 		Set-ItemProperty $0 -Name 'PeopleBand' -Type DWord -Value 0
 
 		$0 = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+		# hide widgets panel
+		Set-ItemProperty $0 -Name 'TaskbarDa' -Value 0 -Type DWord
+		# hide chat icon
+		Set-ItemProperty $0 -Name 'TaskbarMn' -Value 0 -Type DWord
 
 		if (!(IsWindows11))
 		{
 			# taskbar small buttons
 			Set-ItemProperty $0 -Name 'TaskbarSmallIcons' -Value 1 -Type DWord
-			# hide widgets panel
-			Set-ItemProperty $0 -Name 'TaskbarDa' -Value 0 -Type DWord
-			# hide chat icon
-			Set-ItemProperty $0 -Name 'TaskbarMn' -Value 0 -Type DWord
 		}
 
 		# disable item checkboxes
