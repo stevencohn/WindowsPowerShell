@@ -475,6 +475,8 @@ Begin
 		# hide Quick access (delete HubMode value to reenable)
 		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
 		Set-ItemProperty $0 -Name 'HubMode' -Type DWord -Value 1 -Force | Out-Null
+		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace_36354489\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}'
+		Rename-Item $0 ':{f874310e-b6b7-47dc-bc84-b9e6b38f5903}'
 
 		# hide 3D Objects folder
 		$k = '{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}'

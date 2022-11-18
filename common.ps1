@@ -127,6 +127,15 @@ function InstallGit
         $gitpath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) -split ';' | ? { $_ -match 'Git\\cmd' }
         $env:Path = "${env:Path};$gitpath"
     }
+
+    if ((Get-Command gpg -ErrorAction:SilentlyContinue) -eq $null)
+    {
+        HighTitle 'GnuPG'
+        choco install -y gnupg
+        # Git adds its path to the Machine PATH but not the Process PATH; copy it so we don't need to restart the shell
+        $gpgpath = "$([Environment]::GetEnvironmentVariable("ProgramFiles(x86)"))\gnupg"
+        $env:Path = "${env:Path};$gpgpath"
+    }
 }
 
 function InvokeCommand

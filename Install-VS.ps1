@@ -130,11 +130,11 @@ Begin
 		$root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
 		$installer = "$root\Common7\IDE\vsixinstaller.exe"
 
-		InstallVsix $installer 'EditorGuidelines'
-		InstallVsix $installer 'MarkdownEditor'
-		InstallVsix $installer 'SonarLint'
+		InstallVsix $installer 'EditorGuidelines' 	# PaulHarrington.EditorGuidelines
+		InstallVsix $installer 'MarkdownEditor' 	# MadsKristensen.MarkdownEditor2
+		InstallVsix $installer 'SonarLint' 			# SonarSource.SonarLintforVisualStudio2022
 		InstallVsix $installer 'SpecFlow'
-		InstallVsix $installer 'VSColorOutput'
+		InstallVsix $installer 'VSColorOutput'		# MikeWard-AnnArbor.VSColorOutput
 
 		Write-Host
 		WriteWarn '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS'
