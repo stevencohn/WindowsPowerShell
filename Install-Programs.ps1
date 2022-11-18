@@ -192,12 +192,8 @@ Begin
 			New-Item $themes -ItemType Directory -Force
 			Copy-Item "$home\Documents\WindowsPowerShell\Themes\Dark Selenitic npp.xml" "$themes\Dark Selenitic.xml"
 
-			$0 = "$($env:APPDATA)\Notepad++\userDefineLangs"
-			if (!(Test-Path $0))
-			{
-				New-Item $0 -ItemType Directory -Force -Confirm:$false
-			}
 			# includes a dark-selenitic Markdown lang theme
+			$0 = "$($env:APPDATA)\Notepad++"
 			DownloadBootstrap 'npp-config.zip' $0
 
 			# expand %appdata% in GUIConfig[stylerTheme] attribute

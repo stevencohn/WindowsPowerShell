@@ -697,6 +697,15 @@ Process
 		return
 	}
 
+	if (!(Test-Path "$home\Documents\WindowsPowerShell\Modules\Scripts\"))
+	{
+		Write-Host
+		WriteWarn '... Could not find $home\Documents\WindowsPowerShell scripts'
+		WriteWarn '... If your profile is on OneDrive, use this command to link to it:'
+		WriteWarn '... DOS> mklink /j WindowsPowerShell $home\OneDrive\Documents\WindowsPowerShell'
+		return
+	}
+
 	if ($command)
 	{
 		InvokeCommand $command
