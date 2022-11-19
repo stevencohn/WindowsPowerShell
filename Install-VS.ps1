@@ -68,12 +68,13 @@ Begin
 			code --install-extension ms-vscode-remote.remote-wsl
 			code --install-extension ms-dotnettools.csharp
 			code --install-extension ms-vscode.powershell
-			#code --install-extension msjsdiag.debugger-for-chrome
 			code --install-extension jebbs.plantuml
 			code --install-extension sonarsource.sonarlint-vscode
 			code --install-extension vscode-icons-team.vscode-icons
-			# Vuln Cost - Security Scanner for VS Code
 			code --install-extension snyk-security.vscode-vuln-cost	
+			# git
+			code --install-extension donjayamanne.githistory
+			code --install-extension GitHub.vscode-pull-request-github
 			# swagger
 			code --install-extension Arjun.swagger-viewer
 			code --install-extension 42Crunch.vscode-openapi
