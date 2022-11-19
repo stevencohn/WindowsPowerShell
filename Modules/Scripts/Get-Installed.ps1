@@ -87,8 +87,8 @@ Begin
 		$0 = 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages'
 		(Get-ChildItem $0 | where `
 		{
-			$_.GetValue('DisplayName') -notmatch '^ms-resource' -and `
-				$_.GetValue('SupportedUsers') -eq 0
+			$_.GetValue('DisplayName') -notmatch 'ms-resource' -and
+			$_.GetValue('SupportedUsers') -eq 0
 		}).Name | foreach { $_.replace('HKEY_CURRENT_USER', 'HKCU:') }
 	}
 
