@@ -120,11 +120,10 @@ Begin
 		HighTitle 'Visual Studio Extensions'
 
 		# MS Marketplace no longer allows anonymous downloads so we've packaged our own
-		# https://marketplace.visualstudio.com/items?itemName=PaulHarrington.EditorGuidelines
-		# https://marketplace.visualstudio.com/items?itemName=SonarSource.SonarLintforVisualStudio2022
-		# https://marketplace.visualstudio.com/items?itemName=SonarSource.SonarLintforVisualStudio2022
-		# https://marketplace.visualstudio.com/items?itemName=TechTalkSpecFlowTeam.SpecFlowForVisualStudio2022
-		# https://marketplace.visualstudio.com/items?itemName=MikeWard-AnnArbor.VSColorOutput64
+
+		###
+		### See readme.txt in the vs_extensions Zip file for links to each installer
+		###
 
 		DownloadBootstrap "vs_extensions_$Year.zip" $env:TEMP
 
@@ -132,10 +131,11 @@ Begin
 		$installer = "$root\Common7\IDE\vsixinstaller.exe"
 
 		InstallVsix $installer 'EditorGuidelines' 	# PaulHarrington.EditorGuidelines
-		InstallVsix $installer 'MarkdownEditor' 	# MadsKristensen.MarkdownEditor2
+		InstallVsix $installer 'InstallerProjects' 	# VisualStudioClient.MicrosoftVisualStudio2022InstallerProjects
+		InstallVsix $installer 'MarkdownEditor' 	# Github
 		InstallVsix $installer 'SonarLint' 			# SonarSource.SonarLintforVisualStudio2022
-		InstallVsix $installer 'SpecFlow'
-		InstallVsix $installer 'VSColorOutput'		# MikeWard-AnnArbor.VSColorOutput
+		InstallVsix $installer 'SpecFlow'			# TechTalkSpecFlowTeam.SpecFlowForVisualStudio2022
+		InstallVsix $installer 'VSColorOutput'		# MikeWard-AnnArbor.VSColorOutput64
 
 		Write-Host
 		WriteWarn '... Wait a couple of minutes for the VSIXInstaller processes to complete before starting VS'
