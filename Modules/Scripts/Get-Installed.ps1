@@ -5,14 +5,20 @@ Report all installed applications registered on the local system.
 .PARAMETER OutFile
 The name of a CSV file to create. Default is to write to the console.
 
+.PARAMETER Store
+Include Microsoft Store applications.
+
 .DESCRIPTION
 When writing to the console, the number of column in the report is 
 governed by the width of the console. When writing to CSV file, all
 possible columns are reported.
 #>
 
-[CmdletBinding(SupportsShouldProcess=$true)]
-param([string] $outFile)
+[CmdletBinding(SupportsShouldProcess = $true)]
+param(
+	[switch] $Store,
+	[string] $OutFile
+)
 
 Begin
 {
@@ -49,34 +55,78 @@ Begin
 
 			#filter out system components; these are usually windows updates
 			$syscomp = $item.GetValue('SystemComponent')
-			if ($syscomp) { if ($syscomp.uValue -eq 1) { return $null } }
-
-			$app = New-Object PSObject
-			#$app | add-member NoteProperty 'ComputerName' -value $computerName
-			#$app | add-member NoteProperty 'Subkey' -value (split-path $key -parent) # useful when debugging
-			$app | Add-Member NoteProperty 'AppID' -value (Split-Path $key -leaf)
-			$app | Add-Member NoteProperty 'DisplayName' -value $name
-			$app | Add-Member NoteProperty 'Publisher' -value $item.GetValue('Publisher')
-			$app | Add-Member NoteProperty 'DisplayVersion' -value $item.GetValue('DisplayVersion')
+			if ($syscomp) { if ($syscomp -eq 1) { return $null } }
 
 			$installDate = $item.GetValue('InstallDate')
-			if ($installDate) {
-				if ($installDate -ne '') {
-					$installDate = $installDate.Substring(4, 2) + '/' + $installDate.Substring(6, 2) + '/' + $installDate.Substring(0, 4)
-				} 
+			if (-not [String]::IsNullOrWhiteSpace($installDate))
+			{
+				$installDate = $installDate.Substring(4, 2) + '/' + $installDate.Substring(6, 2) + '/' + $installDate.Substring(0, 4)
 			}
-			$app | Add-Member NoteProperty 'Date' -value $installDate
 
 			# If subkey's name is in Wow6432Node, then the application is 32-bit. Otherwise,
 			# $is64Bit determines whether the application is 32-bit or 64-bit.
-			if ($key -match 'Wow6432Node') {
-				$app | Add-Member NoteProperty 'Architecture' -value '32-bit'
-			}
-			else {
-				$app | Add-Member NoteProperty 'Architecture' -value '64-bit'
-			}
+			$arch = '64-bit'
+			if ($key -match 'Wow6432Node') { $arch = '32-bit' }
 
-			$app
+			New-Object PSObject -Property @{
+				#ComputerName  = $computerName
+				#Subkey        =  (split-path $key -parent) # useful when debugging
+				AppID          = (Split-Path $key -leaf)
+				DisplayName    = $name
+				Publisher      = $item.GetValue('Publisher')
+				DisplayVersion = $item.GetValue('DisplayVersion')
+				Date           = $installDate
+				Architecture   = $arch
+				Store          = $false
+			}
+		}
+	}
+
+	function CollectKnownAppXKeys
+	{
+		$0 = 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages'
+		(Get-ChildItem $0 | where `
+		{
+			$_.GetValue('DisplayName') -notmatch '^ms-resource' -and `
+				$_.GetValue('SupportedUsers') -eq 0
+		}).Name | foreach { $_.replace('HKEY_CURRENT_USER', 'HKCU:') }
+	}
+
+	function ExpandAppXDetails
+	{
+		param([Parameter(ValueFromPipeline = $true)] [string] $key)
+		Process
+		{
+			$item = Get-Item $key
+
+			$name = $item.GetValue('DisplayName')
+			$users = $item.GetValue('SupportedUsers')
+			if (($name -notmatch '^ms-resource:.*') -and $users -eq 0)
+			{
+				$packID = $item.GetValue('PackageID')
+				$path = "$($env:ProgramFiles)\Windowsapps\$packID"
+				if (Test-Path $path)
+				{
+					$xmlpath = Join-Path $path 'AppXManifest.xml'
+					if (Test-Path $xmlpath)
+					{
+						[xml]$manifest = Get-Content $xmlpath
+						$version = $manifest.Package.Identity.Version
+						$publisher = $manifest.Package.Properties.PublisherDisplayName
+						$arch = $manifest.Package.Identity.ProcessorArchitecture -match '64'
+					}
+
+					New-Object PSObject -Property @{
+						AppID          = $packID
+						DisplayName    = "$name (`$)"
+						Publisher      = $publisher
+						DisplayVersion = $version
+						Date           = (Get-Item $path).CreationTime.ToShortDateString()
+						Architecture   = @('64-bit','32-bit')[$arch]
+						Store          = $true
+					}
+				}
+			}
 		}
 	}
 }
@@ -85,17 +135,69 @@ Process
 	$confirm = [IO.Path]::Combine((Split-Path -parent $PSCommandPath), 'Test-Elevated.ps1')
 	if (!(. $confirm (Split-Path -Leaf $PSCommandPath) -warn)) { return }
 
-	$apps = CollectKnownApplicationKeys | `
-		ExpandAppDetails | where { $_ -ne $null } | `
-		Select-Object DisplayName, DisplayVersion, Date, Publisher, Architecture, AppID | `
-		Sort -Property DisplayName
+	$apps = CollectKnownApplicationKeys | ExpandAppDetails | where { $_ -ne $null }
 
-	if ($outFile -ne $null -and $outFile.Length -gt 0)
+	if ($Store)
 	{
-		$apps | Export-Csv -Path $outFile
+		$apps += (CollectKnownAppXKeys | ExpandAppXDetails)
 	}
-	else 
+
+	$apps = $apps | Select-Object DisplayName, DisplayVersion, Date, Publisher, Architecture, AppID, Store | `
+		Sort -Property DisplayName
+	
+	if ($OutFile -ne $null -and $OutFile.Length -gt 0)
 	{
-		$apps | Format-Table -AutoSize
+		$apps | Export-Csv -Path $OutFile
+	}
+	else
+	{
+		$esc = [char]27
+		$color = ''
+
+       	# use 'Get-Colors -all' command to fine DOS [esc color numbers
+		$apps | Format-Table `
+			@{
+				Label = 'Name'
+				Expression = {
+					if ($_.Store) { $color = '90' } else { $color = '37' }
+                    "$esc[$color`m$($_.DisplayName)$esc[0m"
+				}
+			},
+			@{
+				Label = 'Version'
+				Expression = {
+					if ($_.Store) { $color = '90' } else { $color = '37' }
+                    "$esc[$color`m$($_.DisplayVersion)$esc[0m"
+				}
+			},
+			@{
+				Label = 'Date'
+				Expression = {
+					if ($_.Store) { $color = '90' } else { $color = '37' }
+                    "$esc[$color`m$($_.Date)$esc[0m"
+				}
+			},
+			@{
+				Label = 'Publisher'
+				Expression = {
+					if ($_.Store) { $color = '90' } else { $color = '37' }
+                    "$esc[$color`m$($_.Publisher)$esc[0m"
+				}
+			},
+			@{
+				Label = 'Architecture'
+				Expression = {
+					if ($_.Store) { $color = '90' } else { $color = '37' }
+                    "$esc[$color`m$($_.Architecture)$esc[0m"
+				}
+			},
+			@{
+				Label = 'AppID'
+				Expression = {
+					if ($_.Store) { $color = '90' } else { $color = '37' }
+                    "$esc[$color`m$($_.AppID)$esc[0m"
+				}
+			} `
+			-AutoSize
 	}
 }
