@@ -22,7 +22,7 @@ Begin
 {
     $taskName = 'Remove-BrowserHijack'
 
-    function InstallHijack
+    function RegisterTask
     {
         $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 
@@ -39,10 +39,11 @@ Begin
         Register-ScheduledTask $taskName -Action $action -Trigger $dailyTrigger, $logonTrigger -User $user -RunLevel Highest
     }
 	
-    function UninstallHijack
+    function UnregisterTask
     {
         Unregister-ScheduledTask $taskName
     }
+
 
     function RemoveHijack
     {
@@ -72,13 +73,13 @@ Process
 {
     if ($PSCmdlet.ParameterSetName -eq 'Install')
     {
-        InstallHijack
+        RegisterTask
         return
     }
 
     if ($PSCmdlet.ParameterSetName -eq 'Uninstall')
     {
-        UninstallHijack
+        UnregisterTask
         return
     }
 
