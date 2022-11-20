@@ -21,11 +21,11 @@ if ((Get-Command dotnet -ErrorAction:SilentlyContinue) -ne $null)
 }
 
 Write-Host
-Write-Host ".NET Runtime: $netrun"
-Write-Host ".NET SDK....: $netsdk"
+Write-Host ".NET Runtime: $netrun" -ForegroundColor Cyan
+Write-Host ".NET SDK....: $netsdk" -ForegroundColor Cyan
 Write-Host
 
-Write-Host "Framework...: $([Environment]::Version)" -NoNewline
+Write-Host "Framework...: $([Environment]::Version)" -NoNewline -ForegroundColor DarkYellow
 
 Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -Recurse |
 Get-ItemProperty -name Version,Release,Install,PSChildName,SP -EA 0 |
