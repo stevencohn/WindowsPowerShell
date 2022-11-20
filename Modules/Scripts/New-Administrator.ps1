@@ -3,10 +3,13 @@
 Create a new local admin user.
 
 .PARAMETER Password
-The required password of the new local admin account to create.
+The required password of the new local admin account to create, as a SecureString.
 
 .PARAMETER Username
 The required username of the new local admin account to create.
+
+.EXAMPLE
+New-Administrator -Username foo -Password (ConvertTo-SecureString 'bar' -AsPlainText -Force)
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -19,8 +22,8 @@ param (
 
 Begin
 {
-	. $PSScriptRoot\common.ps1
-
+    $root = $PSScriptRoot | Split-Path -Parent | Split-Path -Parent
+	. $root\common.ps1
 
     function CreateAdministrator
 	{
