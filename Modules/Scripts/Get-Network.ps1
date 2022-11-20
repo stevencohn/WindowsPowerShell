@@ -1,17 +1,22 @@
 <#
 .SYNOPSIS
-Determines the most likely candidate for the active Internet-specific network adapter on this
-machine.  All other adpaters such as tunneling and loopbacks are ignored.  Only connected IP
-adapters are considered.
-
-.PARAMETER Preferred
-Only return the preferred network address without report bells and whistles
+Displays network adapter information and optionally WiFi profiles with clear text passphrases.
+Can be used to determine the most likely candidate for the active Internet-specific network
+adapter. Only connected IP adapters are considered; all other adpaters such as tunneling and
+loopbacks are ignored.
 
 .PARAMETER Addresses
 Return a @(list) of addresses
 
+.PARAMETER Preferred
+Only return the preferred network address without report bells and whistles.
+
 .PARAMETER Verbose
 Display extra information including MAC addres and bytes sent/received.
+
+.PARAMETER WiFi
+Show detailed WiFi profiles include clear text passwords, highlighting
+currently active SSID and open networks.
 #>
 
 using namespace System.Net
@@ -21,22 +26,25 @@ using namespace System.Net.NetworkInformation
 
 param(
 	[switch] $preferred,	# just return the preferred address
-	[switch] $addresses		# return a list of host addresses
+	[switch] $addresses,	# return a list of host addresses
+	[switch] $wiFi			# show detailed WiFi profiles
 )
 
 Begin
 {
-	function Get-Addresses ()
+	$esc = [char]27
+
+	function GetAllAddresses
 	{
 		$addresses = @()
 		if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 		{
-			[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | % `
+			[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | foreach `
 			{
 				$props = $_.GetIPProperties()
 
 				$address = $props.UnicastAddresses `
-					| ? { $_.Address.AddressFamily -eq 'InterNetwork' } `
+					| where { $_.Address.AddressFamily -eq 'InterNetwork' } `
 					| select -first 1 -ExpandProperty Address
 
 				if ($address)
@@ -49,23 +57,23 @@ Begin
 		$addresses
 	}
 
-	function Get-Preferred ()
+	function GetPreferredAddress
 	{
 		$prefs = @()
 		if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 		{
-			[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | % `
+			[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | foreach `
 			{
 				if (($_.NetworkInterfaceType -ne 'Loopback') -and ($_.OperationalStatus -eq 'Up'))
 				{
 					$props = $_.GetIPProperties()
  
 					$address = $props.UnicastAddresses `
-						| ? { $_.Address.AddressFamily -eq 'InterNetwork' } `
+						| where { $_.Address.AddressFamily -eq 'InterNetwork' } `
 						| select -first 1 -ExpandProperty Address
 
 					$DNSServer = $props.DnsAddresses `
-						| ? { $_.AddressFamily -eq 'InterNetwork' } `
+						| where { $_.AddressFamily -eq 'InterNetwork' } `
 						| select -first 1 -ExpandProperty IPAddressToString
 
 					if ($address -and $DNSServer)
@@ -84,13 +92,13 @@ Begin
 		return $null
 	}
 
-	function Get-Information ()
+	function CollectInformation
 	{
 		$preferred = $null
 		$items = @()
 		if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 		{
-			[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | % `
+			[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | foreach `
 			{
 				if ($_.NetworkInterfaceType -ne 'Loopback')
 				{
@@ -110,15 +118,15 @@ Begin
 					$props = $_.GetIPProperties()
 
 					$item.Address = $props.UnicastAddresses `
-						| ? { $_.Address.AddressFamily -eq 'InterNetwork' } `
+						| where { $_.Address.AddressFamily -eq 'InterNetwork' } `
 						| select -first 1 -ExpandProperty Address
 
 					$item.DNSServer = $props.DnsAddresses `
-						| ? { $_.AddressFamily -eq 'InterNetwork' } `
+						| where { $_.AddressFamily -eq 'InterNetwork' } `
 						| select -first 1 -ExpandProperty IPAddressToString
 
 					$item.Gateway = $props.GatewayAddresses `
-						| ? { $_.Address.AddressFamily -eq 'InterNetwork' } `
+						| where { $_.Address.AddressFamily -eq 'InterNetwork' } `
 						| select -first 1 -ExpandProperty Address
 
 					if ($verbose)
@@ -163,8 +171,9 @@ Begin
 		}
 	}
 
-	function Show-Preferred ($preferred)
+	function ShowPreferred
 	{
+		param($preferred)
 		Write-Host
 		if ($preferred -eq $null)
 		{
@@ -183,8 +192,9 @@ Begin
 		Write-Host " ($name)" -ForegroundColor DarkGreen
 	}
 
-	function Get-ForeColor ($item, $preferred)
+	function GetColorOf
 	{
+		param($item, $preferred)
 		if ($item.Status -ne 'Up') { @{ foregroundcolor='DarkGray' } }
 		elseif ($item.Address -eq $preferred) { @{ foregroundcolor='Green' } }
 		elseif ($item.Type -match 'Wireless') { @{ foregroundcolor='Cyan' } }
@@ -192,28 +202,33 @@ Begin
 		else { @{ } }
 	}
 
-	function Show-Information ($info)
+	function ShowBasicInfo
 	{
+		param($info)
 		Write-Host
 		Write-Host 'Address         DNS Server      Gateway         Interface'
 		Write-Host '-------         ----------      -------         ---------'
-		$info.Items | % `
+		$info.Items | foreach `
 		{
 			$line = ("{0,-15} {1,-15} {2,-15} {3}" -f $_.Address, $_.DNSServer, $_.Gateway, $_.Description)
-			$hash = Get-ForeColor $_ $info.Preferred
+			$hash = GetColorOf $_ $info.Preferred
 			Write-Host $line @hash
 		}
 	}
 
-	function Show-Verbose ($info)
+	function ShowDetailedInfo
 	{
+		param($info)
 		Write-Host
 		Write-Host 'IP/DNS/Gateway   Interface Details'
 		Write-Host '--------------   -----------------'
-		$info.Items | % `
+		$info.Items | foreach `
 		{
-			for ($i = 10; $i -gt 0; $i -= 2) { $_.PhysicalAddress = $_.PhysicalAddress.insert($i, '-') }
-			$hash = Get-ForeColor $_ $info.Preferred
+			if ($_.PhysicalAddress) {
+				for ($i = 10; $i -gt 0; $i -= 2) { $_.PhysicalAddress = $_.PhysicalAddress.insert($i, '-') }
+			}
+
+			$hash = GetColorOf $_ $info.Preferred
 
 			Write-Host ("{0,-15}  {1}" -f $_.Address, $_.Description) @hash
 			Write-Host ("{0,-15}  Physical Address.. {1}" -f $_.DNSServer, $_.PhysicalAddress) -ForegroundColor DarkGray
@@ -233,38 +248,120 @@ Begin
 			Write-Host
 		}
 	}
+
+	function ShowWiFiProfiles
+	{
+		$path = Join-Path $env:temp 'wxpx'
+		if (Test-Path $path)
+		{
+			Remove-Item $path\*.xml -Force -Confirm:$false
+		}
+		else
+		{
+			New-Item -ItemType Directory $path -Force | Out-Null
+		}
+
+		netsh wlan export profile folder=$path key=clear | Out-Null
+
+		$profiles = @()
+		Get-Item $path\Wi-Fi-*.xml | foreach `
+		{
+			[xml]$xml = Get-Content $_
+			$pkg = $xml.WLANProfile
+			$key = $pkg.MSM.Security.sharedKey
+			if ($key)
+			{
+				$keyType = $key.keyType
+				$protected = $key.protected
+				$material = $key.keyMaterial
+			}
+			else
+			{
+				$keyType = [String]::Empty
+				$protected = [String]::Empty
+				$material = [String]::Empty
+			}
+
+			$profiles += New-Object PSObject -Property @{
+				SSID           = $pkg.SSIDConfig.SSID.name
+				Mode           = $pkg.connectionMode
+				Authentication = $pkg.MSM.Security.authEncryption.Authentication
+				Encryption     = $pkg.MSM.Security.authEncryption.encryption
+				KeyType        = $keyType
+				Protected      = $protected
+				Material       = $material
+			}
+		}
+
+		(netsh wlan show interfaces | select-string ' SSID') -match '\s{2,}:\s(.*)' | Out-Null
+		$active = $Matches[1].ToString()
+
+		Write-Host "`n`nWi-Fi Profiles" -NoNewline -ForegroundColor Green
+		Write-Host ", Active:$active" -NoNewline -ForegroundColor DarkGreen
+		Write-Host " (netsh wlan delete profile name='NAME')" -ForegroundColor DarkGray
+
+		$profiles | `
+			Select-Object SSID, Mode, Authentication, Encryption, KeyType, Protected, Material | `
+			Format-Table `
+				@{ Label = 'SSID'; Express = { MakeExpression $_ $_.SSID $active } }, `
+				@{ Label = 'Mode'; Express = { MakeExpression $_ $_.Mode $active } }, `
+				@{ Label = 'Authentication'; Express = { MakeExpression $_ $_.Authentication $active } }, `
+				@{ Label = 'Encryption'; Express = { MakeExpression $_ $_.Encryption $active } }, `
+				@{ Label = 'KeyType'; Express = { MakeExpression $_ $_.KeyType $active } }, `
+				@{ Label = 'Protected'; Express = { MakeExpression $_ $_.Protected $active } }, `
+				@{ Label = 'Material'; Express = { MakeExpression $_ $_.Material $active } } `
+				-AutoSize
+
+		Remove-Item $path -Force -Recurse -Confirm:$false
+	}
+
+	function MakeExpression
+	{
+		param($pfofile, $value, $active)
+		if ($_.SSID -eq $active) { $color = '92' }
+		elseif ($_.Encryption -eq 'none') { $color = '31' }
+		elseif ($_.Mode -eq 'manual') { $color = '90' }
+		else { $color = '97' }
+
+		"$esc[$color`m$($value)$esc[0m"
+	}
 }
 Process
 {
 	if ($preferred)
 	{
-		return Get-Preferred
+		return GetPreferredAddress
 	}
 
 	if ($addresses)
 	{
-		return Get-Addresses
+		return GetAllAddresses
 	}
 
 	$script:verbose = $PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent
 
-	$info = Get-Information
+	$info = CollectInformation
 	if ($info -and $info.Items -and $info.Items.Count -gt 0)
 	{
-		Show-Preferred $info.Preferred
+		ShowPreferred $info.Preferred
 
 		if ($verbose)
 		{
-			Show-Verbose $info
+			ShowDetailedInfo $info
 		}
 		else
 		{
-			Show-Information $info
+			ShowBasicInfo $info
 		}
 	}
 	else
 	{
 		Write-Host 'Network unavailable' -ForegroundColor Red
+	}
+
+	if ($wiFi)
+	{
+		ShowWiFiProfiles
 	}
 }
 

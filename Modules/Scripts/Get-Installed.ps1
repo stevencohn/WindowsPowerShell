@@ -22,6 +22,8 @@ param(
 
 Begin
 {
+	$esc = [char]27
+
 	function CollectKnownApplicationKeys
 	{
 		$root64 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
@@ -129,6 +131,13 @@ Begin
 			}
 		}
 	}
+
+	function MakeExpression
+	{
+		param($store, $value)
+		if ($store) { $color = '90' } else { $color = '37' }
+		"$esc[$color`m$($value)$esc[0m"
+	}
 }
 Process
 {
@@ -151,53 +160,14 @@ Process
 	}
 	else
 	{
-		$esc = [char]27
-		$color = ''
-
        	# use 'Get-Colors -all' command to fine DOS [esc color numbers
 		$apps | Format-Table `
-			@{
-				Label = 'Name'
-				Expression = {
-					if ($_.Store) { $color = '90' } else { $color = '37' }
-                    "$esc[$color`m$($_.DisplayName)$esc[0m"
-				}
-			},
-			@{
-				Label = 'Version'
-				Expression = {
-					if ($_.Store) { $color = '90' } else { $color = '37' }
-                    "$esc[$color`m$($_.DisplayVersion)$esc[0m"
-				}
-			},
-			@{
-				Label = 'Date'
-				Expression = {
-					if ($_.Store) { $color = '90' } else { $color = '37' }
-                    "$esc[$color`m$($_.Date)$esc[0m"
-				}
-			},
-			@{
-				Label = 'Publisher'
-				Expression = {
-					if ($_.Store) { $color = '90' } else { $color = '37' }
-                    "$esc[$color`m$($_.Publisher)$esc[0m"
-				}
-			},
-			@{
-				Label = 'Architecture'
-				Expression = {
-					if ($_.Store) { $color = '90' } else { $color = '37' }
-                    "$esc[$color`m$($_.Architecture)$esc[0m"
-				}
-			},
-			@{
-				Label = 'AppID'
-				Expression = {
-					if ($_.Store) { $color = '90' } else { $color = '37' }
-                    "$esc[$color`m$($_.AppID)$esc[0m"
-				}
-			} `
+			@{ Label = 'Name'; Expression = { MakeExpression $_.Store $_.DisplayName } },
+			@{ Label = 'Version'; Expression = { MakeExpression $_.Store $_.DisplayVersion } },
+			@{ Label = 'Date'; Expression = { MakeExpression $_.Store $_.Date } },
+			@{ Label = 'Publisher'; Expression = { MakeExpression $_.Store $_.Publsher } },
+			@{ Label = 'Architecture'; Expression = { MakeExpression $_.Store $_.Architecture } },
+			@{ Label = 'AppID'; Expression = { MakeExpression $_.Store $_.AppID } } `
 			-AutoSize
 	}
 }

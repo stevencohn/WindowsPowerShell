@@ -144,11 +144,11 @@ Report environment variables in colorized categoties with optional search highli
 #### [`Get-Hosts`](Modules/Scripts/Get-Hosts.ps1)
 Display the /etc/hosts file, colorized.
 
-#### [`Get-Installed`](Modules/Scripts/Get-Installed.ps1) [-Outfile f]
-Report all installed applications registered on the local system.
+#### [`Get-Installed`](Modules/Scripts/Get-Installed.ps1) [-Store -Outfile f]
+Report all installed applications registered on the local system, optionally including Store apps.
 
-#### [`Get-Network`](Modules/Scripts/Get-Network.ps1) [-Preferred] [-Addresses] [-Verbose]
-Determines the most likely candidate for the active Internet-specific network adapter on this machine.  All other adpaters such as tunneling and loopbacks are ignored.  Only connected IP adapters are considered. Wifi aliases are shown.
+#### [`Get-Network`](Modules/Scripts/Get-Network.ps1) [-Preferred] [-Addresses] [-WiFi] [-Verbose]
+Determines the most likely candidate for the active Internet-specific network adapter on this machine. All other adpaters such as tunneling and loopbacks are ignored. Only connected IP adapters are considered. Wifi aliases are shown.
 
 ![alt text](Images/get-network.png "Get-Network Example")
 
