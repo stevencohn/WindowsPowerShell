@@ -60,6 +60,7 @@ Begin
 			code --install-extension alexkrechik.cucumberautocomplete
 			code --install-extension anseki.vscode-color
 			code --install-extension eg2.tslint
+			code --install-extension hediet.vscode-drawio
 			code --install-extension ionutvmi.reg
 			code --install-extension AykutSarac.jsoncrack-vscode
 			code --install-extension mikeburgh.xml-format
