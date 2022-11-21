@@ -5,6 +5,9 @@ Report the account information for the given username and specified domain.
 .DESCRIPTION
 Can report on either a local user account or an ActiveDirectory account.
 
+.PARAMETER All
+Report all usrs
+
 .PARAMETER Username
 The account username to report.
 
@@ -16,14 +19,17 @@ If specified then return only the Sid
 #>
 
 param(
-	[string] $Username = $(throw "Please specify a username"),
+	[string] $Username = $env:USERNAME,
 	[string] $Domain = $env:USERDOMAIN,
-	[switch] $SID
+	[switch] $SID,
+	[switch] $All
 	)
 
 Begin
 {
-	function GetLocalSid ()
+	$esc = [char]27
+
+	function GetLocalSid
 	{
 		$account = Get-LocalUser -Name $Username
 		if (!$account) { Throw 'Account not found' }
@@ -31,7 +37,7 @@ Begin
 		$account.SID
 	}
 
-	function ReportLocalUser ()
+	function ReportLocalUser
 	{
 		$account = Get-LocalUser -name $Username
 		if (!$account) { Throw 'Account not found' }
@@ -58,7 +64,7 @@ Begin
 		write-host("Groups           : {0}" -f ($groups -join ', '))	
 	}
 
-	function GetDomainSid ()
+	function GetDomainSid
 	{
 		$user = New-Object System.Security.Principal.NTAccount($Domain, $Username)
 		if (!$user) { Throw 'Account not found' }
@@ -67,7 +73,7 @@ Begin
 		$sidval.Value
 	}
 
-	function ReportDomainUser ()
+	function ReportDomainUser
 	{
 		$found = $false
 		$entry = New-Object System.DirectoryServices.DirectoryEntry('GC://' + $Domain)
@@ -123,10 +129,43 @@ Begin
 		$lowPart = [System.BitConverter]::ToUInt32($bytes, 0)
 		return $lowPart + $highPart
 	}
+
+	function ReportAllUsers
+	{
+		Get-LocalUser | `
+			Select-Object Name, FullName, Enabled, PasswordExpires, Description, Sid | `
+			Format-Table `
+				@{ Label = 'Name'; Expression = { MakeAllUsersExpression $_ $_.Name } },
+				@{ Label = 'FullName'; Expression = { MakeAllUsersExpression $_ $_.FullName } },
+				@{ Label = 'Enabled'; Expression = { MakeAllUsersExpression $_ $_.Enabled } },
+				@{
+					Label = 'PasswordExpires'
+					Expression = { MakeAllUsersExpression $_ $_.PasswordExpires.ToShortDateString() }
+				},
+				@{
+					Label = 'Description'
+					Expression = { MakeAllUsersExpression $_ (($_.Description.ToCharArray() | select -First 30) -join '') }
+				},
+				@{ Label = 'Sid'; Expression = { MakeAllUsersExpression $_ $_.Sid } } `
+				-AutoSize
+	}
+
+	function MakeAllUsersExpression
+	{
+		param($user, $value)
+		if ($user.Enabled) { $color = '97' }
+		else { $color = '90' }
+
+		"$esc[$color`m$($value)$esc[0m"
+	}
 }
 Process
 {
-	if ($Domain -eq $env:COMPUTERNAME)
+	if ($All)
+	{
+		ReportAllUsers
+	}
+	elseif ($Domain -eq $env:COMPUTERNAME)
 	{
 		if ($SID) { GetLocalSid } else { ReportLocalUser }
 	}
@@ -135,3 +174,17 @@ Process
 		if ($SID) { GetDomainSid } else { ReportDomainUser }
 	}
 }
+<#
+	if ($System)
+	{
+		# Get SID from username
+		$objUser = New-Object System.Security.Principal.NTAccount("SYSTEM") 
+		$strSID = $objUser.Translate([System.Security.Principal.SecurityIdentifier]) 
+		ReportLocalUser -userSID $strSID.Value
+		return
+		# # Get username from SID
+		# $objSID = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-18") 
+		# $objUser = $objSID.Translate( [System.Security.Principal.NTAccount]) 
+		# $objUser.Value
+	}
+#>

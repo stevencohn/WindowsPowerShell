@@ -303,13 +303,13 @@ Begin
 		$profiles | `
 			Select-Object SSID, Mode, Authentication, Encryption, KeyType, Protected, Material | `
 			Format-Table `
-				@{ Label = 'SSID'; Express = { MakeExpression $_ $_.SSID $active } }, `
-				@{ Label = 'Mode'; Express = { MakeExpression $_ $_.Mode $active } }, `
-				@{ Label = 'Authentication'; Express = { MakeExpression $_ $_.Authentication $active } }, `
-				@{ Label = 'Encryption'; Express = { MakeExpression $_ $_.Encryption $active } }, `
-				@{ Label = 'KeyType'; Express = { MakeExpression $_ $_.KeyType $active } }, `
-				@{ Label = 'Protected'; Express = { MakeExpression $_ $_.Protected $active } }, `
-				@{ Label = 'Material'; Express = { MakeExpression $_ $_.Material $active } } `
+				@{ Label = 'SSID'; Expression = { MakeExpression $_ $_.SSID $active } }, `
+				@{ Label = 'Mode'; Expression = { MakeExpression $_ $_.Mode $active } }, `
+				@{ Label = 'Authentication'; Expression = { MakeExpression $_ $_.Authentication $active } }, `
+				@{ Label = 'Encryption'; Expression = { MakeExpression $_ $_.Encryption $active } }, `
+				@{ Label = 'KeyType'; Expression = { MakeExpression $_ $_.KeyType $active } }, `
+				@{ Label = 'Protected'; Expression = { MakeExpression $_ $_.Protected $active } }, `
+				@{ Label = 'Material'; Expression = { MakeExpression $_ $_.Material $active } } `
 				-AutoSize
 
 		Remove-Item $path -Force -Recurse -Confirm:$false
@@ -317,10 +317,10 @@ Begin
 
 	function MakeExpression
 	{
-		param($pfofile, $value, $active)
-		if ($_.SSID -eq $active) { $color = '92' }
-		elseif ($_.Encryption -eq 'none') { $color = '31' }
-		elseif ($_.Mode -eq 'manual') { $color = '90' }
+		param($profile, $value, $active)
+		if ($profile.SSID -eq $active) { $color = '92' }
+		elseif ($profile.Encryption -eq 'none') { $color = '31' }
+		elseif ($profile.Mode -eq 'manual') { $color = '90' }
 		else { $color = '97' }
 
 		"$esc[$color`m$($value)$esc[0m"
