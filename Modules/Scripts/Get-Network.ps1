@@ -109,12 +109,13 @@ Begin
 						Gateway         = $null
 						Description     = $null
 						DnsSuffix       = $null
+						SSID            = $null
 						BytesReceived   = 0
 						BytesSent       = 0
 						Status          = $_.OperationalStatus
 						Type            = $_.NetworkInterfaceType
 					}
-			
+
 					$props = $_.GetIPProperties()
 
 					$item.Address = $props.UnicastAddresses `
@@ -157,7 +158,12 @@ Begin
 
 					if ((!$preferred) -and ($item.Status -eq 'Up') -and $item.Address -and $item.DNSServer)
 					{
-						$preferred = $item.Address
+						$preferred = $item
+						if ($preferred.Description.Contains('Wifi'))
+						{
+							(netsh wlan show interfaces | select-string '\sSSID') -match '\s{2,}:\s(.*)' | Out-Null
+							$preferred.SSID = $Matches[1].ToString()
+						}
 					}
 
 					$items += $item
@@ -181,7 +187,12 @@ Begin
 		}
 		else
 		{
-			Write-Host ("{0} Preferred address is {1}" -f $env:COMPUTERNAME, $preferred) -ForegroundColor Green -NoNewline
+			Write-Host ("{0} Preferred address is {1}" -f $env:COMPUTERNAME, $preferred.Address) -ForegroundColor Green -NoNewline
+		}
+
+		if ($preferred.SSID)
+		{
+			Write-Host " | SSID:$($preferred.SSID)" -ForegroundColor DarkGreen -NoNewline
 		}
 
 		# make FQDN
@@ -189,14 +200,14 @@ Begin
 		if ([String]::IsNullOrEmpty($domain)) { $domain = [Dns]::GetHostName() }
 		$name = [Dns]::GetHostName()
 		if ($name -ne $domain) { $name = $name + '.' + $domain }
-		Write-Host " ($name)" -ForegroundColor DarkGreen
+		Write-Host " | HOST:$name" -ForegroundColor DarkGreen
 	}
 
 	function GetColorOf
 	{
 		param($item, $preferred)
 		if ($item.Status -ne 'Up') { @{ foregroundcolor='DarkGray' } }
-		elseif ($item.Address -eq $preferred) { @{ foregroundcolor='Green' } }
+		elseif ($item.Address -eq $preferred.Address) { @{ foregroundcolor='Green' } }
 		elseif ($item.Type -match 'Wireless') { @{ foregroundcolor='Cyan' } }
 		elseif ($item.Description -match 'Bluetooth') { @{ foregroundcolor='DarkCyan' } }
 		else { @{ } }
