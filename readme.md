@@ -109,7 +109,7 @@ on the local machine. Will indicate when either is account not available.
 Enable PowerShell remoting and trusted hosts for the current machine,
 typically run on a VM that will be used for automated tasks such as CI/CD.
 
-#### [`Get-Account`](Modules/Scripts/Get-Account.ps1) -Username u [-Domain d] [-SID]
+#### [`Get-Account`](Modules/Scripts/Get-Account.ps1) -Username u [-Domain d] [-SID] [-All]
 Report the account information for the given username and optionally a specified domain.
 
 ![alt text](Images/get-account.png "Get-Account Example")
