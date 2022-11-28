@@ -130,12 +130,9 @@ Begin
 						| where { $_.Address.AddressFamily -eq 'InterNetwork' } `
 						| select -first 1 -ExpandProperty Address
 
-					if ($verbose)
-					{
-						$stats = $_.GetIPv4Statistics() | Select -first 1
-						$item.BytesReceived = $stats.BytesReceived
-						$item.BytesSent = $stats.BytesSent
-					}
+					$stats = $_.GetIPv4Statistics() | Select -first 1
+					$item.BytesReceived = $stats.BytesReceived
+					$item.BytesSent = $stats.BytesSent
 
 					$item.Description = $_.Name + ', ' + $_.Description
 					$item.DnsSuffix = $props.DnsSuffix
@@ -156,11 +153,16 @@ Begin
 						}
 					}
 
-					if ((!$preferred) -and ($item.Status -eq 'Up') -and $item.Address -and $item.DNSServer)
+					if (($item.Status -eq 'Up') -and $item.Address -and $item.DNSServer)
 					{
-						$preferred = $item
-						if ($preferred.Description.Contains('Wifi'))
+						if (!$preferred)
 						{
+							$preferred = $item
+						}
+
+						if (!$preffered.SSID -and $item.BytesReceived -gt 0)
+						{
+							Write-Verbose "Description=[$($preferred.Description)]"
 							(netsh wlan show interfaces | select-string '\sSSID') -match '\s{2,}:\s(.*)' | Out-Null
 							$preferred.SSID = $Matches[1].ToString()
 						}
