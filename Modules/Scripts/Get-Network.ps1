@@ -98,6 +98,13 @@ Begin
 		$items = @()
 		if ([Net.NetworkInformation.NetworkInterface]::GetIsNetworkAvailable())
 		{
+			$SSID = $null
+			(netsh wlan show interfaces | select-string '\sSSID') -match '\s{2,}:\s(.*)' | Out-Null
+			if ($Matches -and $Matches.Count -gt 1)
+			{
+				$SSID = $Matches[1].ToString()
+			}
+
 			[Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | foreach `
 			{
 				if ($_.NetworkInterfaceType -ne 'Loopback')
@@ -136,35 +143,26 @@ Begin
 
 					$item.Description = $_.Name + ', ' + $_.Description
 					$item.DnsSuffix = $props.DnsSuffix
-					if (($props.DnsSuffix -ne $null) -and ($props.DnsSuffix.Length -gt 0))
+					if (![String]::IsNullOrWhiteSpace($item.DnsSuffix))
 					{
-						if ($item.Type.ToString().StartsWith('Wireless'))
-						{
-							$ssid = netsh wlan show interfaces | Select-String '\sSSID'
-							if ($ssid)
-							{
-								$profile = $ssid.ToString().Split(':')[1].Trim()
-								if ($profile) { $item.Description += (', ' + $profile) }
-							}
-						}
-						else
-						{
-							$item.Description += (', ' + $props.DnsSuffix)
-						}
+						$item.Description += (', ' + $item.DnsSuffix)
 					}
 
-					if (($item.Status -eq 'Up') -and $item.Address -and $item.DNSServer)
+					if ($item.Type.ToString().StartsWith('Wireless') -and $SSID -and ($item.BytesReceived -gt 0))
+					{
+						$item.Description = (', ' + $SSID)
+					}
+
+					if (($item.Status -eq 'Up') -and $item.Address -and ($item.BytesReceived -gt 0))
 					{
 						if (!$preferred)
 						{
 							$preferred = $item
 						}
 
-						if (!$preffered.SSID -and $item.BytesReceived -gt 0)
+						if (!$preffered.SSID)
 						{
-							Write-Verbose "Description=[$($preferred.Description)]"
-							(netsh wlan show interfaces | select-string '\sSSID') -match '\s{2,}:\s(.*)' | Out-Null
-							$preferred.SSID = $Matches[1].ToString()
+							$preferred.SSID = $SSID
 						}
 					}
 
