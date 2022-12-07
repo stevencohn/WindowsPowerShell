@@ -21,6 +21,9 @@ If true then prompt to reboot system; default is true.
 
 .PARAMETER SourceDriveLabel
 New label to apply to the source drive; default it to retain the current label.
+
+.EXAMPLE
+New-DriveMapping -DriveLetter D -Path C:\Development
 #>
 
 using namespace System.IO
