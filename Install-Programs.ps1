@@ -366,8 +366,8 @@ Begin
 			$profile.antialiasingMode = 'aliased'
 			$profile.colorScheme = 'DarkSelenitic'
 			$profile.cursorShape = 'underscore'
-			$profile.fontFace = 'Lucida Console'
-			$profile.fontSize = 9
+			$profile.font.face = 'Lucida Console'
+			$profile.font.size = 9
 
 			$png = Join-Path ([Environment]::GetFolderPath('MyPictures')) 'architecture.png'
 			if (!(Test-Path $png))
