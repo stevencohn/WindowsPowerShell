@@ -543,7 +543,8 @@ Begin
 			'{A0953C92-50DC-43bf-BE83-3742FED03C9C}', # CLSID_ThisPCMyVideosRegFolder
 		   	'{A8CDFF1C-4878-43be-B5FD-F8091C1C60D0}', # CLSID_ThisPCDocumentsRegFolder
 		    '{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}', # CLSID_ThisPCDesktopRegFolder
-			'{f86fa3ab-70d2-4fc7-9c99-fcbf05467f3a}'  # CLSID_ThisPCLocalVideosRegFolder
+			'{f86fa3ab-70d2-4fc7-9c99-fcbf05467f3a}', # CLSID_ThisPCLocalVideosRegFolder
+			'{f874310e-b6b7-47dc-bc84-b9e6b38f5903}'  # CLSID_ ... Home icon? ...
 		)
 
 		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace'
