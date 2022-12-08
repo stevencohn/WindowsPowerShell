@@ -146,7 +146,7 @@ Begin
 	function EnableHyperVEnhancedMode
 	{
 		[System.ComponentModel.Description(
-			'Disable Windows Hello to allow Enhanced mode sessions for Hyper-V VMs')]
+			'Disable Windows Hello to allow Enhanced mode sessions for Hyper-V VMs or Win11 RDP')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
 		# fixes the problem where you can't log on when connecting to a VM in enhanced mode due
@@ -159,6 +159,14 @@ Begin
 			# 0=disabled, 2=enabled
 			$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
 			Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0	
+		}
+		else
+		{
+			## Does this also disable PIN?
+			Write-Verbose 'disabling Windows Hello to improve RDP to this Win11 machine'
+			# 0=disabled, 1=enabled
+			$0 = 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Setting'
+			Set-ItemProperty $0 -Name 'AllowSignInOptions' -Type DWord -Value 0	
 		}
 	}
 
