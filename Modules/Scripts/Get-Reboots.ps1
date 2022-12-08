@@ -27,6 +27,7 @@ Process
 
     Get-EventLog System -Newest 10000 | `
         Where EventId -in $ids | `
+        Sort-Object -Property TimeGenerated | `
         Format-Table `
             TimeGenerated,
             EventId,
@@ -41,7 +42,7 @@ Process
                         #41 { $color = '31'; break } # dark red
                         #1074 { $color = '33'; break } # dark yellow
                         #1076 { $color = '33'; break } # dark yellow
-                        6005 { $color = '32'; break } # dark green
+                        6005 { $color = '94'; break } # blue
                         6006 { $color = '31'; break } # dark red
                         6008 { $color = '91'; break } # red
                         6009 { $color = '34'; break } # dark blue
