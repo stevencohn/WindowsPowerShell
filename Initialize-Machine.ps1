@@ -162,11 +162,16 @@ Begin
 		}
 		else
 		{
-			## Does this also disable PIN?
 			Write-Verbose 'disabling Windows Hello to improve RDP to this Win11 machine'
+			$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
+			if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
+			# 0=disabled, 2=enabled
+			Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0	
+
+			## this disables PIN!
 			# 0=disabled, 1=enabled
-			$0 = 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Setting'
-			Set-ItemProperty $0 -Name 'AllowSignInOptions' -Type DWord -Value 0	
+			#$0 = 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowSignInOptions'
+			#Set-ItemProperty $0 -Name 'value' -Type DWord -Value 0	
 		}
 	}
 
