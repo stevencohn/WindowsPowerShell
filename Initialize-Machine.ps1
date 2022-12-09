@@ -146,11 +146,13 @@ Begin
 	function EnableHyperVEnhancedMode
 	{
 		[System.ComponentModel.Description(
-			'Disable Windows Hello to allow Enhanced mode sessions for Hyper-V VMs or Win11 RDP')]
+			'Disable Windows Hello to allow Enhanced mode sessions for Hyper-V VMs')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
-		# fixes the problem where you can't log on when connecting to a VM in enhanced mode due
-		# to a conflict in how Windows Hello works, so must disable it to allow enhanced mode
+		# Fixes the problem where you can't log on when connecting to a VM in enhanced mode due
+		# to a conflict in how Windows Hello works, so must disable it to allow enhanced mode.
+		# Also (doesn't :-/ ) fixes the problem where BioIso.exe runs multiple instances, 
+		# eating up CPU, even though corporate has disabled Windows Hello via policy
 
 		# are we running in a Hyper-V VM?
 		if ((gwmi Win32_BaseBoard).Manufacturer -eq 'Microsoft Corporation')
