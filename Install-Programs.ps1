@@ -263,6 +263,18 @@ Begin
 	}
 
 
+	function InstallPowerToys
+	{
+		[System.ComponentModel.Description('Install Microsoft PowerToys')]
+		[CmdletBinding(HelpURI = 'cmd')] param()
+
+		if ((winget list --id Microsoft.PowerToys | where { $_ -like '*PowerToys*' }).Count -eq 0)
+		{
+			winget install Microsoft.PowerToys --source winget
+		}
+	}
+
+
 	function InstallTerminal
 	{
 		[System.ComponentModel.Description('choco Windows Terminal')]
@@ -759,6 +771,7 @@ Process
 		InstallMacrium
 		InstallNotepadPP
 		InstallSysInternals
+		InstallPowerToys
 
 		if (!(IsWindows11)) {
 			InstallTerminal
