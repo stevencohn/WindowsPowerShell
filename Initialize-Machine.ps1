@@ -416,6 +416,40 @@ Begin
 	}
 
 
+	function SetEdgePreferences
+	{
+		[System.ComponentModel.Description(
+			'Customize Edge preferences')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		$0 = Join-Path $env:LOCALAPPDATA 'Microsoft\Edge\User Data\Default\Preferences'
+		if (Test-path $0)
+		{
+			$preferences = Get-Content $0 | ConvertFrom-Json
+
+			<#
+			
+			DO THIS MANUALLY!
+
+			The ConverTo/From-Json commands don't preserve Json like
+			"foo": "@{key=value}"
+			
+			#>
+
+			# disable selected text mini menu; when this is enabled, you have to press
+			# Ctrl+C twice to copy text; this disables that so pressing Ctrl+C once works
+			if ($preferences.edge_quick_search -ne $null)
+			{
+				if ($preferences.edge_quick_search.show_mini_menu -eq 'true')
+				{
+					$preferences.edge_quick_search.show_mini_menu = 'false'
+					$preferences | ConvertTo-Json -Compress | Out-File $0
+				}
+			}
+		}
+	}
+
+
 	function SetExplorerProperties
 	{
 		[System.ComponentModel.Description(
@@ -780,6 +814,7 @@ Process
 
 	GetYellowCursors
 	SetConsoleProperties
+	#SetEdgePreferences # DO THIS MANUALLY
 	CreateHeadlessPowerPlan
 	FixAirpodConnectivity
 
