@@ -828,7 +828,8 @@ Process
 
 	$reminder = 'Consider these manually installed apps:', `
 		' - BeyondCompare (there is a choco package but not for 4.0)', `
-		' - OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)'
+		' - OneMore OneNote add-in (https://github.com/stevencohn/OneMore/releases)', `
+		' - Paint.NET IcoCurType plugin (https://github.com/stevencohn/PDN-IcoCurType)'
 
 	$script:reminders += ,$reminder
 
