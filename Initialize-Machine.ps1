@@ -464,9 +464,9 @@ Begin
 		Set-ItemProperty $0 -Name 'Mode' -Value 1 -Type DWord
 		Set-ItemProperty $0 -Name 'LogicalViewMode' -Value 3 -Type DWord
 
-		# hide taskbar search box
+		#  taskbar search box icon only (0=disabled, 1=icon, 2=box, 3=box+label)
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search'
-		Set-ItemProperty $0 -Name 'SearchboxTaskbarMode' -Type DWord -Value 0
+		Set-ItemProperty $0 -Name 'SearchboxTaskbarMode' -Type DWord -Value 1
 
 		# hide People icon
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People'
