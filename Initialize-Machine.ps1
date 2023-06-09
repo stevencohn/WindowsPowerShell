@@ -552,6 +552,10 @@ Begin
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
 		Set-ItemProperty $0 -Name 'NoDriveTypeAutoRun' -Type DWord -Value 255
 
+		# display seconds in system tray time field
+		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+		Set-ItemProperty $0 -Name 'ShowSecondsInSystemClock' -Type DWord -Value 1
+
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer'
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
 		# unlock start menu customization. Some companies set this to prevent stupid users
