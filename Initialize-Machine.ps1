@@ -553,8 +553,8 @@ Begin
 		Set-ItemProperty $0 -Name 'NoDriveTypeAutoRun' -Type DWord -Value 255
 
 		# display seconds in system tray time field
-		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-		Set-ItemProperty $0 -Name 'ShowSecondsInSystemClock' -Type DWord -Value 1
+		# $0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+		# Set-ItemProperty $0 -Name 'ShowSecondsInSystemClock' -Type DWord -Value 1
 
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer'
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
@@ -563,6 +563,10 @@ Begin
 		Set-ItemProperty $0 -Name 'LockedStartLayout' -Type DWord -Value 0
 		# hide Recently Added apps sections from Start menu
 		Set-ItemProperty $0 -Name 'HideRecentlyAddedApps' -Type DWord -Value 1
+
+		# enable long file paths
+		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+		Set-ItemProperty $0 -Name 'LongPathsEnabled' -Type DWord -Value 1
 
 		if (!(IsWindows11))
 		{
