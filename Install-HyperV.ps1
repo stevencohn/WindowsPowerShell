@@ -5,6 +5,11 @@ Automates the installation of Hyper-V. Works on either Pro or Home editions
 .DESCRIPTION
 This will force an automatic reboot and will pick up where it left off to
 complete the configuration.
+
+.NOTES
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
