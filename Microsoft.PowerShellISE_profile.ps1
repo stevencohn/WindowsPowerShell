@@ -2,7 +2,10 @@
 # Microsoft.PowerShell_profile.ps1                                                    22 Jun 2013
 #*************************************************************************************************
 
-$modules = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)) "WindowsPowerShell\Modules"
+$script:shell = 'PowerShell'
+if ($PSVersionTable.PSVersion.Major -lt 6) { $script:shell = 'WindowsPowerShell' }
+
+$modules = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)) "$shell\Modules"
 if (!$env:PSModulePath.Contains($modules)) { $env:PSModulePath = $modules + ";" + $env:PSModulePath }
 
 Import-Module -Global -Name Addons.psd1

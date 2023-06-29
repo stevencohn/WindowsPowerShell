@@ -35,7 +35,7 @@ Begin
 {
 	. $PSScriptRoot\common.ps1
 
-	$tools = 'C:\tools'
+	$script:tools = 'C:\tools'
 	$script:reminders = @(@())
 
 
@@ -190,7 +190,7 @@ Begin
 
 			$themes = "$env:ProgramFiles\notepad++\themes"
 			New-Item $themes -ItemType Directory -Force
-			Copy-Item "$home\Documents\WindowsPowerShell\Themes\Dark Selenitic npp.xml" "$themes\Dark Selenitic.xml"
+			Copy-Item "$home\Documents\$shell\Themes\Dark Selenitic npp.xml" "$themes\Dark Selenitic.xml"
 
 			# includes a dark-selenitic Markdown lang theme
 			$0 = "$($env:APPDATA)\Notepad++"

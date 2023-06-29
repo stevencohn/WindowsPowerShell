@@ -2,6 +2,7 @@ New-CommandWrapper Out-Default -Process {
 	$nocase = [Text.RegularExpressions.RegexOptions]::IgnoreCase
 	$compressed = New-Object Text.RegularExpressions.Regex('\.(zip|tar|gz|iso)$', $nocase)
 	$executable = New-Object Text.RegularExpressions.Regex('\.(exe|bat|cmd|msi|ps1|psm1)$', $nocase)
+	$unix = New-Object Text.RegularExpressions.Regex('\.(sh)$', $nocase)
 
 	if (($_ -is [IO.DirectoryInfo]) -or ($_ -is [IO.FileInfo]))
 	{
@@ -53,6 +54,7 @@ New-CommandWrapper Out-Default -Process {
 		{
 			if ($compressed.IsMatch($name)) { $color = 'Magenta' }
 			elseif ($executable.IsMatch($name)) { $color = 'DarkGreen' }
+			elseif ($unix.IsMatch($name)) { $color = 'Cyan' }
 			else { $color = 'Gray' }
 
 			# ensure size fits within the 11 char column

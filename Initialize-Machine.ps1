@@ -784,7 +784,7 @@ Process
 		return
 	}
 
-	if (!(Test-Path "$home\Documents\WindowsPowerShell\Modules\Scripts\"))
+	if (!(Test-Path "$home\Documents\$shell\Modules\Scripts\"))
 	{
 		Write-Host
 		WriteWarn '... Could not find $home\Documents\WindowsPowerShell scripts'

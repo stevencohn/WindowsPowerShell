@@ -4,6 +4,9 @@ Library of common functions shared by the Install-foo scripts.
 
 $proEdition = $null
 
+$script:shell = 'PowerShell'
+if ($PSVersionTable.PSVersion.Major -lt 6) { $script:shell = 'WindowsPowerShell' }
+
 
 function Chocolatize
 {

@@ -169,9 +169,12 @@ Begin
 		$upaths = $usrPaths | % { ExpandPath $_ }
 
 		$ppaths = @()
+
+		$shell = 'PowerShell'
+		if ($PSVersionTable.PSVersion.Major -lt 6) { $shell = 'WindowsPowerShell' }
 		
 		# PowerShell scripts are in path
-		$psroot = Join-Path $env:USERPROFILE 'Documents\WindowsPowerShell\Modules\Scripts'
+		$psroot = Join-Path $env:USERPROFILE "Documents\$shell\Modules\Scripts"
 
 		# preserve per-session (process) entries
 		$env:Path -split ';' | % `
