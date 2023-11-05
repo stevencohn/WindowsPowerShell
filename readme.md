@@ -68,6 +68,9 @@ Clear all events from the Windows Event Log.
 #### [`Clear-Temp`](Modules/Scripts/Clear-Temp.ps1) [-Quiet]
 Clear the contents of TEMP, Windows\TEMP, and LocalAppData\TEMP.
 
+#### [`Connect-AwsLogin`](Modules/Scripts/Connect-AwsLogin.ps1) [-Profile] [-Account] [-Device] [-Code]
+Sign in to AWS CLI using MFA for the configured profile of an IAM user.
+
 #### [`ConvertFrom-BinHex`](Modules/Scripts/ConvertFrom-BinHex.ps1) -Hex v -Unicode
 Convert a BinHex encoded string back to its original string value.
 
