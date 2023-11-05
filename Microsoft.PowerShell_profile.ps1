@@ -74,6 +74,8 @@ if ($cmd -notmatch 'cmd\.exe')
 
 if (Test-Path $pwd\PowerShell_profile.ps1)
 {
-	# enable custom profile setup for primary development area, e.g. command aliasing
+	# invoke local folder-specific extensibility script
 	. $pwd\PowerShell_profile.ps1
 }
+
+oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\paradoxical.omp.json" | Invoke-Expression
