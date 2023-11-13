@@ -529,6 +529,17 @@ Begin
 			Rename-Item "HKLM:\SOFTWARE\WOW6432Node\$0\$k" -NewName ":$k"
 		}
 
+		# hide Gallery folder
+		$guid = '{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}'
+		$0 = "HKCU:\Software\Classes\CLSID\$guid"
+		if (Test-Path $0) {
+			Set-ItemProperty $0 -Name 'IsPinnedToNameSpaceTree' -Type DWord -Value 1
+		}
+		$0 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace_41040327\$guid"
+		if (Test-Path $0) {
+			Remove-Item -Path $0 -Force -Recurse -ErrorAction SilentlyContinue
+		}
+
 		# restore traditional Win10 context menu (delete GUID key to revert to new style)
 		#reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
 
