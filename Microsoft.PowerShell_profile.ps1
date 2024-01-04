@@ -36,6 +36,8 @@ Remove-Item alias:curl -ErrorAction SilentlyContinue
 function Start-Wilma { & 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe' }
 New-Alias wilma Start-Wilma 
 
+New-Alias hx Get-HistoryEx
+
 # Docker helpers
 New-Alias doc Remove-DockerTrash
 New-Alias dos Show-Docker
