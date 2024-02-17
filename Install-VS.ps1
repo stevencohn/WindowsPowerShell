@@ -136,6 +136,7 @@ Begin
 		InstallVsix $installer 'MarkdownEditor' 	# Github
 		InstallVsix $installer 'SonarLint' 			# SonarSource.SonarLintforVisualStudio2022
 		InstallVsix $installer 'SpecFlow'			# TechTalkSpecFlowTeam.SpecFlowForVisualStudio2022
+		InstallVsix $installer 'TextMacrosforVisualStudio201220132015'	# XavierPoinas.TextMacrosforVisualStudio201220132015
 		InstallVsix $installer 'VSColorOutput'		# MikeWard-AnnArbor.VSColorOutput64
 
 		Write-Host
