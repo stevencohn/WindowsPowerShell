@@ -24,6 +24,13 @@ New-Alias vs Invoke-VsDevCmd
 New-Alias push Push-Location
 New-Alias pop Pop-Location
 
+$0 = 'C:\Github\ClipboardViewer\bin\Debug\ClipboardViewer.exe'
+if (Test-Path $0)
+{
+	function Start-ClipboardViewer { & $0 }
+	New-Alias cv Start-ClipboardViewer
+}
+
 function Push-PSRoot { Push-Location $PSScriptRoot }
 New-Alias pushp Push-PSRoot
 
