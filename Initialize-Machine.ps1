@@ -21,6 +21,8 @@ Begin
 {
 	. $PSScriptRoot\common.ps1
 
+	$script:tools = 'C:\tools'
+
 
 	function CreateHeadlessPowerPlan()
 	{
@@ -383,16 +385,70 @@ Begin
 			'Create a scheduled task to clean TEMP folders nightly')]
 		[CmdletBinding(HelpURI='cmd')] param()
 
-		# purge the current user's TEMP folder every morning at 5am
-		$trigger = New-ScheduledTaskTrigger -Daily -At 5am;
-		$action = New-ScheduledTaskAction -Execute "powershell.exe" `
-			-Argument '-Command "Start-Transcript %USERPROFILE%\purge.log; Clear-Temp"'
-
-		$task = Get-ScheduledTask -TaskName 'Purge TEMP' -ErrorAction:SilentlyContinue
+		$name = 'Purge TEMP'
+		$task = Get-ScheduledTask -TaskName $name -ErrorAction:SilentlyContinue
 		if ($task -eq $null)
 		{
-			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Purge TEMP" -RunLevel Highest
+			# purge the current user's TEMP folder every morning at 5am
+			$trigger = New-ScheduledTaskTrigger -Daily -At 5am;
+			$action = New-ScheduledTaskAction -Execute "powershell.exe" `
+				-Argument '-Command "Start-Transcript %USERPROFILE%\purge.log; Clear-Temp"'
+
+			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $name -RunLevel Highest
 		}
+	}
+
+
+	function ScheduleRDPConnections
+	{
+		# When connecting via RDP to a host with a password protected screensaver, it may not be
+		# possible to unlock the host through the RDP connection after it locks. This disables the
+		# password protection when connecting through RDP and then restores it when disconnecting.
+
+		[System.ComponentModel.Description(
+			'Create scheduled tasks to toggle password-protected screensaver')]
+		[CmdletBinding(HelpURI='cmd')] param()
+
+		# events 24 and 1149 can be seen in Event Viewer in their respective Applications/$cat paths
+
+		# enable password screensaver on connection event ID 24 (Session has been disconnected)
+		$reg = 'reg add "HKEY_CURRENT_USER\Control Panel\Desktop" /f /v ScreenSaverIsSecure /t REG_SZ /d 1'
+		$category = 'Microsoft-Windows-TerminalServices-LocalSessionManager'
+		CreateRDPTask 'RDP-lock' $reg $category 24
+
+		# disable password screensaver on connection event ID 1149 (User authentication succeeded)
+		$reg = 'reg add "HKEY_CURRENT_USER\Control Panel\Desktop" /f /v ScreenSaverIsSecure /t REG_SZ /d 0'
+		$category = 'Microsoft-Windows-TerminalServices-RemoteConnectionManager'
+		CreateRDPTask 'RDP-unlock' $reg $category 1149
+	}
+
+
+	function CreateRDPTask
+	{
+		param($name, $reg, $category, $eventID)
+
+		# delete old task if it exists
+		Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
+
+		$cmd = "$tools\RDP\$name.cmd"
+		if (!(Test-Path $cmd))
+		{
+			$dir = $cmd | Split-Path -Parent
+			if (!(Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+			$reg | Out-File $cmd -Force -Confirm:$false | Out-Null
+		}
+
+		$xml = "<QueryList><Query Id=""0"" Path=""$category/Operational""><Select Path=""$category/Operational"">*[System[Provider[@Name='$category'] and EventID=$eventID]]</Select></Query></QueryList>"
+
+		$triggers = @()
+		$cim = Get-CimClass -ClassName MSFT_TaskEventTrigger -Namespace Root/Microsoft/Windows/TaskScheduler:MSFT_TaskEventTrigger
+		$trigger = New-CimInstance -CimClass $cim -ClientOnly
+		$trigger.Subscription = $xml
+		$trigger.Enabled = $True 
+		$triggers += $trigger
+	
+		$action = New-ScheduledTaskAction -Execute $cmd
+		Register-ScheduledTask -TaskName $name -Trigger $triggers -Action $action -RunLevel Highest -Force
 	}
 
 
@@ -827,6 +883,7 @@ Process
 	RemoveCrapware
 	SecurePagefile
 	ScheduleTempCleanup
+	ScheduleRDPConnections
 
 	# requires powershell profile scripts
 	DisableZipFolders
