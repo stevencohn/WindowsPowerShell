@@ -27,12 +27,22 @@ New-Alias pop Pop-Location
 $0 = 'C:\Github\ClipboardViewer\bin\Debug\ClipboardViewer.exe'
 if (Test-Path $0)
 {
-	function Start-ClipboardViewer { & $0 }
-	New-Alias cv Start-ClipboardViewer
+	function Start-ClipboardViewer
+	{
+		[CmdletBinding()]
+		[Alias("cv")]
+		param ($p1, $p2, $p3, $p4)
+		& $0 $p1 $p2 $p3 $p4
+	}
 }
 
-function Push-PSRoot { Push-Location $PSScriptRoot }
-New-Alias pushp Push-PSRoot
+function Push-PSRoot
+{
+	[CmdletBinding()]
+	[Alias("pushp")]
+	param()
+	Push-Location $PSScriptRoot
+}
 
 . $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
 Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
@@ -40,8 +50,13 @@ Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
 # curl.exe is installed as a choco package to \system32; ensure no alias
 Remove-Item alias:curl -ErrorAction SilentlyContinue
 
-function Start-Wilma { & 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe' }
-New-Alias wilma Start-Wilma 
+function Start-Wilma
+{
+	[CmdletBinding()]
+	[Alias("wilma")]
+	param()
+	& 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe'
+}
 
 New-Alias hx Get-HistoryEx
 
