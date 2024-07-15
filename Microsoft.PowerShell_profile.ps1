@@ -83,8 +83,8 @@ if (Test-Path($ChocolateyProfile)) {
 # interactive shell, otherwise it will interfere with command-lines like Flat.bat and modifying
 # the current working directory when we don't want it to!
 
-$cmd = (Get-WmiObject win32_process -filter ("ProcessID={0}" -f `
-	(Get-WmiObject win32_process -filter "ProcessID=$PID").ParentProcessID)).CommandLine
+$cmd = (Get-CimInstance win32_process -filter ("ProcessID={0}" -f `
+	(Get-CimInstance win32_process -filter "ProcessID=$PID").ParentProcessID)).CommandLine
 
 if ($cmd -notmatch 'cmd\.exe')
 {

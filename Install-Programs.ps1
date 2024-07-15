@@ -68,7 +68,7 @@ Begin
 		[CmdletBinding(HelpURI = 'cmd')] param()
 
 		# installState 1=enabled, 2=disabled, 3=absent, 4=unknown
-		if ((Get-WmiObject Win32_OptionalFeature | `
+		if ((Get-CimInstance Win32_OptionalFeature | `
 			where { $_.Name -eq 'NetFx3' -and $_.InstallState -eq 1 }) -eq $null)
 		{
 			HighTitle 'NetFx3 (please wait)'

@@ -46,10 +46,10 @@ Process
 {
     Write-Host
     Write-Host 'WMI OS'
-    Get-WmiObject -ComputerName . Win32_OperatingSystem
+    Get-CimInstance -ComputerName . Win32_OperatingSystem
 
     Write-Host "`nWMI Method: (real?)" -ForegroundColor DarkYellow
-    Write-Host ((Get-WmiObject -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey) -ForegroundColor DarkGray
+    Write-Host ((Get-CimInstance -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey) -ForegroundColor DarkGray
 
     Report 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform' 'BackupProductKeyDefault'
     Report 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' 'DigitalProductID'
