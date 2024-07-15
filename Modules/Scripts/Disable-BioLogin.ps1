@@ -66,10 +66,16 @@ Process
     # hide them!
 
     $offender = "$($env:windir)\system32\bioiso.exe"
-    Set-ItemOwner $offender
-    mv $offender "$offender`-hide" -Force -Confirm:$false
+    if (Test-Path $offender)
+    {
+        Set-ItemOwner $offender
+        mv $offender "$offender`-hide" -Force -Confirm:$false
+    }
 
     $offender = "$($env:windir)\system32\ngciso.exe"
-    Set-ItemOwner $offender
-    mv $offender "$offender`-hide" -Force -Confirm:$false
+    if (Test-Path $offender)
+    {
+        Set-ItemOwner $offender
+        mv $offender "$offender`-hide" -Force -Confirm:$false
+    }
 }
