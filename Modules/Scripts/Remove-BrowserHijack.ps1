@@ -8,7 +8,10 @@ Removes group policy registry keys that are created by IT in an attempt to waste
 time by constantly directing users to a site they are not trying to visit.
 
 .PARAMETER Install
-Create a schedueled task that will periodically remove the hijack.
+Creates a schedueled task that will periodically remove the hijack.
+
+.PARAMETER Uninstall
+Removes the schedule task.
 #>
 [CmdletBinding(DefaultParameterSetName = 'Fix')]
 param(
