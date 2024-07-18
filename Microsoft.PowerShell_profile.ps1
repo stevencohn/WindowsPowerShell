@@ -55,7 +55,7 @@ function Start-Wilma
 	[CmdletBinding()]
 	[Alias("wilma")]
 	param()
-	& 'C:\Program Files\Tools\WiLMa\WinLayoutManager.exe'
+	& 'C:\Tools\WiLMa\WinLayoutManager.exe'
 }
 
 New-Alias hx Get-HistoryEx
