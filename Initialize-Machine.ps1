@@ -623,6 +623,11 @@ Begin
 		# $0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 		# Set-ItemProperty $0 -Name 'ShowSecondsInSystemClock' -Type DWord -Value 1
 
+		# enable developer End Task option on taskbar context menu
+		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings'
+		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
+		Set-ItemProperty $0 -Name 'TaskbarEndTask' -Type DWord -Value 1
+		
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer'
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
 		# unlock start menu customization. Some companies set this to prevent stupid users
