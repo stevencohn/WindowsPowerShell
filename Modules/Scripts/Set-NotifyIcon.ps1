@@ -14,6 +14,13 @@ icon and notifications.
 Windows makes changes in memory and (over)writes changes to the Registry when explorer.exe
 shuts down, so if changes are made, they get overwritten. So the best approach is to terminate
 explorer.exe, run this script, and then start explorer.exe again.
+
+Windows keeps track of all notify icons it's ever seen in HKCU:\Control Panel\NotifyIconSettings
+which can be queried like this:
+
+Get-ChildItem -Path 'HKCU:\Control Panel\NotifyIconSettings' -Name | % { `
+   (Get-ItemProperty -Path "HKCU:\Control Panel\NotifyIconSettings\$($_)" `
+   -Name ExecutablePath).ExecutablePath } | select-object -unique | sort
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -94,7 +101,7 @@ Process
     #Write-Host $data
 
     $path = EncodeProgramPath $ProgramPath
-    #Write-Host $path
+   #Write-Host $path
     #Write-Host ( $path.Split('00') | ? { $_.Length -gt 0 } | % { [char](Rot13 ([Convert]::ToByte($_, 16))) } )
 
     if (-not $data.Contains($path))
