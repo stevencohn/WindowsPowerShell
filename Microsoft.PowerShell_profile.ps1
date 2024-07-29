@@ -44,6 +44,14 @@ function Push-PSRoot
 	Push-Location $PSScriptRoot
 }
 
+function Stop-Edge
+{
+	[CmdletBinding()]
+	[Alias('stopedge')]
+	param()
+	taskkill /f /im msedge.exe
+}
+
 . $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
 Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
 
