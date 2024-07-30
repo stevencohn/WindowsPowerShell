@@ -29,7 +29,7 @@ Example:
 ❯ restart-app -get outlook
 ... found process outlook, ID 3972, running "C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
 
-> restart-app -command outlook -register
+> restart-app -name outlook -register -command 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE'
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
