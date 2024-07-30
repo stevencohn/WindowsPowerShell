@@ -89,7 +89,7 @@ Begin
 
         # termservice is harder to stop...
         sc.exe config TermService start= disabled
-        $svcid = gwmi -Class Win32_Service -Filter "Name LIKE 'TermService'" | Select -ExpandProperty ProcessId
+        $svcid = Get-CimInstance -Class Win32_Service -Filter "Name LIKE 'TermService'" | Select -ExpandProperty ProcessId
         taskkill /f /pid $svcid
     }
 

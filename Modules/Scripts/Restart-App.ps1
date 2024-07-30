@@ -22,13 +22,21 @@ Restart-App Outlook 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE
 .PARAMETER GetCommand
 If specified then report the command line of the specified running process. This value can be
 used to specify the Command parameter when registering.
+
+.DESCRIPTION
+Example:
+
+❯ restart-app -get outlook
+... found process outlook, ID 3972, running "C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
+
+> restart-app -command outlook -register
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
-[CmdletBinding(SupportsShouldProcess=$true)]
+[CmdletBinding(SupportsShouldProcess = $true)]
 
 param (
-	[Parameter(Mandatory = $true)] [string] $Name,
+    [Parameter(Mandatory = $true)] [string] $Name,
     [string] $Command,
     [string] $Arguments,
     [switch] $Register,
@@ -48,7 +56,7 @@ Begin
         else
         {
             # get the commandline from the process, strip off quotes
-            $cmd = (gwmi win32_process -filter ("ProcessID={0}" -f $process.id)).CommandLine
+            $cmd = (Get-CimInstance win32_process -filter ("ProcessID={0}" -f $process.id)).CommandLine
             Write-Host "... found process $Name, ID $($process.ID), running $cmd"
         }
     }
@@ -60,7 +68,7 @@ Begin
         if ($process -ne $null)
         {
             # get the commandline from the process, strip off quotes
-            $script:cmd = (gwmi win32_process -filter ("ProcessID={0}" -f $process.id)).CommandLine.Replace('"', '')
+            $script:cmd = (Get-CimInstance win32_process -filter ("ProcessID={0}" -f $process.id)).CommandLine.Replace('"', '')
             Write-Host "... found process $Name running $cmd"
 
             # terminating instead of graceful shutdown because can't connect using this:
@@ -100,11 +108,11 @@ Begin
         $cmd = "Restart-App -Name '$Name' -Command '$Command' -Arguments '$Arguments'"
 
         $trigger = New-ScheduledTaskTrigger -Daily -At 2am;
-		$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-Command ""$cmd"""
+        $action = New-ScheduledTaskAction -Execute 'pwsh' -Argument "-Command ""$cmd"""
 
         $task = Get-ScheduledTask -TaskName "Restart $Name" -ErrorAction:SilentlyContinue
-		if ($task -eq $null)
-		{
+        if ($task -eq $null)
+        {
             Write-Host "... creating scheduled task 'Restart $Name'"
 
             Register-ScheduledTask `
@@ -112,7 +120,7 @@ Begin
                 -Trigger $trigger `
                 -TaskName "Restart $Name" `
                 -RunLevel Highest | Out-Null
-		}
+        }
         else
         {
             Write-Host "... scheduled task 'Restart $Name' is already registered"
