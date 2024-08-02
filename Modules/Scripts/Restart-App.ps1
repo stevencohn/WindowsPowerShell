@@ -12,12 +12,21 @@ The command to use to start the application.
 If not provided then try to use the command line of the existing process.
 This parameter is required when using the -Register switch.
 
+.PARAMETER Delay
+The amount of time to wait after stopping the application and until restarting
+the application, specified as a TimeSpan "hh:mm:ss". Outlook will lock local pst data files,
+preventing OneDrive from syncing them; this give OneDrive time to sync those files
+
 .PARAMETER Name
 The name of the process to restart.
 
 .PARAMETER Register
 If specified then register a Task Scheduler entry to run daily at 2am, for example:
 Restart-App Outlook 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE' '/recycle' -register
+
+.PARAMETER StartTime
+The time of day to start the action. This can be any form accepted by the New-ScheduledTaskTrigger
+command, so something like '2am', which is the default.
 
 .PARAMETER GetCommand
 If specified then report the command line of the specified running process. This value can be
@@ -29,7 +38,9 @@ Example:
 ❯ restart-app -get outlook
 ... found process outlook, ID 3972, running "C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
 
-> restart-app -name outlook -register -command 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE'
+> restart-app -name outlook -register `
+    -command 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE' `
+    -startTime '2am' -delay '02:00:00'
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -39,6 +50,8 @@ param (
     [Parameter(Mandatory = $true)] [string] $Name,
     [string] $Command,
     [string] $Arguments,
+    [string] $Delay = '02:00:00',
+    [string] $StartTime = '2am',
     [switch] $Register,
     [switch] $GetCommand
 )
@@ -78,7 +91,7 @@ Begin
             Write-Host "... terminating process $Name"
             $process.Kill()
             $process = $null
-            Start-Sleep -s 10
+            Start-Sleep -s $delay
         }
         else
         {
@@ -105,7 +118,8 @@ Begin
 
     function RegisterTask
     {
-        $cmd = "Restart-App -Name '$Name' -Command '$Command' -Arguments '$Arguments'"
+        $span = $delay.ToString()
+        $cmd = "Restart-App -Name '$Name' -Command '$Command' -Arguments '$Arguments' -delay '$span')"
 
         $trigger = New-ScheduledTaskTrigger -Daily -At 2am;
         $action = New-ScheduledTaskAction -Execute 'pwsh' -Argument "-Command ""$cmd"""
@@ -132,6 +146,12 @@ Process
     if ($GetCommand)
     {
         GetCommandLine
+        return
+    }
+
+    if (![TimeSpan]::TryParse($Delay, [ref]$delay))
+    {
+        Write-Host '*** Invalid Delay parameter, must be in TimeSpan format'
         return
     }
 
