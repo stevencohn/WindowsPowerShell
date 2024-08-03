@@ -8,8 +8,8 @@ huge amounts of data on a very active system.
 A string specifying the command line arguments to pass to Command on startup.
 
 .PARAMETER Command
-The command to use to start the application.
-If not provided then try to use the command line of the existing process.
+The command to start the application after the specified delay.
+If not provided then try to use the command line of the named process.
 This parameter is required when using the -Register switch.
 
 .PARAMETER Delay
@@ -20,9 +20,14 @@ preventing OneDrive from syncing them; this give OneDrive time to sync those fil
 .PARAMETER Name
 The name of the process to restart.
 
+.PARAMETER Password
+A SecureString specifying the password for a named user. Must be specified with -User.
+
+.PARAMETER User
+The named user under which the scheduled task should run. Must be specified with -Password
+
 .PARAMETER Register
-If specified then register a Task Scheduler entry to run daily at 2am, for example:
-Restart-App Outlook 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE' '/recycle' -register
+Register a scheduled task to invoke the given command at a specified time.
 
 .PARAMETER StartTime
 The time of day to start the action. This can be any form accepted by the New-ScheduledTaskTrigger
@@ -32,15 +37,24 @@ command, so something like '2am', which is the default.
 If specified then report the command line of the specified running process. This value can be
 used to specify the Command parameter when registering.
 
-.DESCRIPTION
-Example:
-
-❯ restart-app -get outlook
+.EXAMPLE
+❯ restart-app -Name outlook -GetCommand
 ... found process outlook, ID 3972, running "C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
 
-> restart-app -name outlook -register `
+To run the task in an elevated context:
+
+> Restart-App -Name outlook -Register `
+    -Command 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE' `
+    -StartTime '2am' -Delay '02:00:00'
+
+To run the task as a specific user:  important when restarting Outlook as it must run as
+ the current user, otherwise it will run as admin and you can't click toast notification
+
+> $password = ConvertTo-SecureString -AsPlainText <plainTextPassword>
+> Restart-App -Name outlook -Register `
     -command 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE' `
-    -startTime '2am' -delay '02:00:00'
+    -StartTime '2am' -Delay '02:00:00' `
+    -User '<username>' -Password $password
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -52,6 +66,8 @@ param (
     [string] $Arguments,
     [string] $Delay = '02:00:00',
     [string] $StartTime = '2am',
+    [string] $User,
+    [System.Security.SecureString] $Password,
     [switch] $Register,
     [switch] $GetCommand
 )
@@ -129,11 +145,19 @@ Begin
         {
             Write-Host "... creating scheduled task 'Restart $Name'"
 
-            Register-ScheduledTask `
-                -Action $action `
-                -Trigger $trigger `
-                -TaskName "Restart $Name" `
-                -RunLevel Highest | Out-Null
+            if ($User -and $Password)
+            {
+                $plainPwd = (New-Object System.Management.Automation.PSCredential `
+                    -ArgumentList $User, $Password).GetNetworkCredential().Password
+
+                Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Restart $Name" ` `
+                    -User $User -Password $plainPwd ` | Out-Null
+            }
+            else
+            {
+                Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Restart $Name" `
+                    -RunLevel Highest | Out-Null
+            }
         }
         else
         {
