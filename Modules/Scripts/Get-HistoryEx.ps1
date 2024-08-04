@@ -23,6 +23,14 @@ Begin
 {
 	$script:id = 1
 
+	function MeasureHistory
+	{
+		# counts all lines so we can adjust the offset when only tailing
+		$count = (Get-Content $savePath | Measure-Object).Count
+		write-host "lines=$count"
+		$script:id = $count - $last + 1
+	}
+
 	function GetHistory
 	{
 		if ($last -gt 0 -and $match -ne $null)
@@ -53,7 +61,7 @@ Begin
 }
 Process
 {
-	$script:last = 0
+	$script:last = 40
 	$script:match = $null
 
 	# because I'm too lazy to remember param names...
@@ -74,5 +82,6 @@ Process
 
 	$script:savePath = (Get-PSReadlineOption).HistorySavePath
 
+	MeasureHistory
 	GetHistory
 }
