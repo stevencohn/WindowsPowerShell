@@ -627,6 +627,11 @@ Begin
 		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings'
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
 		Set-ItemProperty $0 -Name 'TaskbarEndTask' -Type DWord -Value 1
+
+		# show seconds in time
+		$0 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
+		Set-ItemProperty $0 -Name 'ShowSecondsInSystemClock' -Type DWord -Value 1
 		
 		$0 = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer'
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }

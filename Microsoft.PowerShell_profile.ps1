@@ -67,6 +67,7 @@ function Start-Wilma
 }
 
 New-Alias hx Get-HistoryEx
+New-Alias Clear-History Clear-HistoryEx
 
 # Docker helpers
 New-Alias doc Remove-DockerTrash

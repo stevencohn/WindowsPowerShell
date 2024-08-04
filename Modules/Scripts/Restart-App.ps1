@@ -1,4 +1,14 @@
 <#
+
+
+I tried! I really tried. Sigh...
+
+This mostly works but if your current user is a member of a group with elevated privileges
+then the Command always starts elevated. Appears it's not possible to start a non-elevated
+process from a privileged account on Windows!
+
+
+
 .SYNOPSIS
 Restart the named process. This can be used to restart applications such as Outlook on a nightly
 basis. Apps such as this tend to have memory leaks or become unstable over time when dealing with
@@ -51,10 +61,10 @@ To run the task as a specific user:  important when restarting Outlook as it mus
  the current user, otherwise it will run as admin and you can't click toast notification
 
 > $password = ConvertTo-SecureString -AsPlainText <plainTextPassword>
-> Restart-App -Name outlook -Register `
-    -command 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE' `
-    -StartTime '2am' -Delay '02:00:00' `
-    -User '<username>' -Password $password
+> Restart-App -Name outlook -Register -command 'C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE' `
+   -User $env:username -Password $password -StartTime '2am' -Delay '02:00:00' 
+
+For quick testing, use: -Delay '00:00:05' -StartTime (get-date).addseconds(5)
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
@@ -69,6 +79,7 @@ param (
     [string] $User,
     [System.Security.SecureString] $Password,
     [switch] $Register,
+    [switch] $Unregister,
     [switch] $GetCommand
 )
 
@@ -96,48 +107,91 @@ Begin
         $process = (Get-Process $Name -ErrorAction:SilentlyContinue)
         if ($process -ne $null)
         {
-            # get the commandline from the process, strip off quotes
-            $script:cmd = (Get-CimInstance win32_process -filter ("ProcessID={0}" -f $process.id)).CommandLine.Replace('"', '')
-            Write-Host "... found process $Name running $cmd"
+            try
+            {
+                # get the commandline from the process, strip off quotes
+                $script:cmdline = (Get-CimInstance win32_process `
+                    -filter ("ProcessID={0}" -f $process.id)).CommandLine.Replace('"', '')
 
-            # terminating instead of graceful shutdown because can't connect using this:
-            # something funny about 32/64 or elevated process or just whatever
-            #$outlook = [Runtime.Interopservices.Marshal]::GetActiveObject('Outlook.Application')
+                Log "... terminating process $Name running $cmdline"
 
-            Write-Host "... terminating process $Name"
-            $process.Kill()
-            $process = $null
-            Start-Sleep -s $delay
-        }
+                # terminating instead of graceful shutdown because can't connect using this:
+                # GetActiveObject undefined in pwsh Core. Any other way to connect?
+                #$outlook = [Runtime.Interopservices.Marshal]::GetActiveObject('Outlook.Application')
+                #$outlook.Quit()
+
+                $process.Kill()
+                $process = $null
+
+                Log "sleeping $($delay.ToString())"
+                Start-Sleep -Duration $delay
+            }
+            catch
+            {
+                Log "*** error stopping $Name"
+                Log "*** $($_)"
+            }
+    }
         else
         {
-            Write-Host "... $Name process not found"
+            Log "... $Name process not found"
         }
     }
 
 
     function Startup
     {
-        if (!$cmd) { $cmd = $Command }
-        if (!$cmd)
+        Log "... starting $Name"
+
+        $credfile = "C:\Users\$User\$Name`.xml"
+        if (Test-Path $credfile)
         {
-            Write-Host "*** No command specified to start $Name" -ForegroundColor Yellow
-            return
+            try
+            {
+                $credential = Import-Clixml $credfile
+                
+                # TODO: Remove this line:
+                #Remove-Item -Path $credfile -Force
+
+                Log "... running as $($credential.Username) with provided credentials"
+
+                if ($Arguments)
+                {
+                    Log "... starting -Command `"$Command`" -Arguments `"$Arguments`""
+                    Invoke-Command -Credential $credential -ComputerName $env:ComputerName `
+                        -ScriptBlock { & $Command $Arguments }
+                }
+                else
+                {
+                    Log "... starting -Command `"$Command`""
+
+                    #runas /machine:x86 /trustlevel:0x20000 "C:\Windows\sysWOW64\cmd.exe /c `"$Command`""
+
+                    # Invoke-Command -Credential $credential -ComputerName $env:ComputerName `
+                    #     -ScriptBlock { & $Command }
+
+                    Log '... started? elevated?'
+                }
+            }
+            catch
+            {
+                Log "*** error starting $Name"
+                Log "*** $($_)"
+            }
         }
-
-        Write-Host "... starting $Name"
-        Write-Host "... $cmd $Arguments"
-
-        Invoke-Command -ScriptBlock { & $cmd $Arguments }
+        else
+        {
+            Log "... could not file $credfile, aborting"
+        }
     }
 
 
     function RegisterTask
     {
         $span = $delay.ToString()
-        $cmd = "Restart-App -Name '$Name' -Command '$Command' -Arguments '$Arguments' -delay '$span')"
+        $cmd = "Restart-App -Name '$Name' -Command '$Command' -Arguments '$cargs' -User $User -delay '$span'"
 
-        $trigger = New-ScheduledTaskTrigger -Daily -At 2am;
+        $trigger = New-ScheduledTaskTrigger -Daily -At $StartTime
         $action = New-ScheduledTaskAction -Execute 'pwsh' -Argument "-Command ""$cmd"""
 
         $task = Get-ScheduledTask -TaskName "Restart $Name" -ErrorAction:SilentlyContinue
@@ -145,28 +199,54 @@ Begin
         {
             Write-Host "... creating scheduled task 'Restart $Name'"
 
-            if ($User -and $Password)
-            {
-                $plainPwd = (New-Object System.Management.Automation.PSCredential `
-                    -ArgumentList $User, $Password).GetNetworkCredential().Password
+            $credential = New-Object PSCredential($User, $Password)
+            $credential | Export-Clixml -Path "C:\Users\$User\$Name`.xml" -Force
 
-                Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Restart $Name" ` `
-                    -User $User -Password $plainPwd ` | Out-Null
-            }
-            else
-            {
-                Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Restart $Name" `
-                    -RunLevel Highest | Out-Null
-            }
+            #$credential = (New-Object System.Management.Automation.PSCredential `
+            #    -ArgumentList $User, $Password).GetNetworkCredential()
+
+            $plainPwd = ($credential).GetNetworkCredential().Password
+
+            Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Restart $Name" `
+                -User $User -Password $plainPwd | Out-Null
         }
         else
         {
             Write-Host "... scheduled task 'Restart $Name' is already registered"
         }
     }
+
+
+    function UnregisterTask
+    {
+        $taskname = "Restart $Name"
+        $info = get-scheduledtaskinfo -taskname $taskName  -ErrorAction:SilentlyContinue
+        if ($info)
+        {
+            Write-Host "... unregistering scheduled task '$taskName'"
+            Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+        }
+        else
+        {
+            Write-Host "... scheduled task '$taskName' is not found"
+        }
+    }
+
+
+    function Log
+    {
+        param([string] $text)
+        $text | Out-File -FilePath $LogFile -Append
+    }
 }
 Process
 {
+    if ($Name -and $Unregister)
+    {
+        UnregisterTask
+        return
+    }
+
     if ($GetCommand)
     {
         GetCommandLine
@@ -191,6 +271,12 @@ Process
         return
     }
 
+    $script:LogFile = Join-Path $env:TEMP 'restart-app.log'
+    # reset the log file
+    "starting at $(Get-Date)" | Out-File -FilePath $LogFile
+
     Shutdown
     Startup
+
+    Log 'done'
 }

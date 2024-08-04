@@ -1,3 +1,15 @@
+<#
+.SYNOPSIS
+Get and search the full history command line history.
+
+.PARAMETER Arg1
+Interchangeable with Arg2, specifies either the number of most recent items to
+return or a string used to search the history.
+
+.PARAMETER Arg2
+Interchangeable with Arg1, specifies either the number of most recent items to
+return or a string used to search the history.
+#>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
 [CmdletBinding(SupportsShouldProcess = $true)]

@@ -12,12 +12,5 @@ param (
 	[string] $Command
 	)
 
-if ($env:ConEmuPID)
-{
-	# trying to run this in a new tab but it opens a new PowerShell console! :-(
-	runas /trustlist:0x20000 $Command
-}
-else
-{
-	runas /trustlist:0x20000 $Command
-}
+#https://superuser.com/questions/1749696/parameter-is-incorrect-when-using-runas-with-trustlevel-after-windows-11-22h2
+runas /machine:x86 /trustlevel:0x20000 "C:\Windows\sysWOW64\cmd.exe /c `"$Command`""
