@@ -27,19 +27,19 @@ Begin
 	{
 		if ($last -gt 0 -and $match -ne $null)
 		{
-			Get-Content -Last $last $hxPath | where { $_ -like "*$match*" } | foreach { FormatLine $_ } | more
+			Get-Content -Last $last $savePath | where { $_ -like "*$match*" } | foreach { FormatLine $_ } | more
 		}
 		elseif ($last -gt 0)
 		{
-			Get-Content -Last $last $hxPath | foreach { FormatLine $_ } | more
+			Get-Content -Last $last $savePath | foreach { FormatLine $_ } | more
 		}
 		elseif ($match -ne $null)
 		{
-			Get-Content $hxPath | where { $_ -like "*$match*" } | foreach { FormatLine $_ } | more
+			Get-Content $savePath | where { $_ -like "*$match*" } | foreach { FormatLine $_ } | more
 		}
 		else
 		{
-			Get-Content $hxPath | foreach { FormatLine $_ } | more
+			Get-Content $savePath | foreach { FormatLine $_ } | more
 		}
 	}
 
@@ -72,11 +72,7 @@ Process
 		elseif ($typnam -like 'Int*') { $script:last = $arg2 }
 	}
 
-	$hxPath = (Get-PSReadlineOption).HistorySavePath
-	Write-Host $hxPath -ForegroundColor Green
-	Write-Host
-	Write-Host '   Id    CommandLine'
-	Write-Host '   --    -----------'
+	$script:savePath = (Get-PSReadlineOption).HistorySavePath
 
 	GetHistory
 }
