@@ -27,7 +27,6 @@ Begin
 	{
 		# counts all lines so we can adjust the offset when only tailing
 		$count = (Get-Content $savePath | Measure-Object).Count
-		write-host "lines=$count"
 		$script:id = $count - $last + 1
 	}
 
