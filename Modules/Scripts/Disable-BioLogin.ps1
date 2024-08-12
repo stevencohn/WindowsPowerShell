@@ -28,6 +28,33 @@ Begin
 {
     $taskName = 'Disable-BioLogin'
 
+    function DeleteNgcIosBackup
+    {
+        param($arc)
+        $0 = "C:\Windows\WinSxS\$arc`_microsoft-windows-security-ngc-trustlet*\"
+        if (Test-Path $0)
+        {
+            Get-ChildItem -Path $0 -filter NgcIso.exe -Recurse | % `
+            {
+                $name = $_.FullName
+                Write-Host "... delete backup $name"
+                Set-ItemOwner $name
+                Remove-item -Path $name -Force -Confirm:$false
+            }
+        }
+    }
+
+    function HideFile
+    {
+        param($offender)
+        if (Test-Path $offender)
+        {
+            Write-Host "... hiding $offender"
+            Set-ItemOwner $offender
+            mv $offender "$offender`-hide" -Force -Confirm:$false
+        }
+    }
+
     function RegisterTask
     {
         $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
@@ -67,17 +94,11 @@ Process
 
     # ngciso might get started first, so deal with it first to try to
     # catch it before it starts
-    $offender = "$($env:windir)\system32\ngciso.exe"
-    if (Test-Path $offender)
-    {
-        Set-ItemOwner $offender
-        mv $offender "$offender`-hide" -Force -Confirm:$false
-    }
+    HideOffender "$($env:windir)\system32\ngciso.exe"
+    HideOffender "$($env:windir)\system32\bioiso.exe"
 
-    $offender = "$($env:windir)\system32\bioiso.exe"
-    if (Test-Path $offender)
-    {
-        Set-ItemOwner $offender
-        mv $offender "$offender`-hide" -Force -Confirm:$false
-    }
+    # delete WinSxS backup files
+    DeleteNgcIosBackup 'amd64'
+    DeleteNgcIosBackup 'wow64'
+    DeleteNgcIosBackup 'x86'
 }
