@@ -65,14 +65,16 @@ Process
 
     # hide them!
 
-    $offender = "$($env:windir)\system32\bioiso.exe"
+    # ngciso might get started first, so deal with it first to try to
+    # catch it before it starts
+    $offender = "$($env:windir)\system32\ngciso.exe"
     if (Test-Path $offender)
     {
         Set-ItemOwner $offender
         mv $offender "$offender`-hide" -Force -Confirm:$false
     }
 
-    $offender = "$($env:windir)\system32\ngciso.exe"
+    $offender = "$($env:windir)\system32\bioiso.exe"
     if (Test-Path $offender)
     {
         Set-ItemOwner $offender
