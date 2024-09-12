@@ -44,7 +44,7 @@ Begin
         }
     }
 
-    function HideFile
+    function HideOffender
     {
         param($offender)
         if (Test-Path $offender)
