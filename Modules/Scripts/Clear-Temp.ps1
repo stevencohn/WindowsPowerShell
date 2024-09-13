@@ -7,12 +7,23 @@ Suppress any output; default is to report amount of disk space recovered.
 #>
 
 # CmdletBinding adds -Verbose functionality, SupportsShouldProcess adds -WhatIf
-[CmdletBinding(SupportsShouldProcess=$true)]
+[CmdletBinding(
+	SupportsShouldProcess = $true, 
+	DefaultParameterSetName = 'clear')]
 
-param([switch] $Quiet)
+param(
+	[switch] $Quiet,
+	[Parameter(ParameterSetName = 'Install')]
+	[switch] $Install = $false,
+	[Parameter(ParameterSetName = 'Uninstall')]
+	[switch] $Uninstall = $false
+	)
 
 Begin
 {
+	$script:taskName = 'Clear-Temp'
+
+
 	function ClearFolder
 	{
 		param($path)
@@ -36,9 +47,44 @@ Begin
 			Write-Host "... removed $fc files, $dc directories from $path" -ForegroundColor DarkGray
 		}
 	}
+
+
+	function RegisterTask
+	{
+		$user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+
+		$pwsh = 'powershell.exe' #[System.Diagnostics.Process]::GetCurrentProcess().Path
+
+		$log = Join-Path $env:USERPROFILE "task-logs\$taskName.log"
+		$command = "Start-Transcript $log; & '${PSCommandPath}'"
+		#$command = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($command))
+
+		$action = New-ScheduledTaskAction -Execute $pwsh `
+			-Argument "-WindowStyle Hidden -ExecutionPolicy Bypass -Command ""${command}"""
+
+		$trigger = New-ScheduledTaskTrigger -Daily -At 5am
+		Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -User $user -RunLevel Highest
+	}
+	
+	function UnregisterTask
+	{
+		Unregister-ScheduledTask $taskName -Confirm:$false
+	}
 }
 Process
 {
+    if ($PSCmdlet.ParameterSetName -eq 'Install')
+    {
+        RegisterTask
+        return
+    }
+
+    if ($PSCmdlet.ParameterSetName -eq 'Uninstall')
+    {
+        UnregisterTask
+        return
+    }
+
 	$used = (Get-PSDrive C).Used
 	$script:filCount = 0
 	$script:dirCount = 0
@@ -50,7 +96,7 @@ Process
 
 	if (!$Quiet)
 	{
-		$disk = Get-PSDrive C | Select-Object Used,Free
+		$disk = Get-PSDrive C | Select-Object Used, Free
 		$pct = ($disk.Used / ($disk.Used + $disk.Free)) * 100
 		$recovered = $used - $disk.Used
 		Write-Host "... removed $filCount files, $dirCount directories"
