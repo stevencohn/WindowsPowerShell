@@ -199,9 +199,6 @@ Convenient when you need to run as a normal user from an elevated prompt.
 #### [`Invoke-SuperUser`](Modules/Scripts/Invoke-SuperUser.ps1)
 Open a new command prompt in elevated mode. Aliased to `su`. Special command for ConEmu emulator.
 
-#### [`Invoke-VsDevCmd`](Modules/Scripts/Invoke-VsDevCmd.ps1)
-Invoke the Visual Studio environment batch script. Aliased to `vs`
-
 #### [`New-Administrator`](Modules/Scripts/New-Administrator.ps1) -Username -Password
 Create a new local admin user.
 
@@ -263,6 +260,9 @@ Set full-access ownership of a specified Registry key.
 
 #### [`Set-SleepSchedule`](Modules/Scripts/Set-SleepSchedule.ps1) (-SleepTime -WakeTime) | (-Clear [-ClearTimers])
 Creates scheduled tasks to sleep and wake the computer at specified times.
+
+#### [`Set-VsDevEnv`](Modules/Scripts/Set-VsDevEnv.ps1)
+Invoke the Visual Studio environment batch script. Aliased to `vs`
 
 #### [`Show-ColorizedContent`](Modules/Scripts/Show-ColorizedContent.ps1) -Filename f [-ExcludeLineNumbers]
 Type the contents of a PowerShell script with syntax highlighting.

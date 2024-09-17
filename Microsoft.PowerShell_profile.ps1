@@ -20,7 +20,7 @@ function prompt {
 # Aliases
 
 New-Alias ep Edit-PSProfile
-New-Alias vs Invoke-VsDevCmd
+New-Alias vs Set-VsDevEnv
 New-Alias push Push-Location
 New-Alias pop Pop-Location
 
@@ -78,7 +78,7 @@ New-Alias dow Start-DockerForWindows
 
 # run vsdevcmd.bat if $env:vsdev is set; this is done by conemu task definition
 if ($env:vsdev -eq '1') {
-	Invoke-VsDevCmd
+	Set-VsDevEnv
 }
 
 # Chocolatey profile (added by Chocolatey installer)
