@@ -18,87 +18,89 @@ Removes the scheduled task
 #>
 [CmdletBinding(DefaultParameterSetName = 'Fix')]
 param(
-    [Parameter(ParameterSetName = 'Install')]
-    [switch] $Install = $false,
-    [Parameter(ParameterSetName = 'Uninstall')]
-    [switch] $Uninstall = $false
+	[Parameter(ParameterSetName = 'Install')]
+	[switch] $Install = $false,
+	[Parameter(ParameterSetName = 'Uninstall')]
+	[switch] $Uninstall = $false
 )
 
 Begin
 {
-    $taskName = 'Disable-BioLogin'
+	$taskName = 'Disable-BioLogin'
 
-    function DeleteNgcIosBackup
-    {
-        param($arc)
-        $0 = "C:\Windows\WinSxS\$arc`_microsoft-windows-security-ngc-trustlet*\"
-        if (Test-Path $0)
-        {
-            Get-ChildItem -Path $0 -filter NgcIso.exe -Recurse | % `
-            {
-                $name = $_.FullName
-                Write-Host "... delete backup $name"
-                Set-ItemOwner $name
-                Remove-item -Path $name -Force -Confirm:$false
-            }
-        }
-    }
+	function DeleteNgcIosBackup
+	{
+		param($arc)
+		$0 = "C:\Windows\WinSxS\$arc`_microsoft-windows-security-ngc-trustlet*\"
+		if (Test-Path $0)
+		{
+			Get-ChildItem -Path $0 -filter NgcIso.exe -Recurse | % `
+			{
+				$name = $_.FullName
+				Write-Host "... delete backup $name"
+				Set-ItemOwner $name
+				Remove-item -Path $name -Force -Confirm:$false
+			}
+		}
+	}
 
-    function HideOffender
-    {
-        param($offender)
-        if (Test-Path $offender)
-        {
-            Write-Host "... hiding $offender"
-            Set-ItemOwner $offender
-            mv $offender "$offender`-hide" -Force -Confirm:$false
-        }
-    }
+	function HideOffender
+	{
+		param($offender)
+		if (Test-Path $offender)
+		{
+			Write-Host "... hiding $offender"
+			Set-ItemOwner $offender
+			mv $offender "$offender`-hide" -Force -Confirm:$false
+		}
+	}
 
-    function RegisterTask
-    {
-        $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+	function RegisterTask
+	{
+		$user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 
-        $pwsh = [System.Diagnostics.Process]::GetCurrentProcess().Path
-        $command = "& '${PSCommandPath}'"
-        $command = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($command))
+		$pwsh = 'powershell.exe' #[System.Diagnostics.Process]::GetCurrentProcess().Path
 
-        $action = New-ScheduledTaskAction -Execute $pwsh `
-            -Argument "-NonInteractive -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand ${command}"
+		$log = Join-Path $env:USERPROFILE "task-logs\$taskName.log"
+		$command = "Start-Transcript $log; & '${PSCommandPath}'"
+		#$command = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($command))
 
-        $startupTrigger = New-ScheduledTaskTrigger -AtStartup
+		$action = New-ScheduledTaskAction -Execute $pwsh `
+			-Argument "-WindowStyle Hidden -ExecutionPolicy Bypass -Command ""${command}"""
 
-        Register-ScheduledTask $taskName -Action $action -Trigger $startupTrigger -User $user -RunLevel Highest
-    }
+		$trigger = New-ScheduledTaskTrigger -AtStartup
+		Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -User $user -RunLevel Highest
+	}
 	
-    function UnregisterTask
-    {
-        Unregister-ScheduledTask $taskName
-    }
+
+	function UnregisterTask
+	{
+		Unregister-ScheduledTask $taskName -Confirm:$false
+	}
 }
 Process
 {
-    if ($PSCmdlet.ParameterSetName -eq 'Install')
-    {
-        RegisterTask
-        return
-    }
+	if ($PSCmdlet.ParameterSetName -eq 'Install')
+	{
+		RegisterTask
+		return
+	}
 
-    if ($PSCmdlet.ParameterSetName -eq 'Uninstall')
-    {
-        UnregisterTask
-        return
-    }
+	if ($PSCmdlet.ParameterSetName -eq 'Uninstall')
+	{
+		UnregisterTask
+		return
+	}
 
-    # hide them!
+	# hide them!
 
-    # ngciso might get started first, so deal with it first to try to
-    # catch it before it starts
-    HideOffender "$($env:windir)\system32\ngciso.exe"
-    HideOffender "$($env:windir)\system32\bioiso.exe"
+	# ngciso might get started first, so deal with it first to try to
+	# catch it before it starts
+	HideOffender "$($env:windir)\system32\ngciso.exe"
+	HideOffender "$($env:windir)\system32\bioiso.exe"
 
-    # delete WinSxS backup files
-    DeleteNgcIosBackup 'amd64'
-    DeleteNgcIosBackup 'wow64'
-    DeleteNgcIosBackup 'x86'
+	# delete WinSxS backup files
+	DeleteNgcIosBackup 'amd64'
+	DeleteNgcIosBackup 'wow64'
+	DeleteNgcIosBackup 'x86'
 }
