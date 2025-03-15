@@ -15,6 +15,7 @@ Removes the schedule task.
 #>
 [CmdletBinding(DefaultParameterSetName = 'Fix')]
 param(
+	[switch] $Repeat,
 	[Parameter(ParameterSetName = 'Install')]
 	[switch] $Install = $false,
 	[Parameter(ParameterSetName = 'Uninstall')]
@@ -76,6 +77,40 @@ Begin
 			Remove-Item -Force -Recurse $0
 		}
 	}
+
+	function FixEmAll
+	{
+		# Chrome
+		RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
+		RemoveHijack 'HKLM:\SOFTWARE\Policies\Google\Chrome' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
+		RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome\Recommended' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
+		RemoveHijack 'HKLM:\SOFTWARE\Policies\Google\Chrome\Recommended' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
+		RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome\RestoreOnStartupURLs' @('HomepageLocation')
+		RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome\Recommended\RestoreOnStartupURLs' @('HomepageLocation')
+
+		RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Chrome~Policy~googlechrome~Startup'
+		RemoveHijackKey 'HKLM:\SOFTWARE\Policies\Google\Chrome\RestoreOnStartupURLs'
+		RemoveHijackKey 'HKLM:\SOFTWARE\WOW6432Node\Policies\Google\Chrome\RestoreOnStartupURLs'
+		RemoveHijackKey 'HKLM:\SOFTWARE\WOW6432Node\Policies\Google\Chrome\Recommended\RestoreOnStartupURLs'
+		RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\Chrome~Policy~googlechrome_recommended~Startup_recommended'
+		RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\Chrome~Policy~googlechrome~Startup'
+		RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\Providers\89FA9032-04AF-4BA8-BD43-936A846F7EFE\default\Device\Chrome~Policy~googlechrome~Startup'
+
+		# Edge
+		RemoveHijack 'HKCU:\SOFTWARE\Policies\Microsoft\Edge\Recommended' @('HomepageLocation', 'RestoreOnStartup', 'ShowHomeButton', 'InternetExplorerIntegrationSiteList')
+		RemoveHijack 'HKCU:\SOFTWARE\Policies\Microsoft\Edge\Internet Settings' @('ProvisionedHomePages')
+		RemoveHijack 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' @('HomepageLocation', 'RestoreOnStartup', 'ShowHomeButton', 'InternetExplorerIntegrationSiteList')
+
+		RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\microsoft_edge~Policy~microsoft_edge~Startup'
+		RemoveHijackKey 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\RestoreOnStartupURLs'
+		RemoveHijackKey 'HKLM:\SOFTWARE\WOW6432Node\Policies\Microsoft\Policies\Microsoft\Edge\RestoreOnStartupURLs'
+		RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\microsoft_edge~Policy~microsoft_edge_recommended~Startup_recommended'
+		RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\microsoft_edge~Policy~microsoft_edge~Startup'
+		RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\Providers\89FA9032-04AF-4BA8-BD43-936A846F7EFE\default\Device\microsoft_edge~Policy~microsoft_edge~Startup'
+
+		# Firefox
+		RemoveHijackKey 'HKCU:\SOFTWARE\Policies\Mozilla\Firefox\Homepage'
+	}
 }
 Process
 {
@@ -92,35 +127,12 @@ Process
 	}
 
 	# fix it now!
+	FixEmAll
 
-	# Chrome
-	RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
-	RemoveHijack 'HKLM:\SOFTWARE\Policies\Google\Chrome' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
-	RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome\Recommended' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
-	RemoveHijack 'HKLM:\SOFTWARE\Policies\Google\Chrome\Recommended' @('HomePageLocation', 'RestoreOnStartup', 'ShowHomeButton')
-	RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome\RestoreOnStartupURLs' @('HomepageLocation')
-	RemoveHijack 'HKCU:\SOFTWARE\Policies\Google\Chrome\Recommended\RestoreOnStartupURLs' @('HomepageLocation')
-
-	RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Chrome~Policy~googlechrome~Startup'
-	RemoveHijackKey 'HKLM:\SOFTWARE\Policies\Google\Chrome\RestoreOnStartupURLs'
-	RemoveHijackKey 'HKLM:\SOFTWARE\WOW6432Node\Policies\Google\Chrome\RestoreOnStartupURLs'
-	RemoveHijackKey 'HKLM:\SOFTWARE\WOW6432Node\Policies\Google\Chrome\Recommended\RestoreOnStartupURLs'
-	RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\Chrome~Policy~googlechrome_recommended~Startup_recommended'
-	RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\Chrome~Policy~googlechrome~Startup'
-	RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\Providers\89FA9032-04AF-4BA8-BD43-936A846F7EFE\default\Device\Chrome~Policy~googlechrome~Startup'
-
-	# Edge
-	RemoveHijack 'HKCU:\SOFTWARE\Policies\Microsoft\Edge\Recommended' @('HomepageLocation', 'RestoreOnStartup', 'ShowHomeButton', 'InternetExplorerIntegrationSiteList')
-	RemoveHijack 'HKCU:\SOFTWARE\Policies\Microsoft\Edge\Internet Settings' @('ProvisionedHomePages')
-	RemoveHijack 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' @('HomepageLocation', 'RestoreOnStartup', 'ShowHomeButton', 'InternetExplorerIntegrationSiteList')
-
-	RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\microsoft_edge~Policy~microsoft_edge~Startup'
-	RemoveHijackKey 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\RestoreOnStartupURLs'
-	RemoveHijackKey 'HKLM:\SOFTWARE\WOW6432Node\Policies\Microsoft\Policies\Microsoft\Edge\RestoreOnStartupURLs'
-	RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\microsoft_edge~Policy~microsoft_edge_recommended~Startup_recommended'
-	RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\AdmxDefault\89FA9032-04AF-4BA8-BD43-936A846F7EFE\microsoft_edge~Policy~microsoft_edge~Startup'
-	RemoveHijackKey 'HKLM:\SOFTWARE\Microsoft\PolicyManager\Providers\89FA9032-04AF-4BA8-BD43-936A846F7EFE\default\Device\microsoft_edge~Policy~microsoft_edge~Startup'
-
-	# Firefox
-	RemoveHijackKey 'HKCU:\SOFTWARE\Policies\Mozilla\Firefox\Homepage'
+	while ($Repeat)
+	{
+		Write-Host "... sleeping $((get-date).toString('yyyy-MM-dd hh:mm'))"
+		Start-Sleep -Seconds 600  # 10 minutes
+		FixEmAll
+	}
 }
