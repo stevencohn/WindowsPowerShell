@@ -8,7 +8,7 @@ All parameters are mutually exlusive!
 Install VSCode; default is to install Visual Studio Professional
 
 .PARAMETER Community
-Install Visual Studio Community; default is to install Professional
+Install Visual Studio Community; default is to install Professional.
 
 .PARAMETER Enterprise
 Install Visual Studio Enterprise; default is to install Professional
