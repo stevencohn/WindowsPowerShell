@@ -8,6 +8,10 @@ loopbacks are ignored.
 .PARAMETER Addresses
 Return a @(list) of addresses
 
+.PARAMETER bound
+Show only interfaces that are bound to a known IP address, hiding disconnected virtual
+or VPN interfaces.
+
 .PARAMETER Preferred
 Only return the preferred network address without report bells and whistles.
 
@@ -27,6 +31,7 @@ using namespace System.Net.NetworkInformation
 param(
 	[switch] $preferred,	# just return the preferred address
 	[switch] $addresses,	# return a list of host addresses
+	[switch] $bound,        # show only interfaces bound to an IP address
 	[switch] $wiFi			# show detailed WiFi profiles
 )
 
@@ -129,44 +134,47 @@ Begin
 						| where { $_.Address.AddressFamily -eq 'InterNetwork' } `
 						| select -first 1 -ExpandProperty Address
 
-					$item.DNSServer = $props.DnsAddresses `
-						| where { $_.AddressFamily -eq 'InterNetwork' } `
-						| select -first 1 -ExpandProperty IPAddressToString
-
-					$item.Gateway = $props.GatewayAddresses `
-						| where { $_.Address.AddressFamily -eq 'InterNetwork' } `
-						| select -first 1 -ExpandProperty Address
-
-					$stats = $_.GetIPv4Statistics() | Select -first 1
-					$item.BytesReceived = $stats.BytesReceived
-					$item.BytesSent = $stats.BytesSent
-
-					$item.Description = $_.Name + ', ' + $_.Description
-					$item.DnsSuffix = $props.DnsSuffix
-					if (![String]::IsNullOrWhiteSpace($item.DnsSuffix))
+					if ($item.Address -or -not $bound)
 					{
-						$item.Description += (', ' + $item.DnsSuffix)
-					}
+						$item.DNSServer = $props.DnsAddresses `
+							| where { $_.AddressFamily -eq 'InterNetwork' } `
+							| select -first 1 -ExpandProperty IPAddressToString
 
-					if ($item.Type.ToString().StartsWith('Wireless') -and $SSID -and ($item.BytesReceived -gt 0))
-					{
-						$item.Description = (', ' + $SSID)
-					}
+						$item.Gateway = $props.GatewayAddresses `
+							| where { $_.Address.AddressFamily -eq 'InterNetwork' } `
+							| select -first 1 -ExpandProperty Address
 
-					if (($item.Status -eq 'Up') -and $item.Address -and ($item.BytesReceived -gt 0))
-					{
-						if (!$preferred)
+						$stats = $_.GetIPv4Statistics() | Select -first 1
+						$item.BytesReceived = $stats.BytesReceived
+						$item.BytesSent = $stats.BytesSent
+
+						$item.Description = $_.Name + ', ' + $_.Description
+						$item.DnsSuffix = $props.DnsSuffix
+						if (![String]::IsNullOrWhiteSpace($item.DnsSuffix))
 						{
-							$preferred = $item
+							$item.Description += (', ' + $item.DnsSuffix)
 						}
 
-						if (!$preffered.SSID)
+						if ($item.Type.ToString().StartsWith('Wireless') -and $SSID -and ($item.BytesReceived -gt 0))
 						{
-							$preferred.SSID = $SSID
+							$item.Description = (', ' + $SSID)
 						}
-					}
 
-					$items += $item
+						if (($item.Status -eq 'Up') -and $item.Address -and ($item.BytesReceived -gt 0))
+						{
+							if (!$preferred)
+							{
+								$preferred = $item
+							}
+
+							if (!$preffered.SSID)
+							{
+								$preferred.SSID = $SSID
+							}
+						}
+
+						$items += $item
+					}
 				}
 			}
 		}
@@ -262,6 +270,9 @@ Begin
 
 	function ShowWiFiProfiles
 	{
+		Write-Host
+		Write-Host '... fetching WiFi profiles' -ForegroundColor DarkGray -NoNewline
+
 		$path = Join-Path $env:temp 'wxpx'
 		if (Test-Path $path)
 		{
