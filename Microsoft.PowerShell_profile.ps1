@@ -1,4 +1,4 @@
-﻿
+
 $env:PSElevated = Test-Elevated
 
 # override the prompt function
@@ -23,6 +23,7 @@ New-Alias ep Edit-PSProfile
 New-Alias vs Set-VsDevEnv
 New-Alias push Push-Location
 New-Alias pop Pop-Location
+New-Alias rbh Remove-BrowserHijack
 
 $0 = 'C:\Github\ClipboardViewer\bin\Debug\ClipboardViewer.exe'
 if (Test-Path $0)
@@ -111,4 +112,5 @@ if (Test-Path $pwd\PowerShell_profile.ps1)
 	. $pwd\PowerShell_profile.ps1
 }
 
-oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\paradoxical.omp.json" | Invoke-Expression
+oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\paradoxical.omp.json" | Invoke-Expression 
+$env:AWS_PROFILE='wcc-dev'
