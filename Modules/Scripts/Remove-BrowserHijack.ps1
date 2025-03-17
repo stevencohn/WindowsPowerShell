@@ -131,8 +131,14 @@ Process
 
 	while ($Repeat)
 	{
-		Write-Host "... sleeping $((get-date).toString('yyyy-MM-dd hh:mm'))"
-		Start-Sleep -Seconds 600  # 10 minutes
+		# hijacks are established every hour on the hour
+		# so calc diff to next hour plus a minute for wiggle room
+
+		$sleep = (New-TimeSpan -End (get-date -Minute 0 -Second 0).AddHours(1)).TotalSeconds + 60
+		$minutes = [Math]::Round($sleep / 60)
+
+		Write-Host "... $((get-date).toString('yyyy-MM-dd hh:mm')) sleeping $minutes minutes"
+		Start-Sleep -Seconds $sleep
 		FixEmAll
 	}
 }
