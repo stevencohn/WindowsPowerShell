@@ -131,14 +131,16 @@ Process
 
 	while ($Repeat)
 	{
-		# hijacks are established every hour on the hour
+		# hijacks are established every hour on the hour?
 		# so calc diff to next hour plus a minute for wiggle room
 
-		$sleep = (New-TimeSpan -End (get-date -Minute 0 -Second 0).AddHours(1)).TotalSeconds + 60
-		$minutes = [Math]::Round($sleep / 60)
+		$span = New-TimeSpan -End (get-date -Minute 0 -Second 0).AddHours(1)
+		# check every 20 mins on the 20 minute mark
+		$seconds = ($span.Minutes -gt 20) ? (($span.Minutes % 20 + 1) * 60) + 60 : $span.TotalSeconds + 60
+		$minutes = [Math]::Round($seconds / 60)
 
 		Write-Host "... $((get-date).toString('yyyy-MM-dd hh:mm')) sleeping $minutes minutes"
-		Start-Sleep -Seconds $sleep
+		Start-Sleep -Seconds $seconds
 		FixEmAll
 	}
 }
