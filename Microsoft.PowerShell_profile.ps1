@@ -1,7 +1,14 @@
 
+if (!(Get-Command Test-Elevated -ea SilentlyContinue))
+{
+	Write-Host "*** Ensure $PSScriptRoot\Modules\Scripts is in your system env PATH" -ForegroundColor Red
+	Write-Host "*** temporarily setting path" -ForegroundColor DarkGray
+	$env:PATH += "$PSScriptRoot\Modules\Scripts"
+}
+
 $env:PSElevated = Test-Elevated
 
-# override the prompt function
+# override the prompt function; this is the default prompt before using OhMyPosh
 function prompt {
 	$saveCode = $LASTEXITCODE
 	if ($env:PSElevated -eq $true) {
@@ -14,27 +21,6 @@ function prompt {
 
 	$global:LASTEXITCODE = $saveCode
 	return "> "
-}
-
-
-# Aliases
-
-New-Alias ep Edit-PSProfile
-New-Alias vs Set-VsDevEnv
-New-Alias push Push-Location
-New-Alias pop Pop-Location
-New-Alias rbh Remove-BrowserHijack
-
-$0 = 'C:\Github\ClipboardViewer\bin\Debug\ClipboardViewer.exe'
-if (Test-Path $0)
-{
-	function Start-ClipboardViewer
-	{
-		[CmdletBinding()]
-		[Alias("cv")]
-		param ($p1, $p2, $p3, $p4)
-		& $0 $p1 $p2 $p3 $p4
-	}
 }
 
 function Push-PSRoot
@@ -53,12 +39,6 @@ function Stop-Edge
 	taskkill /f /im msedge.exe
 }
 
-. $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
-Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
-
-# curl.exe is installed as a choco package to \system32; ensure no alias
-Remove-Item alias:curl -ErrorAction SilentlyContinue
-
 function Start-Wilma
 {
 	[CmdletBinding()]
@@ -67,13 +47,38 @@ function Start-Wilma
 	& 'C:\Tools\WiLMa\WinLayoutManager.exe'
 }
 
-New-Alias hx Get-HistoryEx
-New-Alias Clear-History Clear-HistoryEx
+$0 = 'C:\Github\ClipboardViewer\bin\Debug\ClipboardViewer.exe'
+if (Test-Path $0)
+{
+	function Start-ClipboardViewer
+	{
+		[CmdletBinding()]
+		[Alias("cv")]
+		param ($p1, $p2, $p3, $p4)
+		& $0 $p1 $p2 $p3 $p4
+	}
+}
+
+# Command aliases...
+
+. $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
+Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
+
+New-Alias Clear-History Clear-HistoryEx -ea SilentlyContinue
+New-Alias ep Edit-PSProfile -ea SilentlyContinue
+New-Alias hx Get-HistoryEx -ea SilentlyContinue
+New-Alias pop Pop-Location -ea SilentlyContinue
+New-Alias push Push-Location -ea SilentlyContinue
+New-Alias rbh Remove-BrowserHijack -ea SilentlyContinue
+New-Alias vs Set-VsDevEnv -ea SilentlyContinue
 
 # Docker helpers
-New-Alias doc Remove-DockerTrash
-New-Alias dos Show-Docker
-New-Alias dow Start-DockerForWindows
+New-Alias doc Remove-DockerTrash -ea SilentlyContinue
+New-Alias dos Show-Docker -ea SilentlyContinue
+New-Alias dow Start-DockerForWindows -ea SilentlyContinue
+
+# curl.exe is installed as a choco package to \system32; ensure no alias
+Remove-Item alias:curl -ErrorAction SilentlyContinue
 
 # OK, Go!
 
@@ -98,9 +103,7 @@ $cmd = (Get-CimInstance win32_process -filter ("ProcessID={0}" -f `
 
 if ($cmd -notmatch 'cmd\.exe')
 {
-	if (Test-Path 'D:\scp') { Set-Location 'D:\scp'; }
-	elseif (Test-Path 'D:\Github') { Set-Location 'D:\Github'; }
-	elseif (Test-Path 'C:\Github') { Set-Location 'C:\Github'; }
+	if (Test-Path 'C:\Github') { Set-Location 'C:\Github'; }
 	elseif (Test-Path 'C:\Code') { Set-Location 'C:\Code'; }
 	elseif (Test-Path 'C:\River') { Set-Location 'C:\River'; }
 	else { Set-Location '\'; }

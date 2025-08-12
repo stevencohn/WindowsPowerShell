@@ -6,16 +6,16 @@ and installation of common apps and tools that I frequently use.
 
 ## How to install
 
-This entire repo can be overlayed ontop of your Documents\WindowsPowerShell folder.
+This entire repo can be overlayed ontop of your Documents\PowerShell folder.
 
 As with all PowerShell scripts, you'll need to loosen up the execution policy on new machines.
 
 ```powershell
+try{
 Set-ExecutionPolicy RemoteSigned -Force -Confirm:$false;
-Set-Executionpolicy -Scope CurrentUser -ExecutionPolicy UnRestricted -Force -Confirm:$false
+Set-Executionpolicy -Scope CurrentUser -ExecutionPolicy Unrestricted -Force -Confirm:$false;
+}catch{}
 ```
-
-Future: _I'll consider signing the scripts and setting the execution policy to AllSigned._
 
 If starting from scratch on a fresh machine:
 
@@ -25,6 +25,11 @@ $0 = 'https://raw.githubusercontent.com/stevencohn/WindowsPowerShell/main'
 Invoke-WebRequest -Uri "$0/common.ps1" -OutFile C:\common.ps1;
 Invoke-WebRequest -Uri "$0/Initialize-Machine.ps1" -OutFile C:\Initialize-Machine.ps1
 ```
+### Set PATH
+Ensure that the scripts are discoverable by adding their folder to your System-wide environment
+variable definitions:
+
+`C:\Users\username\Documents\PowerShell\Modules\Scripts`
 
 Then execute Initialize-Machine:
 

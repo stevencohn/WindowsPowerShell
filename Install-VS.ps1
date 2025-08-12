@@ -57,6 +57,7 @@ Begin
 			$env:PATH = (($env:PATH -split ';') -join ';') + ";$0"
 
 			Highlight 'Adding VSCode extensions...'
+			code --install-extension alefragnani.Bookmarks
 			code --install-extension alexkrechik.cucumberautocomplete
 			code --install-extension anseki.vscode-color
 			code --install-extension eg2.tslint
