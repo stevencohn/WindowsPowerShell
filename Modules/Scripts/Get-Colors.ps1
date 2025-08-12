@@ -104,12 +104,14 @@ Begin
 
 			if ($name -eq 'Black') {
 				Write-Host ("{0,-35} #{1}  {2,-14}  {3}  " -f $basics, $rgb, $decimal, $escapes) -ForegroundColor $name -BackgroundColor DarkGray	-NoNewline
-				Write-Host (" <ESC>[{0} " -f $codes[$name].Back) -BackgroundColor $name -ForegroundColor Gray
+				Write-Host (" <ESC>[{0} " -f $codes[$name].Back) -BackgroundColor $name -ForegroundColor Gray -NoNewline
+				Write-Host
 			}
 			else {
 				Write-Host ("{0,-35} #{1}  {2,-14}  {3}  " -f $basics, $rgb, $decimal, $escapes) -ForegroundColor $name -NoNewline
 				$fore = if ($name -eq 'Gray') { 'DarkGray' } else { 'Gray' }
-				Write-Host (" <ESC>[{0}m " -f $codes[$name].Back) -BackgroundColor $name -ForegroundColor $fore
+				Write-Host (" <ESC>[{0}m " -f $codes[$name].Back) -BackgroundColor $name -ForegroundColor $fore -NoNewline
+				Write-Host
 			}
 		}
 
@@ -140,7 +142,8 @@ Begin
 			$decimal = "{0}, {1}, {2}" -f $lolor.R, $lolor.G, $lolor.B
 
 			if ($name -eq 'Black') {
-				Write-Host ("{0,-21} {1,-13} #{2}  {3,-14}" -f $lolor.Name, $name, $rgb, $decimal) -ForegroundColor $name -BackgroundColor DarkGray
+				Write-Host ("{0,-21} {1,-13} #{2}  {3,-14}" -f $lolor.Name, $name, $rgb, $decimal) -ForegroundColor $name -BackgroundColor DarkGray -NoNewline
+				Write-Host
 			}
 			else {
 				Write-Host ("{0,-21} {1,-13} #{2}  {3,-14}" -f $lolor.Name, $name, $rgb, $decimal) -ForegroundColor $name
