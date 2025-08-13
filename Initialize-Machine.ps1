@@ -645,6 +645,10 @@ Begin
 		$0 = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
 		Set-ItemProperty $0 -Name 'LongPathsEnabled' -Type DWord -Value 1
 
+		# enable verbose status on Startup/Shutdown screens
+		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+		Set-ItemProperty $0 -Name 'VerboseStatus' -Type DWord -Value 1
+
 		if (!(IsWindows11))
 		{
 			# set Details tab as default in Task Manager, Windows 10 only :-(
