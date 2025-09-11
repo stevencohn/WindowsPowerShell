@@ -59,6 +59,10 @@ if (Test-Path $0)
 	}
 }
 
+function Unlock-RDP {
+    & "C:\Tools\RDP\RDP-unlock.cmd"
+}
+
 # Command aliases...
 
 . $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
@@ -71,6 +75,7 @@ New-Alias pop Pop-Location -ea SilentlyContinue
 New-Alias push Push-Location -ea SilentlyContinue
 New-Alias rbh Remove-BrowserHijack -ea SilentlyContinue
 New-Alias vs Set-VsDevEnv -ea SilentlyContinue
+Set-Alias unlock Unlock-RDP -ea SilentlyContinue
 
 # Docker helpers
 New-Alias doc Remove-DockerTrash -ea SilentlyContinue
