@@ -59,6 +59,9 @@ if (Test-Path $0)
 	}
 }
 
+function Lock-RDP {
+    & "C:\Tools\RDP\RDP-lock.cmd"
+}
 function Unlock-RDP {
     & "C:\Tools\RDP\RDP-unlock.cmd"
 }
@@ -75,6 +78,7 @@ New-Alias pop Pop-Location -ea SilentlyContinue
 New-Alias push Push-Location -ea SilentlyContinue
 New-Alias rbh Remove-BrowserHijack -ea SilentlyContinue
 New-Alias vs Set-VsDevEnv -ea SilentlyContinue
+Set-Alias lock Lock-RDP -ea SilentlyContinue
 Set-Alias unlock Unlock-RDP -ea SilentlyContinue
 
 # Docker helpers
@@ -122,3 +126,6 @@ if (Test-Path $pwd\PowerShell_profile.ps1)
 
 oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\paradoxical.omp.json" | Invoke-Expression 
 $env:AWS_PROFILE='wcc-dev'
+
+Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+Set-PSReadLineOption -PredictionViewStyle ListView
