@@ -76,6 +76,9 @@ Clear the contents of TEMP, Windows\TEMP, and LocalAppData\TEMP.
 #### [`Connect-AwsLogin`](Modules/Scripts/Connect-AwsLogin.ps1) [-Profile] [-Account] [-Device] [-Code]
 Sign in to AWS CLI using MFA for the configured profile of an IAM user.
 
+#### [`Confirm-Schema`](Modules/Scripts/Confirm-Schema.ps1) -XmlPath x -XsdPath s [-Namespace n]
+Validates an XML file against a given schema definition file.
+
 #### [`ConvertFrom-BinHex`](Modules/Scripts/ConvertFrom-BinHex.ps1) -Hex v -Unicode
 Convert a BinHex encoded string back to its original string value.
 
