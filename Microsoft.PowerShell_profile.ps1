@@ -31,6 +31,11 @@ function Push-PSRoot
 	Push-Location $PSScriptRoot
 }
 
+function Set-SubShellPrompt
+{
+	$env:POSH_THEME = "$env:POSH_THEMES_PATH\paradoxical-subshell.omp.json"
+}
+
 function Stop-Edge
 {
 	[CmdletBinding()]
@@ -70,6 +75,7 @@ New-Alias hx Get-HistoryEx -ea SilentlyContinue
 New-Alias pop Pop-Location -ea SilentlyContinue
 New-Alias push Push-Location -ea SilentlyContinue
 New-Alias rbh Remove-BrowserHijack -ea SilentlyContinue
+New-Alias shell Set-SubShellPrompt -ea SilentlyContinue
 New-Alias vs Set-VsDevEnv -ea SilentlyContinue
 
 # Docker helpers
@@ -117,3 +123,7 @@ if (Test-Path $pwd\PowerShell_profile.ps1)
 
 oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\paradoxical.omp.json" | Invoke-Expression 
 $env:AWS_PROFILE='wcc-dev'
+
+# enable predictive intellisense listview
+Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+Set-PSReadLineOption -PredictionViewStyle ListView
