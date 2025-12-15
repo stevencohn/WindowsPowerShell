@@ -2,20 +2,30 @@
 .SYNOPSIS
 Print environment variables with optional highlighting.
 
-.PARAMETER name
+.PARAMETER Edit
+
+
+.PARAMETER Name
 A string used to match and highlight entries based on their name.
 
-.PARAMETER only
+.PARAMETER Only
 Only display matched entries.
 
-.PARAMETER value
+.PARAMETER Value
 A string used to match and highlight entries based on their value.
 #>
 
 param (
-	[string] $name,
-	[string] $value,
-	[switch] $only)
+	[string] $Name,
+	[string] $Value,
+	[switch] $Only,
+	[switch] $Edit)
+
+if ($Edit)
+{
+	Start-Process rundll32 -ArgumentList 'sysdm.cpl,EditEnvironmentVariables'
+	return
+}
 
 $format = '{0,-30} {1}'
 
@@ -31,15 +41,15 @@ Get-ChildItem env: | sort name | % `
 	$max = $host.UI.RawUI.WindowSize.Width - 32
 	if ($evalue.Length -gt $max) { $evalue = $evalue.Substring(0, $max - 3) + '...' }
 
-	if ($name -and ($_.Name -match $name))
+	if ($Name -and ($_.Name -match $Name))
 	{
 		Write-Host ($format -f $ename, $evalue) -ForegroundColor Green
 	}
-	elseif ($value -and ($_.Value -match $value) -and !$only)
+	elseif ($Value -and ($_.Value -match $Value) -and !$Only)
 	{
 		Write-Host ($format -f $ename, $evalue) -ForegroundColor DarkGreen
 	}
-	elseif ([String]::IsNullOrEmpty($name) -and [String]::IsNullOrEmpty($value) -and !$only)
+	elseif ([String]::IsNullOrEmpty($Name) -and [String]::IsNullOrEmpty($Value) -and !$Only)
 	{
 		if ($_.Name -eq 'COMPUTERNAME' -or $_.Name -eq 'USERDOMAIN')
 		{
@@ -66,7 +76,7 @@ Get-ChildItem env: | sort name | % `
 			Write-Host ($format -f $ename, $evalue)
 		}
 	}
-	elseif (!$only)
+	elseif (!$Only)
 	{
 		Write-Host ($format -f $ename, $evalue)
 	}
