@@ -229,7 +229,7 @@ Begin
 				$lastset = ConvertFileTime $properties.pwdlastset[0]
 				($formatter -f 'Pwd last set',$lastset) | Write-Host -NoNewline
 				$days = ((Get-Date) - (Get-Date $lastset)).Days
-				$color = if ($days -lt 20) { 'Green' } elseif ($days -lt 60) { 'Yellow' } else { 'Red' }
+				$color = if ($days -lt 30) { 'Green' } elseif ($days -lt 60) { 'Yellow' } else { 'Red' }
 				Write-Host " ($days days ago)" -ForegroundColor $color
 
 				($formatter -f 'Last modified',$properties.whenchanged[0]) | Write-Host # no conversion needed, already string!
