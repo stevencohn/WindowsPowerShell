@@ -155,7 +155,7 @@ Begin
 
 	function ReportDomainUser
 	{
-		$formatter = '{0,-15}: {1}'
+		$formatter = "{0,-$LabelWidth}: {1}"
 		$entry = New-Object System.DirectoryServices.DirectoryEntry('GC://' + $Domain)
 		$searcher = New-Object System.DirectoryServices.DirectorySearcher($entry)
 		$searcher.Filter = '(&((&(objectCategory=Person)(objectClass=User)))(samaccountname=' + $Username + '))'
