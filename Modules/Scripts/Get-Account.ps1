@@ -160,7 +160,7 @@ Begin
 		$searcher = New-Object System.DirectoryServices.DirectorySearcher($entry)
 		$searcher.Filter = '(&((&(objectCategory=Person)(objectClass=User)))(samaccountname=' + $Username + '))'
 
-		try
+		$found = try
 		{
 			$searcher.FindAll() | % `
 			{
@@ -178,11 +178,12 @@ Begin
 
 				$title = $properties.title[0]
 				if (![string]::IsNullOrWhiteSpace($title)) {
+					($formatter -f 'Title',"$($PSStyle.Italic)$title$($PSStyle.Reset)") | Write-Host -NoNewline
 					$att = $properties.extensionattribute8[0] # I think this is worker|manager|something|something...
-					if (![string]::IsNullOrWhiteSpace($att)) { $title = "$title ($att)" }
+					if (![string]::IsNullOrWhiteSpace($att)) { Write-Host " ($att)" -NoNewline }
 					$company = $properties.company[0]
-					if (![string]::IsNullOrWhiteSpace($company)) { $title = "$title [$company]" }
-					($formatter -f 'Title',$title) | Write-Host
+					if (![string]::IsNullOrWhiteSpace($company)) { Write-Host " [$company]" -NoNewline }
+					Write-Host
 				}
 
 				$dept = $properties.department[0]
@@ -258,17 +259,18 @@ Begin
 					}
 				}
 
-				return
+				$true
 			}
 		}
 		catch
 		{
 			write-host $_.Exception.Message -ForegroundColor Red
-			return
+			$true
 		}
 
-		# not found
-		Write-Host ... Count not find user "$domain\$username" -ForegroundColor Yellow
+		if (!$found) {
+			Write-Host ... Count not find user "$domain\$username" -ForegroundColor Yellow
+		}
 	}
 
 
