@@ -6,10 +6,10 @@ Report the account information for the given username and specified domain.
 Can report on either a local user account or an ActiveDirectory account.
 
 .PARAMETER All
-Report all usrs
+Report all local users.
 
 .PARAMETER Username
-The account username to report.
+The account username to report. Default is $env:USERNAME.
 
 .PARAMETER Domain
 The ActiveDirectory domain to use. Default is $env:USERDOMAIN.
@@ -27,7 +27,84 @@ param(
 
 Begin
 {
-	$esc = [char]27
+	$script:LabelWidth = 15
+
+	# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+	# Helpers...
+
+	function ConvertFileTime
+	{
+		param($value)
+		try {
+			return [datetime]::FromFileTimeUtc($value)
+		}
+		catch {
+			return '<error in ConvertFileTime>'
+		}
+	}
+
+	function ConvertADSLargeInteger
+	{
+		param([object] $adsLargeInteger)
+		try {
+			$highPart = $adsLargeInteger.GetType().InvokeMember("HighPart", [System.Reflection.BindingFlags]::GetProperty, $null, $adsLargeInteger, $null)
+			$lowPart  = $adsLargeInteger.GetType().InvokeMember("LowPart",  [System.Reflection.BindingFlags]::GetProperty, $null, $adsLargeInteger, $null)
+			$bytes = [System.BitConverter]::GetBytes($highPart)
+			$tmp   = [System.Byte[]]@(0,0,0,0,0,0,0,0)
+			[System.Array]::Copy($bytes, 0, $tmp, 4, 4)
+			$highPart = [System.BitConverter]::ToInt64($tmp, 0)
+			$bytes = [System.BitConverter]::GetBytes($lowPart)
+			$lowPart = [System.BitConverter]::ToUInt32($bytes, 0)
+			return $lowPart + $highPart
+		}
+		catch {
+			return '<error in ConvertADSLargeInteger>'
+		}
+	}
+
+	function FormatEnabledString
+	{
+		param($user, $value)
+		if ($user.Enabled) {
+			"$($PSStyle.BrightWhite)$value$($PSStyle.Reset)"
+		} else {
+			"$($PSStyle.BrightBlack)$value$($PSStyle.Reset)"
+		}
+	}
+
+	function WriteHanging
+	{
+		param(
+			[Parameter(Mandatory)] [string]$Label,
+			[Parameter(Mandatory)] [string[]]$Items,
+			[ConsoleColor]$Forecolor = 'DarkGray'
+		)
+
+		$Label = ("{0,-$LabelWidth}: " -f $Label)
+		$Label | Write-Host -NoNewline
+
+		$indent = $Label.Length
+		$width = $host.UI.RawUI.WindowSize.Width - $indent
+		$margin = ' ' * $indent
+
+		$line = '' # first line is already prefixed with Label
+		foreach ($item in $items)
+		{
+			$item = $item.Trim()
+			if ($item) {
+				if ($line.Length + $item.Length + 2 -gt $width) {
+					Write-Host $line -ForegroundColor $Forecolor
+					$line = $margin # subsequent lines get a margin prefix
+				} else {
+					$line = $line.Trim().Length -eq 0 ? "$line$item" : "$line, $item"
+				}
+			}
+		}
+
+		if ($line.Length -gt $margin.Length) {
+			Write-Host $line -ForegroundColor $Forecolor
+		}
+	}
 
 	function GetLocalSid
 	{
@@ -36,6 +113,9 @@ Begin
 
 		$account.SID
 	}
+
+	# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+	# Reporters...
 
 	function ReportLocalUser
 	{
@@ -75,6 +155,7 @@ Begin
 
 	function ReportDomainUser
 	{
+		$formatter = '{0,-15}: {1}'
 		$found = $false
 		$entry = New-Object System.DirectoryServices.DirectoryEntry('GC://' + $Domain)
 		$searcher = New-Object System.DirectoryServices.DirectorySearcher($entry)
@@ -83,31 +164,107 @@ Begin
 		{
 			$searcher.FindAll() | % `
 			{
-				$properties = $_.GetDirectoryEntry().Properties
-				#$properties
-				Write-Host('Account Name : ' + $properties['sAMAccountName'].Value)
-				Write-Host('Display Name : ' + $properties['displayName'].Value)
-				Write-Host('Mail         : ' + $properties['mail'].Value)
-				Write-Host('Telephone    : ' + $properties['telephoneNumber'].Value)
+				$properties = $_.properties
 
-				$lastset = [datetime]::FromFileTimeUtc((ConvertADSLargeInteger $properties['pwdLastSet'].Value))
-				Write-Host('Pwd last set : ' + $lastset)
+				Write-Host
+				Write-Host ('-' * 80)
 
-				#Write-Host('Member of    : ' + $properties['memberOf'].Value)
+				($formatter -f 'Account','') | Write-Host -NoNewline
+				$properties.samaccountname[0] | Write-Host -ForegroundColor Cyan -NoNewline
+				" ($($properties.adspath[0]))" | Write-Host -ForegroundColor DarkGray
 
-				$manager = [string]($properties['manager'].Value)
-				if (!([String]::IsNullOrEmpty($manager))) {
+				($formatter -f 'Principal name',$properties.userprincipalname[0]) | Write-Host
+				($formatter -f 'Display name',$properties.displayname[0]) | Write-Host
+
+				$title = $properties.title[0]
+				if (![string]::IsNullOrWhiteSpace($title)) {
+					$att = $properties.extensionattribute8[0] # I think this is worker|manager|something|something...
+					if (![string]::IsNullOrWhiteSpace($att)) { $title = "$title ($att)" }
+					$company = $properties.company[0]
+					if (![string]::IsNullOrWhiteSpace($company)) { $title = "$title [$company]" }
+					($formatter -f 'Title',$title) | Write-Host
+				}
+
+				$dept = $properties.department[0]
+				$group = $properties.extensionattribute9[0]
+				if (![string]::IsNullOrWhiteSpace($group)) { $dept = "$dept, $group" }
+				$org = $properties.extensionattribute3[0]
+				if (![string]::IsNullOrWhiteSpace($org)) { $dept = "$dept, $org" }
+				($formatter -f 'Department',$dept) | Write-Host
+
+				$manager = [string]($properties.manager[0])
+				if (!([String]::IsNullOrWhiteSpace(($manager)))) {
 					if ($manager.StartsWith('CN=')) {
 						$manager = $manager.Split(',')[0].Split('=')[1]
-						Write-Host('Manager      : ' + $manager)
+						($formatter -f 'Manager',$manager) | Write-Host
 					}
 				}
 	
+				$mail = $properties.mail[0]
+				($formatter -f 'Mail',$mail) | Write-Host
+
+				if ($properties.proxyaddresses.count -gt 0) {
+					$aliases = @()
+					$properties.proxyaddresses | foreach {
+						$alias = $_.ToLower().StartsWith('smtp:') ? $_.Substring(5) : $_
+						if ($alias -ne $mail) { $aliases += $alias }
+					}
+					if ($aliases.count -gt 0) {
+						WriteHanging -Label 'Mail aliases' -Items ($aliases | sort)
+					}
+				}
+
+				$address = "{0}, {1} {2}, {3}, {4}" -f $properties.streetaddress[0],$properties.l[0],$properties.st[0],$properties.postalcode[0],$properties.c[0]
+				($formatter -f 'Address',$address) | Write-Host
+
+				($formatter -f 'Telephone',$properties.telephonenumber[0]) | Write-Host
+
+				$mobile = $properties.mobile[0]
+				if (![string]::IsNullOrWhiteSpace($mobile)) { ($formatter -f 'Mobile',$mobile) | Write-Host }
+
+				$lastlogin = ConvertFileTIme $properties.lastlogontimestamp[0]
+				($formatter -f 'Last login',$lastlogin) | Write-Host
+
+				$lastset = ConvertFileTime $properties.pwdlastset[0]
+				($formatter -f 'Pwd last set',$lastset) | Write-Host -NoNewline
+				$days = ((Get-Date) - (Get-Date $lastset)).Days
+				$color = if ($days -lt 20) { 'Green' } elseif ($days -lt 60) { 'Yellow' } else { 'Red' }
+				Write-Host " ($days days ago)" -ForegroundColor $color
+
+				($formatter -f 'Last modified',$properties.whenchanged[0]) | Write-Host # no conversion needed, already string!
+
+				$sid = New-Object System.Security.Principal.SecurityIdentifier($properties.objectsid[0], 0)
+				($formatter -f 'SID',$sid) | Write-Host
+
+				if ($properties.directreports.count -gt 0) {
+					$reports = @()
+					$properties.directreports | foreach { 
+						if ($_.StartsWith('CN=')) { $reports += $_.split(',')[0].split('=')[1] }
+					}
+					if ($reports.count -gt 0) {
+						Write-Host
+						WriteHanging -Label 'Direct reports' -Items ($reports | sort)
+					}
+				}
+
+				if ($properties.memberof.count -gt 0) {
+					$ships = @()
+					$properties.memberof | foreach { 
+						if ($_.StartsWith('CN=')) { $ships += $_.split(',')[0].split('=')[1] }
+					}
+					if ($ships.count -gt 0) {
+						Write-Host
+						WriteHanging -Label 'Member of' -Items ($ships | sort)
+					}
+				}
+
 				$found = $true
 			}
 		}
 		catch
 		{
+			write-host $_.Exception.Message -ForegroundColor Red
+			return
 		}
 	
 		if (!$found)
@@ -117,46 +274,24 @@ Begin
 	}
 
 
-	function ConvertADSLargeInteger([object] $adsLargeInteger)
-	{
-		$highPart = $adsLargeInteger.GetType().InvokeMember("HighPart", [System.Reflection.BindingFlags]::GetProperty, $null, $adsLargeInteger, $null)
-		$lowPart  = $adsLargeInteger.GetType().InvokeMember("LowPart",  [System.Reflection.BindingFlags]::GetProperty, $null, $adsLargeInteger, $null)
-		$bytes = [System.BitConverter]::GetBytes($highPart)
-		$tmp   = [System.Byte[]]@(0,0,0,0,0,0,0,0)
-		[System.Array]::Copy($bytes, 0, $tmp, 4, 4)
-		$highPart = [System.BitConverter]::ToInt64($tmp, 0)
-		$bytes = [System.BitConverter]::GetBytes($lowPart)
-		$lowPart = [System.BitConverter]::ToUInt32($bytes, 0)
-		return $lowPart + $highPart
-	}
-
 	function ReportAllUsers
 	{
 		Get-LocalUser | `
 			Select-Object Name, FullName, Enabled, PasswordExpires, Description, Sid | `
 			Format-Table `
-				@{ Label = 'Name'; Expression = { MakeAllUsersExpression $_ $_.Name } },
-				@{ Label = 'FullName'; Expression = { MakeAllUsersExpression $_ $_.FullName } },
-				@{ Label = 'Enabled'; Expression = { MakeAllUsersExpression $_ $_.Enabled } },
+				@{ Label = 'Name'; Expression = { FormatEnabledString $_ $_.Name } },
+				@{ Label = 'FullName'; Expression = { FormatEnabledString $_ $_.FullName } },
+				@{ Label = 'Enabled'; Expression = { FormatEnabledString $_ $_.Enabled } },
 				@{
 					Label = 'PasswordExpires'
-					Expression = { MakeAllUsersExpression $_ $_.PasswordExpires.ToShortDateString() }
+					Expression = { FormatEnabledString $_ $_.PasswordExpires.ToShortDateString() }
 				},
 				@{
 					Label = 'Description'
-					Expression = { MakeAllUsersExpression $_ (($_.Description.ToCharArray() | select -First 30) -join '') }
+					Expression = { FormatEnabledString $_ (($_.Description.ToCharArray() | select -First 30) -join '') }
 				},
-				@{ Label = 'Sid'; Expression = { MakeAllUsersExpression $_ $_.Sid } } `
+				@{ Label = 'Sid'; Expression = { FormatEnabledString $_ $_.Sid } } `
 				-AutoSize
-	}
-
-	function MakeAllUsersExpression
-	{
-		param($user, $value)
-		if ($user.Enabled) { $color = '97' }
-		else { $color = '90' }
-
-		"$esc[$color`m$($value)$esc[0m"
 	}
 }
 Process

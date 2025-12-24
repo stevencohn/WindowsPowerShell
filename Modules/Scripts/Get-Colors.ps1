@@ -12,9 +12,6 @@ Display colors for the Windows Command console only.
 .PARAMETER ConEmu
 Display colors for the ConEmu Command console only.
 
-.PARAMETER PS
-Display colors for the PowerShell console only.
-
 .PARAMETER Script
 Generate a script to set the entire color table.
 
@@ -26,7 +23,6 @@ value as well as the RGB, decimal equivalents, and console Esc sequences.
 param (
 	[switch] $All,
 	[switch] $Cmd,
-	[switch] $PS,
 	[switch] $ConEmu,
 	[switch] $Script)
 
@@ -151,6 +147,12 @@ Begin
 		}
 	}
 
+	function ShowPowerShellStyle
+	{
+		Box @('$PSStyle')
+		$PSStyle
+	}
+
 	function ShowConEmuColors ()
 	{
 		if (Test-Path $ConEmuFile)
@@ -248,10 +250,6 @@ Process
 	{
 		ShowConEmuColors
 	}
-	elseif ($PS)
-	{
-		ShowPowerShellColors
-	}
 	elseif ($All)
 	{
 		ShowPowerShellColors
@@ -261,5 +259,6 @@ Process
 	else
 	{
 		ShowPowerShellColors
+		ShowPowerShellStyle
 	}
 }
