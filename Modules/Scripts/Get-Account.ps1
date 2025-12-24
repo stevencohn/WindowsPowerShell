@@ -156,10 +156,10 @@ Begin
 	function ReportDomainUser
 	{
 		$formatter = '{0,-15}: {1}'
-		$found = $false
 		$entry = New-Object System.DirectoryServices.DirectoryEntry('GC://' + $Domain)
 		$searcher = New-Object System.DirectoryServices.DirectorySearcher($entry)
 		$searcher.Filter = '(&((&(objectCategory=Person)(objectClass=User)))(samaccountname=' + $Username + '))'
+
 		try
 		{
 			$searcher.FindAll() | % `
@@ -258,7 +258,7 @@ Begin
 					}
 				}
 
-				$found = $true
+				return
 			}
 		}
 		catch
@@ -266,11 +266,9 @@ Begin
 			write-host $_.Exception.Message -ForegroundColor Red
 			return
 		}
-	
-		if (!$found)
-		{
-			Write-Host ... Count not find user "$domain\$username" -ForegroundColor Yellow
-		}
+
+		# not found
+		Write-Host ... Count not find user "$domain\$username" -ForegroundColor Yellow
 	}
 
 
