@@ -44,9 +44,9 @@ Begin
 }
 Process
 {
-    Write-Host
-    Write-Host 'WMI OS'
-    Get-CimInstance -ComputerName . Win32_OperatingSystem
+    $os = Get-CimInstance Win32_OperatingSystem | Select Caption, Version
+    $product = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion")
+    Write-Host "`n$($os.Caption) $($os.Version) $($product.DisplayVersion)" -ForegroundColor Green
 
     Write-Host "`nWMI Method: (real?)" -ForegroundColor DarkYellow
     Write-Host ((Get-CimInstance -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey) -ForegroundColor DarkGray
