@@ -1,4 +1,4 @@
-
+# warning
 if (!(Get-Command Test-Elevated -ea SilentlyContinue))
 {
 	Write-Host "*** Ensure $PSScriptRoot\Modules\Scripts is in your system env PATH" -ForegroundColor Red
@@ -8,7 +8,9 @@ if (!(Get-Command Test-Elevated -ea SilentlyContinue))
 
 $env:PSElevated = Test-Elevated
 
-# override the prompt function; this is the default prompt before using OhMyPosh
+# --------------------------------------------------------------------------------------
+# default prompt prior loading OhMyPosh
+
 function prompt {
 	$saveCode = $LASTEXITCODE
 	if ($env:PSElevated -eq $true) {
@@ -23,18 +25,38 @@ function prompt {
 	return "> "
 }
 
+# --------------------------------------------------------------------------------------
+# cmdlets
+
+function Go-Profile
+{
+	[CmdletBinding()]
+	[Alias('pushp', 'profile', 'goprofile', 'push-profile')]
+	param()
+	$p = [IO.Path]::GetDirectoryName($profile)
+	Write-Host "... pushing $p" -fo DarkGray
+	Push-Location $p
+}
+
+function Lock-RDP {
+	# enable default screensaver and locking behavior
+	[CmdletBinding()]
+	[Alias("lock")]
+	param()
+    Set-RDP-Screensaver
+}
+function Unlock-RDP {
+	# disable default screensaver and locking behavior for RDP sessions
+	[CmdletBinding()]
+	[Alias("unlock")]
+	param()
+	Set-RDP-Screensaver -Disable
+}
+
 function New-Console
 {
 	# start a new PS7 console window, rather than a Windows Terminal
 	Start-Process conhost.exe -ArgumentList "`"$env:ProgramFiles\PowerShell\7\pwsh.exe`""
-}
-
-function Push-PSRoot
-{
-	[CmdletBinding()]
-	[Alias("pushp")]
-	param()
-	Push-Location $PSScriptRoot
 }
 
 function Set-SubShellPrompt
@@ -59,27 +81,6 @@ function Start-Wilma
 	& 'C:\Tools\WiLMa\WinLayoutManager.exe'
 }
 
-$0 = 'C:\Github\ClipboardViewer\bin\Debug\ClipboardViewer.exe'
-if (Test-Path $0)
-{
-	function Start-ClipboardViewer
-	{
-		[CmdletBinding()]
-		[Alias("cv")]
-		param ($p1, $p2, $p3, $p4)
-		& $0 $p1 $p2 $p3 $p4
-	}
-}
-
-function Lock-RDP {
-	# enable default screensaver and locking behavior
-    Set-RDP-Screensaver
-}
-function Unlock-RDP {
-	# disable default screensaver and locking behavior for RDP sessions
-	Set-RDP-Screensaver -Disable
-}
-
 # Command aliases...
 
 . $PSScriptRoot\Modules\Scripts\Set-OutDefaultOverride.ps1
@@ -93,8 +94,6 @@ New-Alias push Push-Location -ea SilentlyContinue
 New-Alias rbh Remove-BrowserHijack -ea SilentlyContinue
 New-Alias shell Set-SubShellPrompt -ea SilentlyContinue
 New-Alias vs Set-VsDevEnv -ea SilentlyContinue
-Set-Alias lock Lock-RDP -ea SilentlyContinue
-Set-Alias unlock Unlock-RDP -ea SilentlyContinue
 
 # Docker helpers
 New-Alias doc Remove-DockerTrash -ea SilentlyContinue
@@ -104,6 +103,7 @@ New-Alias dow Start-DockerForWindows -ea SilentlyContinue
 # curl.exe is installed as a choco package to \system32; ensure no alias
 Remove-Item alias:curl -ErrorAction SilentlyContinue
 
+# --------------------------------------------------------------------------------------
 # OK, Go!
 
 # run vsdevcmd.bat if $env:vsdev is set; this is done by conemu task definition
@@ -115,6 +115,18 @@ if ($env:vsdev -eq '1') {
 $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 if (Test-Path($ChocolateyProfile)) {
 	Import-Module "$ChocolateyProfile"
+}
+
+$0 = 'C:\Github\ClipboardViewer\bin\Debug\ClipboardViewer.exe'
+if (Test-Path $0)
+{
+	function Start-ClipboardViewer
+	{
+		[CmdletBinding()]
+		[Alias("cv")]
+		param ($p1, $p2, $p3, $p4)
+		& $0 $p1 $p2 $p3 $p4
+	}
 }
 
 # Win-X-I and Win-X-A will open in %userprofile% and %systemrootm%\system32 respectively.
