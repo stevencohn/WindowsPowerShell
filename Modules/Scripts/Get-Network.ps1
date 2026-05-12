@@ -8,9 +8,8 @@ loopbacks are ignored.
 .PARAMETER Addresses
 Return a @(list) of addresses
 
-.PARAMETER bound
-Show only interfaces that are bound to a known IP address, hiding disconnected virtual
-or VPN interfaces.
+.PARAMETER unbound
+Include interfaces that are not bound to an IP address.
 
 .PARAMETER Preferred
 Only return the preferred network address without report bells and whistles.
@@ -31,7 +30,7 @@ using namespace System.Net.NetworkInformation
 param(
 	[switch] $preferred,	# just return the preferred address
 	[switch] $addresses,	# return a list of host addresses
-	[switch] $bound,        # show only interfaces bound to an IP address
+	[switch] $unbound,      # show interfaces not bound to an IP address
 	[switch] $wiFi			# show detailed WiFi profiles
 )
 
@@ -134,7 +133,7 @@ Begin
 						| where { $_.Address.AddressFamily -eq 'InterNetwork' } `
 						| select -first 1 -ExpandProperty Address
 
-					if ($item.Address -or -not $bound)
+					if ($item.Address -or $unbound)
 					{
 						$item.DNSServer = $props.DnsAddresses `
 							| where { $_.AddressFamily -eq 'InterNetwork' } `
@@ -208,7 +207,15 @@ Begin
 		if ([String]::IsNullOrEmpty($domain)) { $domain = [Dns]::GetHostName() }
 		$name = [Dns]::GetHostName()
 		if ($name -ne $domain) { $name = $name + '.' + $domain }
-		Write-Host " | HOST:$name" -ForegroundColor DarkGreen
+		Write-Host " | HOST:$name" -ForegroundColor DarkGreen -NoNewline
+
+		$wan = (Invoke-RestMethod "https://icanhazip.com" -ErrorAction SilentlyContinue)
+		if ($wan)
+		{
+			Write-Host " | WAN:$wan" -ForegroundColor DarkGreen -NoNewline
+		}
+
+		Write-Host
 	}
 
 	function GetColorOf
