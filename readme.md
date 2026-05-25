@@ -191,6 +191,9 @@ Return the translation of a SpecialFolder by name or show all SpecialFolders wit
 Returns a VM configuration object of the specified .vmcx VM configuration
 file even if the VM is not attached to a Hyper-V server.
 
+#### [`Git-Cleanup`](Modules/Scripts/Git-Cleanup.ps1)
+Cleanup remote-tracking branches and local branches whose upstream branch is marked gone.
+
 #### [`Install-BuildTools`](Modules/Scripts/Install-BuildTools.ps1) [-Force] [-Full] [-VsWhere]
 Install minimal Microsoft build and test tools required for CI/CD.
 
