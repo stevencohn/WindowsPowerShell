@@ -47,5 +47,5 @@ foreach ($entry in $commits) {
 }
 Write-Host
 
-Write-Host "`nCommits on origin/main with NO PR and NOT merged since $Since`n" -fo Cyan
+Write-Host "`nCommits on origin/main without a PR and not a 'merge-commit' since $Since`n" -fo Cyan
 $directCommits | Format-Table -AutoSize
