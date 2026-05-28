@@ -73,6 +73,20 @@ function Stop-Edge
 	if ($WebView) { taskkill /f /im msedgewebview2.exe }
 }
 
+function Start-OneMore
+{
+	[CmdletBinding()]
+	[Alias("onemore")]
+   	param(
+        [Parameter(ValueFromRemainingArguments = $true)]
+        [string[]]$Args)
+
+    $exe = "C:\Github\OneMore\OneMore\bin\Debug\OneMoreCli.exe"
+	if (!(Test-Path $exe)) { $exe = "C:\Github\stevencohn\OneMore\OneMore\bin\Debug\OneMoreCli.exe" }
+	if (!(Test-Path $exe)) { Write-Host "OneMoreCli.exe not found!" -ForegroundColor Red; return }
+    & $exe @Args
+}
+
 function Start-Wilma
 {
 	[CmdletBinding()]
