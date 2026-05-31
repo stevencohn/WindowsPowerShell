@@ -17,16 +17,23 @@ The GitHub repository name. Defaults to 'OneMore'.
 .PARAMETER Since
 ISO-8601 timestamp specifying how far back to scan, e.g. 2024-05-01T00:00:00.
 
+.PARAMETER SinceVersion
+A git tag (e.g. v4.15 or 4.15) whose commit date is used as the start of the scan.
+Mutually exclusive with -Since.
+
 .EXAMPLE
 Get-CommitsToMain -Since 2024-05-01T00:00:00Z
 Get-CommitsToMain -Owner myorg -Repo myrepo -Since 2025-01-01
+Get-CommitsToMain -SinceVersion 4.15
+Get-CommitsToMain -Owner myorg -Repo myrepo -SinceVersion 4.15
 #>
 param(
     [string] $Owner = 'stevencohn',
     [string] $Repo = 'OneMore',
 
-    [Parameter(Mandatory)]
-    [string] $Since
+    [string] $Since,
+
+    [string] $SinceVersion
 )
 
 Begin
@@ -85,6 +92,24 @@ Process
     # check if 'gh' CLI is available
     if (-not (Get-Command 'gh' -ErrorAction SilentlyContinue)) {
         throw "GitHub CLI 'gh' is not installed or not in PATH. Please install it from https://cli.github.com/"
+    }
+
+    # require exactly one of -Since / -SinceVersion
+    if ($Since -and $SinceVersion) {
+        throw "Specify only one of -Since or -SinceVersion, not both."
+    }
+    if (-not $Since -and -not $SinceVersion) {
+        throw "One of -Since or -SinceVersion is required."
+    }
+
+    # resolve -SinceVersion to a timestamp
+    if ($SinceVersion) {
+        git fetch origin --tags --quiet
+        $tagDate = git log -1 --format="%ai" "$SinceVersion" 2>$null
+        if (-not $tagDate) {
+            throw "Tag '$SinceVersion' not found. Run 'git tag' to list available tags."
+        }
+        $Since = $tagDate.Trim()
     }
 
     # validate timestamp
