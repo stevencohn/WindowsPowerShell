@@ -6,7 +6,7 @@ Lists commits pushed directly to main without an associated pull request.
 Fetches the latest origin/main and scans commits since a given date, querying
 GitHub to identify any that have no associated PR (i.e. were committed directly
 to main rather than merged via a pull request). Merge commits are excluded.
-Results are displayed with a clickable hyperlink to each commit on GitHub.
+Results are output as a Markdown table with [sha](URL) hyperlinks to each commit on GitHub.
 
 .PARAMETER Owner
 The GitHub repository owner (user or org). Defaults to 'stevencohn'.
@@ -127,16 +127,17 @@ Process
 
     # report
 
-    Write-Host "`nCommits on origin/main without a PR and not a 'merge-commit' since $Since`n" -fo Cyan
-
-    $esc = [char]27
-    Write-Host ("Date".PadRight(18) + "SHA".PadRight(42) + "Message") -fo Yellow
-    Write-Host ("-" * 100) -fo DarkGray
+    Write-Output ""
+    Write-Output "## Commits on origin/main without a PR since $Since"
+    Write-Output ""
+    Write-Output "| Date | Commit | Message |"
+    Write-Output "|------|--------|---------|"
 
     foreach ($c in $directCommits)
     {
-        $url  = "https://github.com/$Owner/$Repo/commit/$($c.SHA)"
-        $link = "$esc]8;;$url$esc\$($c.SHA)$esc]8;;$esc\"
-        Write-Host "$($c.Date)  $link  $($c.Message)"
+        $short = $c.SHA.Substring(0, 7)
+        $url   = "https://github.com/$Owner/$Repo/commit/$($c.SHA)"
+        $link  = "[$short]($url)"
+        Write-Output "| $($c.Date) | $link | $($c.Message) |"
     }
 }

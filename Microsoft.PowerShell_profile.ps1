@@ -28,6 +28,19 @@ function prompt {
 # --------------------------------------------------------------------------------------
 # cmdlets
 
+function Edit-History
+{
+	[CmdletBinding()]
+	[Alias('edithistory')]
+	param()
+	$0 = (Get-PSReadLineOption).HistorySavePath
+	if (!(Test-Path $0)) {
+		Write-Host "*** history path not found: $0" -fo Red
+		return
+	}
+	notepad $0
+}
+
 function Go-Profile
 {
 	[CmdletBinding()]
