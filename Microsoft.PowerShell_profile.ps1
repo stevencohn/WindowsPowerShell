@@ -145,6 +145,9 @@ if (Test-Path($ChocolateyProfile)) {
 }
 
 $0 = 'C:\Github\ClipboardViewer\bin\Debug\ClipboardViewer.exe'
+if (!(Test-Path $0)) { 
+	$0 = 'C:\Github\stevencohn\ClipboardViewer\bin\Debug\ClipboardViewer.exe'
+}
 if (Test-Path $0)
 {
 	function Start-ClipboardViewer
