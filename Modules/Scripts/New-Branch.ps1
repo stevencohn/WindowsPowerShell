@@ -4,10 +4,11 @@ Creates a new git branch following the "1234-word-word-word" naming convention.
 
 .DESCRIPTION
 Creates a local git branch named Name, where Name must start with a GitHub issue
-number followed by hyphen-delimited words, e.g. "1234-fix-thing-here". Sets the
-branch description (git config branch.<name>.description) to two lines: the full
-branch name with hyphens replaced by spaces, and "Relates to #<issue>". Warns and
-prompts for confirmation if the current branch is not 'main' before branching.
+number followed by hyphen-delimited words, e.g. "1234-fix-thing-here". Prints a
+two-line commit message to the console: the full branch name with hyphens replaced
+by spaces, and "Relates to #<issue>" -- copy/paste this into your first commit.
+Warns and prompts for confirmation if the current branch is not 'main' before
+branching.
 
 .PARAMETER Name
 The new branch name, of the form "1234-word-word-word" where 1234 is a GitHub
@@ -27,15 +28,11 @@ param(
 
 Begin
 {
-    function SetBranchDescription
+    function GetBranchMessage
     {
         param($Name, $Issue)
 
-        $description = "$($Name -replace '-', ' ')`nRelates to #$Issue"
-        git config "branch.$Name.description" $description
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "*** failed to set description for branch '$Name'" -ForegroundColor Red
-        }
+        return "$($Name -replace '-', ' ')`nRelates to #$Issue"
     }
 }
 Process
@@ -68,8 +65,8 @@ Process
             return
         }
 
-        SetBranchDescription $Name $issue
-
         Write-Host "Created branch '$Name' from '$current'" -ForegroundColor Cyan
+        Write-Host ''
+        Write-Host (GetBranchMessage $Name $issue)
     }
 }
