@@ -67,6 +67,12 @@ Process
 
         Write-Host "Created branch '$Name' from '$current'" -ForegroundColor Cyan
         Write-Host ''
-        Write-Host (GetBranchMessage $Name $issue)
+
+        $msg = GetBranchMessage $Name $issue
+        Set-Clipboard $msg
+
+        Write-Host 'This message is on the clipboard; paste it into your first commit:'
+        write-host ''
+        Write-Host $msg -ForegroundColor Green
     }
 }

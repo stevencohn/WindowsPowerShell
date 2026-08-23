@@ -116,6 +116,7 @@ Set-Alias ls Get-ChildItemColorized -Force -Option AllScope
 New-Alias Clear-History Clear-HistoryEx -ea SilentlyContinue
 New-Alias ep Edit-PSProfile -ea SilentlyContinue
 New-Alias hx Get-HistoryEx -ea SilentlyContinue
+New-Alias nb New-Branch
 New-Alias pop Pop-Location -ea SilentlyContinue
 New-Alias push Push-Location -ea SilentlyContinue
 New-Alias rbh Remove-BrowserHijack -ea SilentlyContinue
