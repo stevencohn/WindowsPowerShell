@@ -46,7 +46,7 @@ Process
         return
     }
 
-    if ($current -ne 'main' -and current -ne 'next')
+    if ($current -ne 'main' -and $current -ne 'next')
     {
         Write-Host "Current branch is '$current', not 'main' or 'next'." -ForegroundColor Yellow
         $go = Read-Host "Are you sure you want to branch from here? (y/n) [n]"
