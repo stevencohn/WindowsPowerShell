@@ -1,3 +1,4 @@
 PackageManagement
 profile.ps1
 Modules/ImportExcel
+Modules/AWS.Tools*
