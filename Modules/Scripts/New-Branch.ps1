@@ -7,7 +7,7 @@ Creates a local git branch named Name, where Name must start with a GitHub issue
 number followed by hyphen-delimited words, e.g. "1234-fix-thing-here". Prints a
 two-line commit message to the console: the full branch name with hyphens replaced
 by spaces, and "Relates to #<issue>" -- copy/paste this into your first commit.
-Warns and prompts for confirmation if the current branch is not 'main' before
+Warns and prompts for confirmation if the current branch is not 'main' or 'next' before
 branching.
 
 .PARAMETER Name
@@ -46,9 +46,9 @@ Process
         return
     }
 
-    if ($current -ne 'main')
+    if ($current -ne 'main' -and current -ne 'next')
     {
-        Write-Host "Current branch is '$current', not 'main'." -ForegroundColor Yellow
+        Write-Host "Current branch is '$current', not 'main' or 'next'." -ForegroundColor Yellow
         $go = Read-Host "Are you sure you want to branch from here? (y/n) [n]"
         if ($go -ne 'y')
         {
